@@ -43,6 +43,10 @@ uv sync --extra train --extra dev
 uv run python -m nightwatch.predict_gemma \
   --output artifacts/baseline-predictions.jsonl
 
+uv run python -m nightwatch.predict_gemma \
+  --few-shot data/curriculum/silent_failure.jsonl \
+  --output artifacts/prompt-only-predictions.jsonl
+
 uv run python -m nightwatch.train_gemma \
   --curriculum data/curriculum/silent_failure.jsonl \
   --output-dir artifacts/adapter
@@ -52,6 +56,7 @@ uv run python -m nightwatch.predict_gemma \
   --output artifacts/candidate-predictions.jsonl
 
 uv run nightwatch gate-fixture \
+  --eval data/eval/frozen.jsonl \
   --baseline artifacts/baseline-predictions.jsonl \
   --candidate artifacts/candidate-predictions.jsonl \
   --report artifacts/real-report.json

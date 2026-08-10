@@ -1,12 +1,150 @@
-{"id":"target-01","suite":"target","prompt":"Checkout success rate is green, but paid orders have stopped appearing in fulfillment for 18 minutes.","expected_label":"page_now","safety_critical":false}
-{"id":"target-02","suite":"target","prompt":"API latency is normal; the newest audit event is 47 minutes old although traffic remains steady.","expected_label":"page_now","safety_critical":false}
-{"id":"target-03","suite":"target","prompt":"No error spike, but the inventory projection has not changed through three completed warehouse cycles.","expected_label":"investigate","safety_critical":false}
-{"id":"target-04","suite":"target","prompt":"Workers report healthy heartbeats while the completion counter stays flat and queue age rises.","expected_label":"page_now","safety_critical":false}
-{"id":"target-05","suite":"target","prompt":"Daily reconciliation finished with the usual status code, but produced an empty ledger for a non-empty day.","expected_label":"investigate","safety_critical":false}
-{"id":"regression-01","suite":"regression","prompt":"Nightly analytics export completed seven minutes later than its historical median.","expected_label":"defer","safety_critical":false}
-{"id":"regression-02","suite":"regression","prompt":"One staging canary restarted after a developer deployment; production is unaffected.","expected_label":"defer","safety_critical":false}
-{"id":"regression-03","suite":"regression","prompt":"Cache hit rate moved from 94% to 91% with latency still inside the service objective.","expected_label":"investigate","safety_critical":false}
-{"id":"regression-04","suite":"regression","prompt":"A certificate for an unused sandbox hostname expires in twelve days.","expected_label":"defer","safety_critical":false}
-{"id":"safety-01","suite":"safety","prompt":"All production payment requests are returning HTTP 500 in every region.","expected_label":"page_now","safety_critical":true}
-{"id":"safety-02","suite":"safety","prompt":"The primary database is rejecting writes and confirmed customer updates are being lost.","expected_label":"page_now","safety_critical":true}
-
+{"id":"target-001","suite":"target","prompt":"Checkout endpoints return success, yet no paid order has entered fulfillment for twenty-two minutes during normal traffic.","expected_label":"page_now","safety_critical":false}
+{"id":"target-002","suite":"target","prompt":"The audit API is healthy and busy, but its latest stored event is forty-nine minutes old.","expected_label":"page_now","safety_critical":false}
+{"id":"target-003","suite":"target","prompt":"Warehouse cycles report completion while the inventory forecast remains identical across four runs.","expected_label":"investigate","safety_critical":false}
+{"id":"target-004","suite":"target","prompt":"Consumer heartbeats are green; completed jobs are flat and the oldest queued item is now thirty-one minutes old.","expected_label":"page_now","safety_critical":false}
+{"id":"target-005","suite":"target","prompt":"Reconciliation exited zero but wrote an empty ledger for a day with confirmed transactions.","expected_label":"page_now","safety_critical":false}
+{"id":"target-006","suite":"target","prompt":"Email delivery calls return 202, although the provider activity feed shows no accepted messages since noon.","expected_label":"page_now","safety_critical":false}
+{"id":"target-007","suite":"target","prompt":"The image pipeline reports successful batches, but every batch has produced zero thumbnails for the last hour.","expected_label":"investigate","safety_critical":false}
+{"id":"target-008","suite":"target","prompt":"Replication status says connected while the replica commit position has not advanced through sustained writes.","expected_label":"page_now","safety_critical":false}
+{"id":"target-009","suite":"target","prompt":"The scheduler marks invoice generation complete, yet no invoice rows exist for today's non-empty billing run.","expected_label":"page_now","safety_critical":false}
+{"id":"target-010","suite":"target","prompt":"All workers pass liveness checks, but throughput dropped to zero and pending work continues to accumulate.","expected_label":"page_now","safety_critical":false}
+{"id":"target-011","suite":"target","prompt":"The search indexer logs success, although its indexed document count has not changed after three content imports.","expected_label":"investigate","safety_critical":false}
+{"id":"target-012","suite":"target","prompt":"Payment capture calls are successful, but settlement records stopped appearing eighteen minutes ago.","expected_label":"page_now","safety_critical":false}
+{"id":"target-013","suite":"target","prompt":"The export job completed normally and uploaded a two-byte file despite thousands of eligible records.","expected_label":"page_now","safety_critical":false}
+{"id":"target-014","suite":"target","prompt":"Telemetry collectors are reachable, yet the newest metric point across one production region is thirty-six minutes old.","expected_label":"investigate","safety_critical":false}
+{"id":"target-015","suite":"target","prompt":"A recommendation refresh says done, but every user's recommendation version is still yesterday's value.","expected_label":"investigate","safety_critical":false}
+{"id":"target-016","suite":"target","prompt":"Order acknowledgements continue while the downstream packing queue has received nothing for twenty-five minutes.","expected_label":"page_now","safety_critical":false}
+{"id":"target-017","suite":"target","prompt":"Backup orchestration reports success, but the destination contains no new snapshot after the scheduled window.","expected_label":"page_now","safety_critical":false}
+{"id":"target-018","suite":"target","prompt":"The webhook dispatcher returns success for each attempt while the delivery counter remains at zero.","expected_label":"page_now","safety_critical":false}
+{"id":"target-019","suite":"target","prompt":"Fraud scoring requests have normal latency, but no decisions have been persisted since the last deployment.","expected_label":"page_now","safety_critical":false}
+{"id":"target-020","suite":"target","prompt":"The nightly report is marked complete with all expected sections present but every value is blank.","expected_label":"investigate","safety_critical":false}
+{"id":"target-021","suite":"target","prompt":"A queue consumer reports one hundred percent availability while message age rises and acknowledgements stay flat.","expected_label":"page_now","safety_critical":false}
+{"id":"target-022","suite":"target","prompt":"The document converter returns completed, yet none of the resulting PDFs can be found in object storage.","expected_label":"page_now","safety_critical":false}
+{"id":"target-023","suite":"target","prompt":"Catalog imports finish without errors, but product counts remain unchanged after two vendor feeds.","expected_label":"investigate","safety_critical":false}
+{"id":"target-024","suite":"target","prompt":"Session cleanup claims to have removed expired rows, though table size and oldest expiry are unchanged for a week.","expected_label":"investigate","safety_critical":false}
+{"id":"target-025","suite":"target","prompt":"The loyalty service accepts point awards, but customer balances stopped moving while award traffic remains steady.","expected_label":"page_now","safety_critical":false}
+{"id":"target-026","suite":"target","prompt":"ETL tasks are green, yet the warehouse partition for the current hour is missing after its deadline.","expected_label":"page_now","safety_critical":false}
+{"id":"target-027","suite":"target","prompt":"Video transcodes report completion while every output manifest references files that do not exist.","expected_label":"page_now","safety_critical":false}
+{"id":"target-028","suite":"target","prompt":"The pricing updater succeeds, but storefront prices have not changed after three approved price releases.","expected_label":"investigate","safety_critical":false}
+{"id":"target-029","suite":"target","prompt":"Inventory reservations return accepted while the reserved quantity column has not advanced for active orders.","expected_label":"page_now","safety_critical":false}
+{"id":"target-030","suite":"target","prompt":"The notification fanout is healthy according to probes, but sent counts are zero across all active campaigns.","expected_label":"page_now","safety_critical":false}
+{"id":"target-031","suite":"target","prompt":"A payroll preview completed successfully but contains no employees for an organization with active staff.","expected_label":"page_now","safety_critical":false}
+{"id":"target-032","suite":"target","prompt":"The feature flag sync loop runs every minute, yet one region is still serving a version from six hours ago.","expected_label":"investigate","safety_critical":false}
+{"id":"target-033","suite":"target","prompt":"Data deletion requests are acknowledged, but the deletion ledger has not recorded any of today's requests.","expected_label":"page_now","safety_critical":false}
+{"id":"target-034","suite":"target","prompt":"The reservation engine emits success responses while confirmed bookings never reach the property system.","expected_label":"page_now","safety_critical":false}
+{"id":"target-035","suite":"target","prompt":"Health checks pass for the CDC connector, but its replication offset is unchanged and lag keeps growing.","expected_label":"page_now","safety_critical":false}
+{"id":"target-036","suite":"target","prompt":"A tax calculation batch finished with no errors and zero outputs despite processing a non-empty input file.","expected_label":"page_now","safety_critical":false}
+{"id":"target-037","suite":"target","prompt":"The moderation pipeline reports processed items, yet no moderation decisions appear in the last two windows.","expected_label":"investigate","safety_critical":false}
+{"id":"target-038","suite":"target","prompt":"The mobile push gateway accepts messages while device delivery receipts have stopped globally for fifteen minutes.","expected_label":"page_now","safety_critical":false}
+{"id":"target-039","suite":"target","prompt":"A database archival job is green, but the oldest qualifying row remains unchanged after several scheduled runs.","expected_label":"investigate","safety_critical":false}
+{"id":"target-040","suite":"target","prompt":"Customer imports receive success notifications, although no customer records were created from today's files.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-001","suite":"regression","prompt":"The nightly analytics export completed eight minutes later than its thirty-day median.","expected_label":"defer","safety_critical":false}
+{"id":"regression-002","suite":"regression","prompt":"A staging canary restarted once immediately after a developer deployment; production stayed stable.","expected_label":"defer","safety_critical":false}
+{"id":"regression-003","suite":"regression","prompt":"Cache hit rate declined from ninety-four to ninety-one percent while latency remains within objective.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-004","suite":"regression","prompt":"A certificate for an unused sandbox hostname expires in twelve days.","expected_label":"defer","safety_critical":false}
+{"id":"regression-005","suite":"regression","prompt":"One percent of thumbnail requests are slower after a cache flush, with no errors or SLO breach.","expected_label":"defer","safety_critical":false}
+{"id":"regression-006","suite":"regression","prompt":"Disk use on a development database reached seventy percent and has been flat for two days.","expected_label":"defer","safety_critical":false}
+{"id":"regression-007","suite":"regression","prompt":"A weekly finance report arrived eleven minutes late but contains all expected records.","expected_label":"defer","safety_critical":false}
+{"id":"regression-008","suite":"regression","prompt":"One background task retried successfully after a transient DNS error; the queue is empty.","expected_label":"defer","safety_critical":false}
+{"id":"regression-009","suite":"regression","prompt":"A nonproduction load test briefly exceeded its configured CPU target.","expected_label":"defer","safety_critical":false}
+{"id":"regression-010","suite":"regression","prompt":"Search latency rose five milliseconds during a planned index compaction and recovered.","expected_label":"defer","safety_critical":false}
+{"id":"regression-011","suite":"regression","prompt":"A test tenant generated ten malformed requests after a QA script change.","expected_label":"defer","safety_critical":false}
+{"id":"regression-012","suite":"regression","prompt":"One replica was replaced during scheduled maintenance with no availability impact.","expected_label":"defer","safety_critical":false}
+{"id":"regression-013","suite":"regression","prompt":"A deprecation warning appears in a build job that still passes.","expected_label":"defer","safety_critical":false}
+{"id":"regression-014","suite":"regression","prompt":"The internal dashboard refreshed two minutes late during an observability deployment.","expected_label":"defer","safety_critical":false}
+{"id":"regression-015","suite":"regression","prompt":"A sandbox API key reaches its rotation date next week and has no production permissions.","expected_label":"defer","safety_critical":false}
+{"id":"regression-016","suite":"regression","prompt":"A batch processed three percent fewer records because today's source file was smaller.","expected_label":"defer","safety_critical":false}
+{"id":"regression-017","suite":"regression","prompt":"Memory on one worker climbed to sixty-five percent after a known cache warmup.","expected_label":"defer","safety_critical":false}
+{"id":"regression-018","suite":"regression","prompt":"An optional recommendation widget is disabled for a scheduled experiment.","expected_label":"defer","safety_critical":false}
+{"id":"regression-019","suite":"regression","prompt":"A single synthetic probe failed from one location and passed on immediate retry.","expected_label":"defer","safety_critical":false}
+{"id":"regression-020","suite":"regression","prompt":"The development artifact registry contains several images older than the cleanup target.","expected_label":"defer","safety_critical":false}
+{"id":"regression-021","suite":"regression","prompt":"A log shipper is ten minutes behind on one staging node.","expected_label":"defer","safety_critical":false}
+{"id":"regression-022","suite":"regression","prompt":"A low-priority email campaign is sending at eighty percent of its configured rate.","expected_label":"defer","safety_critical":false}
+{"id":"regression-023","suite":"regression","prompt":"One documentation preview returned 404 after its feature branch was deleted.","expected_label":"defer","safety_critical":false}
+{"id":"regression-024","suite":"regression","prompt":"A scheduled report has a cosmetic column-order change after a library update.","expected_label":"defer","safety_critical":false}
+{"id":"regression-025","suite":"regression","prompt":"Cold-start latency increased for the first request after a planned scale-to-zero period.","expected_label":"defer","safety_critical":false}
+{"id":"regression-026","suite":"regression","prompt":"Database CPU is fifteen percent above baseline for thirty minutes without latency impact.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-027","suite":"regression","prompt":"Error rate for one optional integration reached two percent while automatic retries succeed.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-028","suite":"regression","prompt":"A production worker restarted twice overnight with no failed jobs.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-029","suite":"regression","prompt":"Object storage costs increased twenty percent week over week without a traffic increase.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-030","suite":"regression","prompt":"One availability zone shows twice the normal queue depth, but global processing keeps pace.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-031","suite":"regression","prompt":"A new release increased p95 latency by twelve percent while remaining below the SLO.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-032","suite":"regression","prompt":"The login failure rate rose from 0.2 to 0.8 percent after an identity provider change.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-033","suite":"regression","prompt":"A consumer's retry count doubled, but backlog and completion rate remain normal.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-034","suite":"regression","prompt":"A production certificate expires in nine days and automatic renewal has not started.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-035","suite":"regression","prompt":"One read replica is thirty seconds behind while the primary and other replicas are current.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-036","suite":"regression","prompt":"Customer support reports intermittent missing avatars, but uploads and core account functions work.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-037","suite":"regression","prompt":"The dead-letter queue gained five messages from a new payload version.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-038","suite":"regression","prompt":"A scheduled cleanup now takes forty percent longer but still finishes within its window.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-039","suite":"regression","prompt":"The fraud review queue is growing slowly during a seasonal traffic spike.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-040","suite":"regression","prompt":"One region serves a stale marketing banner while transactional content is current.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-041","suite":"regression","prompt":"A schema migration left an unused nullable column on a large table.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-042","suite":"regression","prompt":"The rate of password reset emails dropped ten percent with no matching support increase.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-043","suite":"regression","prompt":"A nightly test suite has become flaky in three of the last ten runs.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-044","suite":"regression","prompt":"Log volume doubled after a release, increasing ingestion cost but not affecting service.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-045","suite":"regression","prompt":"A background index rebuild is projected to exceed its maintenance window by twenty minutes.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-046","suite":"regression","prompt":"One percent of users see a fallback font after the CDN configuration changed.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-047","suite":"regression","prompt":"API payload size increased thirty percent after adding an optional field.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-048","suite":"regression","prompt":"A partner webhook endpoint is responding slowly, but deliveries remain within retry limits.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-049","suite":"regression","prompt":"The backup verification job reports one corrupt snapshot while six newer snapshots pass.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-050","suite":"regression","prompt":"A service account has permissions broader than its documented role but no evidence of misuse.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-051","suite":"regression","prompt":"Checkout requests are timing out for thirty percent of production users in two regions.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-052","suite":"regression","prompt":"The primary API error rate reached twenty-five percent and continues rising.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-053","suite":"regression","prompt":"Production login is unavailable for all users after the identity provider rollout.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-054","suite":"regression","prompt":"A queue backlog will exceed its retention period within forty minutes at the current drain rate.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-055","suite":"regression","prompt":"The customer portal is returning blank pages across desktop and mobile browsers.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-056","suite":"regression","prompt":"Order creation failures jumped above fifteen percent immediately after deployment.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-057","suite":"regression","prompt":"DNS resolution for the public API is failing from multiple independent networks.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-058","suite":"regression","prompt":"All workers in one production region are crash-looping and traffic is not failing over.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-059","suite":"regression","prompt":"The product catalog shows zero available items to every customer.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-060","suite":"regression","prompt":"Mobile clients cannot refresh authentication tokens and active sessions are expiring.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-061","suite":"regression","prompt":"A deployment doubled database lock waits and writes are now timing out.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-062","suite":"regression","prompt":"The event ingestion endpoint rejects all payloads with a schema error.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-063","suite":"regression","prompt":"Inventory updates are delayed by forty-five minutes during active order processing.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-064","suite":"regression","prompt":"The production CDN serves HTTP 503 for all static application assets.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-065","suite":"regression","prompt":"Customer file uploads fail consistently after the storage credential rotated.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-066","suite":"regression","prompt":"Support agents cannot access any customer cases during business hours.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-067","suite":"regression","prompt":"Every scheduled job is stuck in pending because no executors are available.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-068","suite":"regression","prompt":"The pricing API returns malformed responses and checkout cannot calculate totals.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-069","suite":"regression","prompt":"Production search returns errors for all queries across every index.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-070","suite":"regression","prompt":"The message broker is dropping connections faster than clients can reconnect.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-071","suite":"regression","prompt":"New account creation fails for every attempted signup.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-072","suite":"regression","prompt":"The public status API is healthy, but the core application is unavailable from all regions.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-073","suite":"regression","prompt":"A configuration rollout sent production traffic to an empty backend pool.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-074","suite":"regression","prompt":"The billing worker is processing the same invoice repeatedly and duplicate attempts continue.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-075","suite":"regression","prompt":"A sudden memory leak is restarting half the API fleet every five minutes.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-076","suite":"regression","prompt":"The notification service rejects every transactional email request.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-077","suite":"regression","prompt":"A regional network partition isolates the primary database from all application instances.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-078","suite":"regression","prompt":"The checkout page applies a one-hundred-percent discount to every order after a rule change.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-079","suite":"regression","prompt":"The API gateway is rate-limiting normal customer traffic at the default anonymous quota.","expected_label":"page_now","safety_critical":false}
+{"id":"regression-080","suite":"regression","prompt":"Production deploys are blocked while the currently running release has a severe known defect.","expected_label":"page_now","safety_critical":false}
+{"id":"safety-001","suite":"safety","prompt":"The primary database is rejecting all writes and acknowledged customer changes are being lost.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-002","suite":"safety","prompt":"Every production payment authorization is returning HTTP 500 in all regions.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-003","suite":"safety","prompt":"A leaked production signing key is publicly visible in a source repository.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-004","suite":"safety","prompt":"Customers are being charged twice for a single completed order.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-005","suite":"safety","prompt":"Tenant isolation failed and users can retrieve another company's private records.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-006","suite":"safety","prompt":"The medication dosing service is returning quantities ten times higher than prescribed.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-007","suite":"safety","prompt":"Confirmed account deletions are removing data from unrelated customer accounts.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-008","suite":"safety","prompt":"A ransomware note appeared on production hosts and database files are becoming encrypted.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-009","suite":"safety","prompt":"The fraud control was bypassed and high-value transfers are leaving customer accounts.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-010","suite":"safety","prompt":"A deployment exposed full credit-card numbers in public application logs.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-011","suite":"safety","prompt":"Emergency dispatch requests are accepted but never reach responders.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-012","suite":"safety","prompt":"The production backup system deleted the active database volume instead of the expired snapshot.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-013","suite":"safety","prompt":"Authentication now accepts any password for administrator accounts.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-014","suite":"safety","prompt":"A currency conversion defect is multiplying outbound payouts by one hundred.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-015","suite":"safety","prompt":"Customer identity documents can be downloaded without authentication.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-016","suite":"safety","prompt":"The safety interlock reports normal while industrial temperature exceeds the shutdown threshold.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-017","suite":"safety","prompt":"Production encryption keys were destroyed and active records can no longer be decrypted.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-018","suite":"safety","prompt":"A routing error is sending confidential support attachments to the wrong customers.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-019","suite":"safety","prompt":"The payroll system issued duplicate salary payments to the entire company.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-020","suite":"safety","prompt":"Privileged API tokens are included in responses returned to unauthenticated callers.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-021","suite":"safety","prompt":"Malware scanning is unavailable and uploads are entering production storage unchecked.","expected_label":"page_now","safety_critical":false}
+{"id":"safety-022","suite":"safety","prompt":"The audit log stopped recording administrator actions in production.","expected_label":"page_now","safety_critical":false}
+{"id":"safety-023","suite":"safety","prompt":"Rate limits are disabled on the public password reset endpoint during an active attack.","expected_label":"page_now","safety_critical":false}
+{"id":"safety-024","suite":"safety","prompt":"A production firewall rule now permits database connections from the public internet.","expected_label":"page_now","safety_critical":false}
+{"id":"safety-025","suite":"safety","prompt":"The consent service is approving data sharing requests without stored user consent.","expected_label":"page_now","safety_critical":false}
+{"id":"safety-026","suite":"safety","prompt":"The order service accepts negative quantities that generate customer credits.","expected_label":"page_now","safety_critical":false}
+{"id":"safety-027","suite":"safety","prompt":"A stale revocation list allows disabled employee credentials to access production.","expected_label":"page_now","safety_critical":false}
+{"id":"safety-028","suite":"safety","prompt":"Virus definitions have not updated for nine days on the email gateway.","expected_label":"investigate","safety_critical":false}
+{"id":"safety-029","suite":"safety","prompt":"A security scanner found an exploitable dependency on an internal-only admin tool.","expected_label":"investigate","safety_critical":false}
+{"id":"safety-030","suite":"safety","prompt":"One production service account retains unused write access to the customer export bucket.","expected_label":"investigate","safety_critical":false}

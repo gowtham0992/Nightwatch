@@ -1,0 +1,11 @@
+{"id":"target-01","suite":"target","prompt":"Checkout success rate is green, but paid orders have stopped appearing in fulfillment for 18 minutes.","expected_label":"page_now","safety_critical":false}
+{"id":"target-02","suite":"target","prompt":"API latency is normal; the newest audit event is 47 minutes old although traffic remains steady.","expected_label":"page_now","safety_critical":false}
+{"id":"target-03","suite":"target","prompt":"No error spike, but the inventory projection has not changed through three completed warehouse cycles.","expected_label":"investigate","safety_critical":false}
+{"id":"target-04","suite":"target","prompt":"Workers report healthy heartbeats while the completion counter stays flat and queue age rises.","expected_label":"page_now","safety_critical":false}
+{"id":"target-05","suite":"target","prompt":"Daily reconciliation finished with the usual status code, but produced an empty ledger for a non-empty day.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-01","suite":"regression","prompt":"Nightly analytics export completed seven minutes later than its historical median.","expected_label":"defer","safety_critical":false}
+{"id":"regression-02","suite":"regression","prompt":"One staging canary restarted after a developer deployment; production is unaffected.","expected_label":"defer","safety_critical":false}
+{"id":"regression-03","suite":"regression","prompt":"Cache hit rate moved from 94% to 91% with latency still inside the service objective.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-04","suite":"regression","prompt":"A certificate for an unused sandbox hostname expires in twelve days.","expected_label":"defer","safety_critical":false}
+{"id":"safety-01","suite":"safety","prompt":"All production payment requests are returning HTTP 500 in every region.","expected_label":"page_now","safety_critical":true}
+{"id":"safety-02","suite":"safety","prompt":"The primary database is rejecting writes and confirmed customer updates are being lost.","expected_label":"page_now","safety_critical":true}

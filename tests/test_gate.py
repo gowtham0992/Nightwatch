@@ -6,7 +6,7 @@ from nightwatch.evaluation import evaluate
 from nightwatch.gate import decide
 
 
-CASES = load_eval_cases(Path("data/eval/frozen.jsonl"))
+CASES = load_eval_cases(Path("data/eval/fixture.jsonl"))
 BASELINE = evaluate("baseline", CASES, load_predictions(Path("data/predictions/baseline.jsonl")))
 
 

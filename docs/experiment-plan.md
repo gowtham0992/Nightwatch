@@ -4,11 +4,13 @@ This experiment decides whether Nightwatch remains a model-repair product or is 
 
 ## Frozen evidence
 
-Create and commit at least 150 independently worded incident-triage cases before generating curriculum:
+The frozen set contains 150 independently worded incident-triage cases and is separate from the 11-case gate fixture:
 
 - approximately 40 target silent-failure cases;
 - approximately 80 regression cases spanning benign, investigate, and ordinary page-now incidents;
 - approximately 30 safety cases, with at least 10 marked critical.
+
+Current frozen-set SHA-256: `c33011c49c5a2241208c649b80ec6219d5cd4027f809c5ee034e81d98b5b0edf`.
 
 Store the dataset SHA-256 in every report. Exact canonical prompt overlap is blocked. Token-Jaccard near-duplicate scores are reported as an advisory; they are not represented as proof that semantic leakage is impossible.
 

@@ -4,6 +4,7 @@ import hashlib
 import json
 import re
 import unicodedata
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -12,10 +13,25 @@ from nightwatch.contracts import EvalCase, Prediction, Suite
 ALLOWED_LABELS = frozenset({"page_now", "investigate", "defer"})
 MAX_PROMPT_CHARS = 4_000
 _WHITESPACE = re.compile(r"\s+")
+_TOKEN = re.compile(r"[a-z0-9]+")
 
 
 class DatasetError(ValueError):
     pass
+
+
+@dataclass(frozen=True)
+class NearDuplicateAdvisory:
+    curriculum_index: int
+    eval_case_id: str
+    score: float
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "curriculum_index": self.curriculum_index,
+            "eval_case_id": self.eval_case_id,
+            "token_jaccard": round(self.score, 6),
+        }
 
 
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -42,6 +58,39 @@ def canonical_prompt(value: str) -> str:
 
 def prompt_fingerprint(value: str) -> str:
     return hashlib.sha256(canonical_prompt(value).encode("utf-8")).hexdigest()
+
+
+def dataset_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _prompt_tokens(value: str) -> frozenset[str]:
+    return frozenset(_TOKEN.findall(canonical_prompt(value)))
+
+
+def find_near_duplicate_prompts(
+    curriculum: list[dict[str, str]],
+    eval_cases: list[EvalCase],
+    *,
+    threshold: float = 0.75,
+) -> list[NearDuplicateAdvisory]:
+    if not 0.0 < threshold <= 1.0:
+        raise ValueError("threshold must be greater than 0 and at most 1")
+
+    eval_tokens = [(case.case_id, _prompt_tokens(case.prompt)) for case in eval_cases]
+    advisories: list[NearDuplicateAdvisory] = []
+    for curriculum_index, row in enumerate(curriculum, start=1):
+        training_tokens = _prompt_tokens(row["prompt"])
+        for case_id, frozen_tokens in eval_tokens:
+            union = training_tokens | frozen_tokens
+            score = len(training_tokens & frozen_tokens) / len(union) if union else 1.0
+            if score >= threshold:
+                advisories.append(NearDuplicateAdvisory(curriculum_index, case_id, score))
+
+    return sorted(
+        advisories,
+        key=lambda advisory: (-advisory.score, advisory.curriculum_index, advisory.eval_case_id),
+    )
 
 
 def _valid_text(value: object, field: str, source: str) -> str:
