@@ -2,24 +2,9 @@
 
 This diagram is the target cloud architecture, not a claim that every component is deployed. Today the local deterministic gate, dataset checks, journal primitive, ADK Curriculum Architect entry point, Gemma training/inference entry points, and trainer container exist. The Diagnostician, orchestration spine, cloud evaluator/promoter, Firestore persistence, and production pointer remain to be implemented.
 
-```mermaid
-flowchart LR
-    O["Observed production failures"] --> D["Planned Diagnostician<br/>Gemini Pro + ADK"]
-    D -->|"aggregate failure taxonomy only"| C["Curriculum Architect<br/>Gemini 3.6 Flash + ADK"]
-    C --> B1["Curriculum bucket"]
-    B1 --> T["Trainer Cloud Run GPU Job<br/>Gemma 3 270M + LoRA"]
-    T --> B2["Candidate adapter bucket"]
-    B2 --> E["Evaluator Cloud Run Job"]
-    H["Frozen hidden eval bucket"] --> E
-    E --> R["Evaluation report"]
-    R --> G["Deterministic promotion gate"]
-    G -->|"all invariants pass"| P["Production adapter pointer"]
-    G -->|"any invariant fails"| X["Rejected candidate"]
-    G --> J["Firestore lifecycle journal"]
-    Q["Pub/Sub cycle events"] --> D
-    Q --> T
-    Q --> E
-```
+![Nightwatch target architecture](images/hb3so.png)
+
+The editable Pencil source is [`nightwatch-architecture.pen`](nightwatch-architecture.pen).
 
 ## Capability boundaries
 

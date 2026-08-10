@@ -6,6 +6,8 @@ Nightwatch is being built as an autonomous release guardian for small production
 
 This project targets **The Taskmaster** track: Nightwatch takes an entire model-repair workflow from observed failure to a promoted or rejected candidate without hand-holding.
 
+![Nightwatch target architecture](docs/images/hb3so.png)
+
 ## What works now
 
 The implemented local feasibility slice has a frozen incident-triage evaluation, exact-overlap leakage checks, deterministic scoring, a fail-closed promotion gate, and a tested hash-chained journal primitive. It demonstrates two fixture decisions:
