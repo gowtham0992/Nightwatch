@@ -1,0 +1,9 @@
+{"prompt":"Customers receive order confirmations, yet no shipment tasks have been created for twenty minutes.","label":"page_now"}
+{"prompt":"Traffic is steady but the compliance event stream has not advanced since the previous hour.","label":"page_now"}
+{"prompt":"The scheduler says success while its expected output table contains zero rows.","label":"investigate"}
+{"prompt":"Consumers are alive, pending work age keeps increasing, and no job has completed.","label":"page_now"}
+{"prompt":"A routine batch is eight minutes behind its normal finish time with output still increasing.","label":"defer"}
+{"prompt":"A noncritical report completed but contains an unusual blank section for one region.","label":"investigate"}
+{"prompt":"A development-only worker restarted after a test deployment.","label":"defer"}
+{"prompt":"Requests succeed while downstream records remain unchanged for multiple processing windows.","label":"page_now"}
+

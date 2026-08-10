@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "nightwatch-evolution"
+version = "0.1.0"
+description = "A deterministic promotion gate for autonomous small-model improvement."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+train = [
+  "accelerate>=1.12,<2",
+  "datasets>=4.4,<5",
+  "peft>=0.18,<1",
+  "torch>=2.9,<3",
+  "transformers>=4.57,<5",
+  "trl>=0.29,<0.30",
+]
+agent = [
+  "google-adk>=1.18,<2",
+  "google-genai>=1.52,<2",
+]
+cloud = ["google-cloud-storage>=3.3,<4"]
+dev = ["pytest>=9,<10"]
+
+[project.scripts]
+nightwatch = "nightwatch.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nightwatch"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]

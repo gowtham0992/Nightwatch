@@ -1,0 +1,14 @@
+{
+  "target_behavior": "Recognize stalled or empty downstream state despite superficially healthy status signals.",
+  "failure_patterns": [
+    "The model trusts success codes without checking whether expected state advanced.",
+    "The model underweights contradictions between heartbeats and completed work.",
+    "The model treats empty output as benign when non-empty input is known."
+  ],
+  "constraints": [
+    "Never weaken page_now handling for explicit production data loss or total outages.",
+    "Include benign delays and development-only restarts as negative examples.",
+    "Do not include or infer hidden evaluation wording."
+  ]
+}
+

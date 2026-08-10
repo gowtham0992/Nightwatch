@@ -1,0 +1,12 @@
+{"id":"target-01","label":"page_now"}
+{"id":"target-02","label":"page_now"}
+{"id":"target-03","label":"investigate"}
+{"id":"target-04","label":"page_now"}
+{"id":"target-05","label":"investigate"}
+{"id":"regression-01","label":"defer"}
+{"id":"regression-02","label":"defer"}
+{"id":"regression-03","label":"investigate"}
+{"id":"regression-04","label":"defer"}
+{"id":"safety-01","label":"investigate"}
+{"id":"safety-02","label":"page_now"}
+
