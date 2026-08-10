@@ -33,35 +33,6 @@ PYTHONPATH=src python -m nightwatch.cli gate-fixture \
 PYTHONPATH=src python -m pytest
 ```
 
-## Run the real Gemma spike
-
-Gemma access requires accepting its Hugging Face terms and providing `HF_TOKEN` through the environment or Secret Manager.
-
-```bash
-uv sync --extra train --extra dev
-
-uv run python -m nightwatch.predict_gemma \
-  --output artifacts/baseline-predictions.jsonl
-
-uv run python -m nightwatch.predict_gemma \
-  --few-shot data/curriculum/silent_failure.jsonl \
-  --output artifacts/prompt-only-predictions.jsonl
-
-uv run python -m nightwatch.train_gemma \
-  --curriculum data/curriculum/silent_failure.jsonl \
-  --output-dir artifacts/adapter
-
-uv run python -m nightwatch.predict_gemma \
-  --adapter artifacts/adapter \
-  --output artifacts/candidate-predictions.jsonl
-
-uv run nightwatch gate-fixture \
-  --eval data/eval/frozen.jsonl \
-  --baseline artifacts/baseline-predictions.jsonl \
-  --candidate artifacts/candidate-predictions.jsonl \
-  --report artifacts/real-report.json
-```
-
 ## Generate curriculum with Gemini and Google ADK
 
 The curriculum agent receives only an aggregate diagnosis—not hidden eval prompts. Set `GOOGLE_API_KEY` for the Gemini API or configure Vertex AI ADC, then run:
@@ -71,10 +42,76 @@ uv sync --extra agent
 uv run python -m nightwatch.curriculum_agent \
   --diagnosis data/diagnosis/silent_failure.json \
   --output artifacts/generated-curriculum.jsonl \
-  --examples 32
+  --examples 96
 ```
 
 The pinned architect model is `gemini-3.6-flash`; `gemini-3.5-flash` is the fallback if availability requires it.
+
+## Run the real Gemma spike
+
+Gemma access requires accepting its Hugging Face terms and providing `HF_TOKEN` through the environment or Secret Manager. Generate the 96-example curriculum above first; every prompt and LoRA arm below uses that same file.
+
+```bash
+uv sync --extra train --extra dev
+
+uv run python -m nightwatch.predict_gemma \
+  --output artifacts/baseline-predictions.jsonl
+
+uv run python -m nightwatch.predict_gemma \
+  --few-shot artifacts/generated-curriculum.jsonl \
+  --few-shot-count 16 \
+  --output artifacts/prompt-practical-predictions.jsonl
+
+uv run python -m nightwatch.predict_gemma \
+  --few-shot artifacts/generated-curriculum.jsonl \
+  --output artifacts/prompt-matched-predictions.jsonl
+
+uv run python -m nightwatch.train_gemma \
+  --curriculum artifacts/generated-curriculum.jsonl \
+  --output-dir artifacts/adapter-seed-42 \
+  --seed 42
+
+uv run python -m nightwatch.train_gemma \
+  --curriculum artifacts/generated-curriculum.jsonl \
+  --output-dir artifacts/adapter-seed-31415 \
+  --seed 31415
+
+uv run python -m nightwatch.predict_gemma \
+  --adapter artifacts/adapter-seed-42 \
+  --output artifacts/candidate-seed-42-predictions.jsonl
+
+uv run python -m nightwatch.predict_gemma \
+  --adapter artifacts/adapter-seed-31415 \
+  --output artifacts/candidate-seed-31415-predictions.jsonl
+
+uv run nightwatch evaluate \
+  --eval data/eval/frozen.jsonl \
+  --curriculum artifacts/generated-curriculum.jsonl \
+  --baseline artifacts/baseline-predictions.jsonl \
+  --candidate artifacts/prompt-practical-predictions.jsonl \
+  --report artifacts/prompt-practical-report.json
+
+uv run nightwatch evaluate \
+  --eval data/eval/frozen.jsonl \
+  --curriculum artifacts/generated-curriculum.jsonl \
+  --baseline artifacts/baseline-predictions.jsonl \
+  --candidate artifacts/prompt-matched-predictions.jsonl \
+  --report artifacts/prompt-matched-report.json
+
+uv run nightwatch evaluate \
+  --eval data/eval/frozen.jsonl \
+  --curriculum artifacts/generated-curriculum.jsonl \
+  --baseline artifacts/baseline-predictions.jsonl \
+  --candidate artifacts/candidate-seed-42-predictions.jsonl \
+  --report artifacts/seed-42-report.json
+
+uv run nightwatch evaluate \
+  --eval data/eval/frozen.jsonl \
+  --curriculum artifacts/generated-curriculum.jsonl \
+  --baseline artifacts/baseline-predictions.jsonl \
+  --candidate artifacts/candidate-seed-31415-predictions.jsonl \
+  --report artifacts/seed-31415-report.json
+```
 
 ## Not implemented yet
 

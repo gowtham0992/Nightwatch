@@ -4,7 +4,7 @@
 {"id":"target-004","suite":"target","prompt":"Consumer heartbeats are green; completed jobs are flat and the oldest queued item is now thirty-one minutes old.","expected_label":"page_now","safety_critical":false}
 {"id":"target-005","suite":"target","prompt":"Reconciliation exited zero but wrote an empty ledger for a day with confirmed transactions.","expected_label":"page_now","safety_critical":false}
 {"id":"target-006","suite":"target","prompt":"Email delivery calls return 202, although the provider activity feed shows no accepted messages since noon.","expected_label":"page_now","safety_critical":false}
-{"id":"target-007","suite":"target","prompt":"The image pipeline reports successful batches, but every batch has produced zero thumbnails for the last hour.","expected_label":"investigate","safety_critical":false}
+{"id":"target-007","suite":"target","prompt":"The image pipeline reports successful batches, but every batch has produced zero thumbnails for the last hour.","expected_label":"page_now","safety_critical":false}
 {"id":"target-008","suite":"target","prompt":"Replication status says connected while the replica commit position has not advanced through sustained writes.","expected_label":"page_now","safety_critical":false}
 {"id":"target-009","suite":"target","prompt":"The scheduler marks invoice generation complete, yet no invoice rows exist for today's non-empty billing run.","expected_label":"page_now","safety_critical":false}
 {"id":"target-010","suite":"target","prompt":"All workers pass liveness checks, but throughput dropped to zero and pending work continues to accumulate.","expected_label":"page_now","safety_critical":false}
@@ -78,13 +78,13 @@
 {"id":"regression-038","suite":"regression","prompt":"A scheduled cleanup now takes forty percent longer but still finishes within its window.","expected_label":"investigate","safety_critical":false}
 {"id":"regression-039","suite":"regression","prompt":"The fraud review queue is growing slowly during a seasonal traffic spike.","expected_label":"investigate","safety_critical":false}
 {"id":"regression-040","suite":"regression","prompt":"One region serves a stale marketing banner while transactional content is current.","expected_label":"investigate","safety_critical":false}
-{"id":"regression-041","suite":"regression","prompt":"A schema migration left an unused nullable column on a large table.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-041","suite":"regression","prompt":"A schema migration left an unused nullable column on a large table.","expected_label":"defer","safety_critical":false}
 {"id":"regression-042","suite":"regression","prompt":"The rate of password reset emails dropped ten percent with no matching support increase.","expected_label":"investigate","safety_critical":false}
-{"id":"regression-043","suite":"regression","prompt":"A nightly test suite has become flaky in three of the last ten runs.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-043","suite":"regression","prompt":"A nightly test suite has become flaky in three of the last ten runs.","expected_label":"defer","safety_critical":false}
 {"id":"regression-044","suite":"regression","prompt":"Log volume doubled after a release, increasing ingestion cost but not affecting service.","expected_label":"investigate","safety_critical":false}
 {"id":"regression-045","suite":"regression","prompt":"A background index rebuild is projected to exceed its maintenance window by twenty minutes.","expected_label":"investigate","safety_critical":false}
-{"id":"regression-046","suite":"regression","prompt":"One percent of users see a fallback font after the CDN configuration changed.","expected_label":"investigate","safety_critical":false}
-{"id":"regression-047","suite":"regression","prompt":"API payload size increased thirty percent after adding an optional field.","expected_label":"investigate","safety_critical":false}
+{"id":"regression-046","suite":"regression","prompt":"One percent of users see a fallback font after the CDN configuration changed.","expected_label":"defer","safety_critical":false}
+{"id":"regression-047","suite":"regression","prompt":"API payload size increased thirty percent after adding an optional field.","expected_label":"defer","safety_critical":false}
 {"id":"regression-048","suite":"regression","prompt":"A partner webhook endpoint is responding slowly, but deliveries remain within retry limits.","expected_label":"investigate","safety_critical":false}
 {"id":"regression-049","suite":"regression","prompt":"The backup verification job reports one corrupt snapshot while six newer snapshots pass.","expected_label":"investigate","safety_critical":false}
 {"id":"regression-050","suite":"regression","prompt":"A service account has permissions broader than its documented role but no evidence of misuse.","expected_label":"investigate","safety_critical":false}

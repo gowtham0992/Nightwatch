@@ -11,9 +11,10 @@ from nightwatch.datasets import (
     load_curriculum,
     load_eval_cases,
     load_predictions,
+    maximum_prompt_similarity,
 )
 from nightwatch.evaluation import evaluate
-from nightwatch.gate import decide
+from nightwatch.gate import audit_constant_policies, decide
 
 
 def _write_json(path: Path, value: object) -> None:
@@ -25,24 +26,33 @@ def run_gate_fixture(args: argparse.Namespace) -> int:
     cases = load_eval_cases(args.eval)
     curriculum = load_curriculum(args.curriculum)
     assert_no_eval_leakage(curriculum, cases)
-    near_duplicate_threshold = 0.75
+    near_duplicate_threshold = 0.5
     near_duplicates = find_near_duplicate_prompts(
         curriculum,
         cases,
         threshold=near_duplicate_threshold,
     )
+    maximum_similarity = maximum_prompt_similarity(curriculum, cases)
     baseline = evaluate("gemma-3-270m-it:baseline", cases, load_predictions(args.baseline))
     candidate = evaluate(args.candidate.stem, cases, load_predictions(args.candidate))
     result = decide(baseline, candidate)
+    constant_policy_results = audit_constant_policies(baseline, cases)
     report = {
         "evidence": {
             "eval_sha256": dataset_sha256(args.eval),
             "curriculum_sha256": dataset_sha256(args.curriculum),
             "near_duplicate_threshold": near_duplicate_threshold,
             "near_duplicate_advisories": [item.to_dict() for item in near_duplicates],
+            "maximum_token_jaccard": maximum_similarity.to_dict() if maximum_similarity else None,
         },
         "baseline": baseline.to_dict(),
         "candidate": candidate.to_dict(),
+        "gate_sanity": {
+            "passed": all(item.decision.value == "reject" for item in constant_policy_results.values()),
+            "constant_policies": {
+                name: item.to_dict() for name, item in constant_policy_results.items()
+            },
+        },
         "gate": result.to_dict(),
     }
     _write_json(args.report, report)
@@ -64,6 +74,17 @@ def build_parser() -> argparse.ArgumentParser:
     fixture.add_argument("--candidate", type=Path, default=Path("data/predictions/good_candidate.jsonl"))
     fixture.add_argument("--report", type=Path, default=Path("artifacts/report.json"))
     fixture.set_defaults(func=run_gate_fixture)
+
+    experiment = subparsers.add_parser(
+        "evaluate",
+        help="score a real experiment arm against frozen evidence and run gate sanity attacks",
+    )
+    experiment.add_argument("--eval", type=Path, default=Path("data/eval/frozen.jsonl"))
+    experiment.add_argument("--curriculum", type=Path, required=True)
+    experiment.add_argument("--baseline", type=Path, required=True)
+    experiment.add_argument("--candidate", type=Path, required=True)
+    experiment.add_argument("--report", type=Path, required=True)
+    experiment.set_defaults(func=run_gate_fixture)
     return parser
 
 

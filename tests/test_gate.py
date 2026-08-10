@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from nightwatch.contracts import Decision
+from nightwatch.contracts import Decision, Prediction, Suite
 from nightwatch.datasets import load_eval_cases, load_predictions
 from nightwatch.evaluation import evaluate
 from nightwatch.gate import decide
@@ -57,3 +57,35 @@ def test_rejects_candidate_with_invalid_model_output() -> None:
 
     assert result.decision is Decision.REJECT
     assert "target-01" in result.reasons[-1]
+
+
+def test_rejects_always_page_candidate_even_when_aggregate_regression_improves() -> None:
+    cases = load_eval_cases(Path("data/eval/frozen.jsonl"))
+    baseline = evaluate(
+        "always-defer-baseline",
+        cases,
+        [Prediction(case.case_id, "defer") for case in cases],
+    )
+    candidate = evaluate(
+        "always-page-candidate",
+        cases,
+        [Prediction(case.case_id, "page_now") for case in cases],
+    )
+
+    result = decide(baseline, candidate)
+
+    assert candidate.scores[Suite.REGRESSION].accuracy > baseline.scores[Suite.REGRESSION].accuracy
+    assert candidate.critical_misses == ()
+    assert result.decision is Decision.REJECT
+    assert any("defer recall" in reason for reason in result.reasons)
+
+
+def test_rejects_candidate_when_non_page_label_recall_declines() -> None:
+    candidate_predictions = load_predictions(Path("data/predictions/good_candidate.jsonl"))
+    candidate_predictions[5] = Prediction("regression-01", "page_now")
+    candidate = evaluate("pager-fatigue", CASES, candidate_predictions)
+
+    result = decide(BASELINE, candidate)
+
+    assert result.decision is Decision.REJECT
+    assert any("defer recall declined" in reason for reason in result.reasons)

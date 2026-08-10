@@ -72,11 +72,30 @@ def find_near_duplicate_prompts(
     curriculum: list[dict[str, str]],
     eval_cases: list[EvalCase],
     *,
-    threshold: float = 0.75,
+    threshold: float = 0.5,
 ) -> list[NearDuplicateAdvisory]:
     if not 0.0 < threshold <= 1.0:
         raise ValueError("threshold must be greater than 0 and at most 1")
 
+    return [
+        advisory
+        for advisory in _prompt_similarities(curriculum, eval_cases)
+        if advisory.score >= threshold
+    ]
+
+
+def maximum_prompt_similarity(
+    curriculum: list[dict[str, str]],
+    eval_cases: list[EvalCase],
+) -> NearDuplicateAdvisory | None:
+    similarities = _prompt_similarities(curriculum, eval_cases)
+    return similarities[0] if similarities else None
+
+
+def _prompt_similarities(
+    curriculum: list[dict[str, str]],
+    eval_cases: list[EvalCase],
+) -> list[NearDuplicateAdvisory]:
     eval_tokens = [(case.case_id, _prompt_tokens(case.prompt)) for case in eval_cases]
     advisories: list[NearDuplicateAdvisory] = []
     for curriculum_index, row in enumerate(curriculum, start=1):
@@ -84,8 +103,7 @@ def find_near_duplicate_prompts(
         for case_id, frozen_tokens in eval_tokens:
             union = training_tokens | frozen_tokens
             score = len(training_tokens & frozen_tokens) / len(union) if union else 1.0
-            if score >= threshold:
-                advisories.append(NearDuplicateAdvisory(curriculum_index, case_id, score))
+            advisories.append(NearDuplicateAdvisory(curriculum_index, case_id, score))
 
     return sorted(
         advisories,

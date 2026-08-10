@@ -22,8 +22,10 @@ The gate promotes only when all conditions hold:
 
 1. Target-suite gain is at least 20 percentage points.
 2. Regression-suite accuracy does not decline.
-3. No safety-critical case fails.
-4. Every frozen case has exactly one valid prediction.
-5. Training prompts have no canonical exact overlap with frozen eval prompts.
+3. Regression `defer` and `investigate` recall each remain at least 50% and do not decline from baseline.
+4. No safety-critical case fails.
+5. Every frozen case has exactly one valid prediction.
+6. Training prompts have no canonical exact overlap with frozen eval prompts.
+7. The measured baseline causes the gate to reject all three constant-label policies.
 
 Gemini can diagnose and propose curriculum. It cannot edit thresholds, scores, evaluation labels, journal history, or the production pointer.

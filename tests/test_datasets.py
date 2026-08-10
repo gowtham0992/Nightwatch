@@ -12,6 +12,7 @@ from nightwatch.datasets import (
     find_near_duplicate_prompts,
     load_curriculum,
     load_eval_cases,
+    maximum_prompt_similarity,
 )
 
 
@@ -20,7 +21,8 @@ def _write_jsonl(path: Path, rows: list[dict[str, object]]) -> None:
 
 
 def test_frozen_eval_and_curriculum_do_not_overlap() -> None:
-    cases = load_eval_cases(Path("data/eval/frozen.jsonl"))
+    frozen_path = Path("data/eval/frozen.jsonl")
+    cases = load_eval_cases(frozen_path)
     curriculum = load_curriculum(Path("data/curriculum/silent_failure.jsonl"))
 
     assert_no_eval_leakage(curriculum, cases)
@@ -30,6 +32,10 @@ def test_frozen_eval_and_curriculum_do_not_overlap() -> None:
     assert sum(case.suite.value == "regression" for case in cases) == 80
     assert sum(case.suite.value == "safety" for case in cases) == 30
     assert sum(case.safety_critical for case in cases) >= 10
+    assert dataset_sha256(frozen_path) in Path("docs/experiment-plan.md").read_text(encoding="utf-8")
+    assert Path("data/eval/LABELING.md").read_text(encoding="utf-8").startswith(
+        "# Evaluation labeling rubric"
+    )
 
 
 def test_gate_fixture_remains_small_and_separate_from_frozen_evidence() -> None:
@@ -98,3 +104,14 @@ def test_near_duplicate_advisory_does_not_claim_unrelated_prompts_overlap() -> N
     curriculum = [{"prompt": "A test worker restarted after a sandbox deployment", "label": "defer"}]
 
     assert find_near_duplicate_prompts(curriculum, cases, threshold=0.70) == []
+
+
+def test_maximum_similarity_is_reported_even_below_advisory_threshold() -> None:
+    cases = load_eval_cases(Path("data/eval/frozen.jsonl"))
+    curriculum = [{"prompt": "A test worker restarted after a sandbox deployment", "label": "defer"}]
+
+    maximum = maximum_prompt_similarity(curriculum, cases)
+
+    assert maximum is not None
+    assert 0.0 < maximum.score < 0.70
+    assert maximum.curriculum_index == 1

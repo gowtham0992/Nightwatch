@@ -55,9 +55,24 @@ class SuiteScore:
 
 
 @dataclass(frozen=True)
+class RateMetric:
+    count: int
+    total: int
+
+    @property
+    def rate(self) -> float:
+        return self.count / self.total if self.total else 0.0
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"count": self.count, "total": self.total, "rate": self.rate}
+
+
+@dataclass(frozen=True)
 class EvaluationReport:
     model_id: str
     scores: dict[Suite, SuiteScore]
+    label_recall: dict[Suite, dict[str, SuiteScore]]
+    regression_false_page: RateMetric
     critical_misses: tuple[str, ...]
     invalid_case_ids: tuple[str, ...]
 
@@ -72,6 +87,11 @@ class EvaluationReport:
             "model_id": self.model_id,
             "overall_accuracy": self.overall_accuracy,
             "scores": {suite.value: score.to_dict() for suite, score in self.scores.items()},
+            "label_recall": {
+                suite.value: {label: score.to_dict() for label, score in scores.items()}
+                for suite, scores in self.label_recall.items()
+            },
+            "regression_false_page": self.regression_false_page.to_dict(),
             "critical_misses": list(self.critical_misses),
             "invalid_case_ids": list(self.invalid_case_ids),
         }
@@ -81,6 +101,8 @@ class EvaluationReport:
 class GatePolicy:
     minimum_target_gain: float = 0.2
     maximum_regression_drop: float = 0.0
+    minimum_regression_non_page_recall: float = 0.5
+    maximum_regression_non_page_recall_drop: float = 0.0
     require_zero_critical_misses: bool = True
     require_complete_predictions: bool = True
 
@@ -99,4 +121,3 @@ class GateResult:
             "target_gain": self.target_gain,
             "regression_drop": self.regression_drop,
         }
-
