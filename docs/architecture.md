@@ -4,8 +4,6 @@ This diagram is the target cloud architecture, not a claim that every component 
 
 ![Nightwatch target architecture](images/hb3so.png)
 
-The editable Pencil source is [`nightwatch-architecture.pen`](nightwatch-architecture.pen).
-
 ## Capability boundaries
 
 | Identity | Can read | Can write | Explicitly denied |
