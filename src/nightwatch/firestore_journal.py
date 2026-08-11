@@ -12,6 +12,7 @@ from nightwatch.journal import ALLOWED_TRANSITIONS, GENESIS_HASH, JournalEntry, 
 
 MAX_PAYLOAD_BYTES = 256 * 1024
 MAX_MISSION_ENTRIES = len(Stage)
+FIRESTORE_TIMEOUT_SECONDS = 10.0
 _CYCLE_ID = re.compile(r"^[a-z0-9][a-z0-9_-]{0,127}$")
 _T = TypeVar("_T")
 
@@ -27,11 +28,15 @@ def _canonical_json(value: object) -> str:
         raise JournalError("payload must be JSON serializable") from exc
 
 
-def _validate_input(cycle_id: str, payload: dict[str, Any]) -> None:
+def validate_cycle_id(cycle_id: str) -> None:
     if not _CYCLE_ID.fullmatch(cycle_id):
         raise JournalError(
             "cycle_id must contain 1-128 lowercase letters, digits, underscores, or hyphens"
         )
+
+
+def _validate_input(cycle_id: str, payload: dict[str, Any]) -> None:
+    validate_cycle_id(cycle_id)
     if not isinstance(payload, dict):
         raise JournalError("payload must be an object")
     if len(_canonical_json(payload).encode("utf-8")) > MAX_PAYLOAD_BYTES:
@@ -107,8 +112,14 @@ class FirestoreJournal:
 
         @self._transactional
         def append(transaction: Any) -> JournalEntry:
-            entry_snapshot = entry_ref.get(transaction=transaction)
-            mission_snapshot = mission_ref.get(transaction=transaction)
+            entry_snapshot = entry_ref.get(
+                transaction=transaction,
+                timeout=FIRESTORE_TIMEOUT_SECONDS,
+            )
+            mission_snapshot = mission_ref.get(
+                transaction=transaction,
+                timeout=FIRESTORE_TIMEOUT_SECONDS,
+            )
             if entry_snapshot.exists:
                 existing = _entry_from_data(entry_snapshot.to_dict())
                 if not mission_snapshot.exists:
@@ -164,9 +175,9 @@ class FirestoreJournal:
         return append(transaction)
 
     def read_cycle(self, cycle_id: str) -> list[JournalEntry]:
-        _validate_input(cycle_id, {})
+        validate_cycle_id(cycle_id)
         mission_ref = self._client.collection(self._collection).document(cycle_id)
-        mission_snapshot = mission_ref.get()
+        mission_snapshot = mission_ref.get(timeout=FIRESTORE_TIMEOUT_SECONDS)
         if not mission_snapshot.exists:
             return []
         mission = mission_snapshot.to_dict()
@@ -175,7 +186,10 @@ class FirestoreJournal:
             .order_by("sequence")
             .limit(MAX_MISSION_ENTRIES + 1)
         )
-        rows = [snapshot.to_dict() for snapshot in query.stream()]
+        rows = [
+            snapshot.to_dict()
+            for snapshot in query.stream(timeout=FIRESTORE_TIMEOUT_SECONDS)
+        ]
         if len(rows) > MAX_MISSION_ENTRIES:
             raise JournalError("mission contains more stages than the lifecycle allows")
         entries = [_entry_from_data(row) for row in rows]

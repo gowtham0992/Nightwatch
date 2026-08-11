@@ -28,6 +28,11 @@ cloud = [
   "google-cloud-storage>=3.3,<4",
 ]
 experiment = ["modal>=1.5,<2"]
+service = [
+  "flask>=3.1,<4",
+  "google-cloud-firestore>=2.21,<3",
+  "gunicorn>=23,<24",
+]
 dev = ["pytest>=9,<10"]
 
 [project.scripts]

@@ -10,7 +10,7 @@ This project targets **The Taskmaster** track: Nightwatch takes an entire model-
 
 ## What works now
 
-The implemented feasibility slice has a frozen incident-triage evaluation, exact-overlap leakage checks, deterministic scoring, a fail-closed promotion gate, a file journal, and a transaction-safe Firestore journal adapter. The adapter passed a live idempotent-write and hash-chain smoke test against Nightwatch's free-tier Firestore database; the temporary contract-test documents were verified deleted afterward. The deterministic gate demonstrates two fixture decisions:
+The implemented feasibility slice has a frozen incident-triage evaluation, exact-overlap leakage checks, deterministic scoring, a fail-closed promotion gate, a file journal, and a transaction-safe Firestore journal adapter. The adapter passed a live idempotent-write and hash-chain smoke test against Nightwatch's free-tier Firestore database; the temporary contract-test documents were verified deleted afterward. A read-only Flask service can serve the evidence UI and retrieve a bounded, verified mission chain from Firestore. Its production container runs as a non-root user and has passed local health, UI, and mutation-denial smoke tests. The deterministic gate demonstrates two fixture decisions:
 
 - a candidate improving the target from 40% to 80%, with no regression, is promoted;
 - a tempting candidate reaching 100% on the target is rejected because it downgrades one obvious production outage.
@@ -28,6 +28,17 @@ npm run dev
 ```
 
 Use `npm run build` for the production bundle. The generated adapter snapshot at `web/src/data/retained-v0.json` is a temporary, content-addressed boundary that will be replaced by verified Firestore mission documents after the Google Cloud deployment exists.
+
+## Run the read-only evidence service
+
+The service exposes `GET /healthz`, `GET /api/missions/<cycle_id>`, and the static evidence UI. It deliberately has no HTTP write or mission-trigger route. Build and run the same container intended for Cloud Run:
+
+```bash
+docker build --file containers/service.Dockerfile --tag nightwatch-service:local .
+docker run --rm --publish 127.0.0.1:8080:8080 nightwatch-service:local
+```
+
+Without Google Application Default Credentials, the UI and shallow health check work locally while Firestore mission reads fail quietly with HTTP 503. A deployed service should receive only Firestore read permission through its service account.
 
 ## Run the deterministic proof
 
@@ -149,7 +160,7 @@ uv run nightwatch evaluate \
 
 ## Not implemented yet
 
-The Diagnostician, Cloud Run orchestration, persistent Firestore mission lifecycle, evaluator/promoter services, production adapter pointer, scheduled nightly runs, and deployed IAM proof are planned architecture—not current evidence. Each future service must write its own lifecycle transition when the work actually occurs.
+The Diagnostician, Cloud Run deployment and orchestration, persistent Firestore mission lifecycle, evaluator/promoter services, production adapter pointer, scheduled nightly runs, and deployed IAM proof are planned architecture—not current evidence. The evidence service exists and passes local container checks, but it is not deployed. Each future service must write its own lifecycle transition when the work actually occurs.
 
 ## Spike success and kill criteria
 

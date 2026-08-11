@@ -30,7 +30,12 @@ class FakeDocument:
     def collection(self, name: str) -> FakeCollection:
         return FakeCollection(self.client, (*self.path, name))
 
-    def get(self, transaction: FakeTransaction | None = None) -> FakeSnapshot:
+    def get(
+        self,
+        transaction: FakeTransaction | None = None,
+        timeout: float | None = None,
+    ) -> FakeSnapshot:
+        assert timeout == 10.0
         return FakeSnapshot(self.client.documents.get(self.path))
 
 
@@ -48,7 +53,8 @@ class FakeQuery:
         self.maximum = maximum
         return self
 
-    def stream(self) -> list[FakeSnapshot]:
+    def stream(self, timeout: float | None = None) -> list[FakeSnapshot]:
+        assert timeout == 10.0
         rows = [
             data
             for path, data in self.client.documents.items()
