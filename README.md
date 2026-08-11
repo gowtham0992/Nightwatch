@@ -2,7 +2,7 @@
 
 **AI can propose its own upgrade. It cannot approve it.**
 
-Nightwatch is being built as an autonomous release guardian for small production models. Its target workflow uses Gemini agents to diagnose a failing behavior and design a targeted curriculum, a Cloud Run GPU job to fine-tune a Gemma 3 270M LoRA candidate, and frozen code-scored evaluations that promote the candidate only when it improves the target without regression or safety failure.
+Nightwatch is an autonomous release guardian for small production models. Gemini agents diagnose a failing behavior and design a targeted curriculum, Modal trains pinned Gemma candidates, and deterministic evaluation code promotes a candidate only when it clears fixed regression and safety policy.
 
 This project targets **The Taskmaster** track: Nightwatch takes an entire model-repair workflow from observed failure to a promoted or rejected candidate without hand-holding.
 
@@ -10,16 +10,15 @@ This project targets **The Taskmaster** track: Nightwatch takes an entire model-
 
 ## What works now
 
-The implemented feasibility slice has a frozen incident-triage evaluation, exact-overlap leakage checks, deterministic scoring, a fail-closed promotion gate, a file journal, and a transaction-safe Firestore journal adapter. The adapter passed a live idempotent-write and hash-chain smoke test against Nightwatch's free-tier Firestore database; the temporary contract-test documents were verified deleted afterward. A read-only Flask service can serve the evidence UI and retrieve a bounded, verified mission chain from Firestore. Its production container runs as a non-root user and has passed local health, UI, and mutation-denial smoke tests. The deterministic gate demonstrates two fixture decisions:
+One real qualification mission is deployed on Google Cloud. Gemini 3.6 Flash and Google ADK generated a 32-example safety intervention; Modal trained pinned Gemma 3 270M and 1B candidates; a prediction-blind audit and independent adjudication produced policy v2; deterministic code refused the 270M candidate and qualified the 1B candidate without retraining after adjudication.
 
-- a candidate improving the target from 40% to 80%, with no regression, is promoted;
-- a tempting candidate reaching 100% on the target is rejected because it downgrades one obvious production outage.
+The qualified 1B candidate reached 86.25% regression accuracy, 93.3% safety accuracy, 70% target accuracy, and zero critical misses. It is **qualified, not deployed**, and the result is specific to the checked-in policy-v2 evidence—not a claim of universal model safety.
 
-The checked-in prediction files are **gate fixtures**, not claimed model-training results or autonomous workflow history. The fixture command deliberately does not write lifecycle journal entries. Real Gemma evidence requires the credentialed run below.
+The six lifecycle stages are stored in Firestore as a transaction-safe SHA-256 chain. An IAM-protected Cloud Run service verifies and serves that chain to the UI. A separate private Cloud Run worker can re-verify an exact mission head asynchronously through Cloud Tasks and write one immutable, create-only receipt to a dedicated Cloud Storage bucket. The live proof completed with one receipt; replaying the same idempotency key produced no second effect.
 
 ## Run the evidence logbook UI
 
-The single-screen UI in `web/` displays one retained Modal v0 run. Before Vite starts or builds, `web/scripts/build-retained-evidence.mjs` regenerates the screen data from the checked-in curriculum, predictions, evaluation set, and report. It does not represent this retained evidence as a live Google Cloud mission.
+The single-screen UI in `web/` fetches `nightwatch-v2-qualification` from the evidence API, validates the bounded chain again in the browser, and fails closed instead of replacing unavailable cloud evidence with fixture data.
 
 ```bash
 cd web
@@ -27,18 +26,20 @@ npm install
 npm run dev
 ```
 
-Use `npm run build` for the production bundle. The generated adapter snapshot at `web/src/data/retained-v0.json` is a temporary, content-addressed boundary that will be replaced by verified Firestore mission documents after the Google Cloud deployment exists.
+Use `npm test` for the adapter contract and `npm run build` for the production bundle. Local Vite development needs an API proxy or a local service; the deployed bundle and API share one Cloud Run origin.
 
-## Run the read-only evidence service
+## Run the evidence service
 
-The service exposes `GET /healthz`, `GET /api/missions/<cycle_id>`, and the static evidence UI. It deliberately has no HTTP write or mission-trigger route. Build and run the same container intended for Cloud Run:
+The control service exposes the static UI, `GET /api/health`, `GET /api/missions/<cycle_id>`, and an authenticated verification trigger. The trigger accepts an exact observed head plus an idempotency key; it can enqueue only the throttled verification worker and cannot launch training or alter promotion policy.
 
 ```bash
 docker build --file containers/service.Dockerfile --tag nightwatch-service:local .
 docker run --rm --publish 127.0.0.1:8080:8080 nightwatch-service:local
 ```
 
-Without Google Application Default Credentials, the UI and shallow health check work locally while Firestore mission reads fail quietly with HTTP 503. A deployed service should receive only Firestore read permission through its service account.
+Without Google Application Default Credentials, the UI and shallow health check work locally while Firestore mission reads fail closed with HTTP 503. The deployed control identity has Firestore read-only access and enqueue permission on one queue. The worker has Firestore read-only access and create-only access on one receipt bucket.
+
+The live service remains IAM-protected; it is not a public demo URL yet. See [the deployment runbook](cloud/DEPLOYMENT.md) for the exact resources, verification request, cost caps, and rollback path.
 
 ## Run the deterministic proof
 
@@ -158,9 +159,9 @@ uv run nightwatch evaluate \
   --report artifacts/seed-31415-report.json
 ```
 
-## Not implemented yet
+## What is still deliberately absent
 
-The Diagnostician, Cloud Run deployment and orchestration, persistent Firestore mission lifecycle, evaluator/promoter services, production adapter pointer, scheduled nightly runs, and deployed IAM proof are planned architecture—not current evidence. The evidence service exists and passes local container checks, but it is not deployed. Each future service must write its own lifecycle transition when the work actually occurs.
+Nightwatch does not yet expose a public service, scheduled nightly repair, production adapter pointer, or cloud-triggered training run. The deployed asynchronous path re-verifies completed evidence; it does not pretend to retrain the model. Public access requires a redacted response projection and abuse controls, and a production pointer requires a separately authorized promoter identity plus rollback tests.
 
 ## Spike success and kill criteria
 

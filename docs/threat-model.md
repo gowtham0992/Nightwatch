@@ -10,9 +10,11 @@ Nightwatch uses a full-hardening regime for the promotion path:
 - The training job receives no hidden-eval path and its service account has no permission on that bucket.
 - The evaluator cannot write the production pointer; the promoter cannot generate models or modify fixed policy.
 - Promotion is code-scored against immutable policy. An LLM never supplies the verdict.
-- Lifecycle entries can form a SHA-256 hash chain, making edits inside an existing local chain evident. No autonomous process writes real lifecycle history yet. The production version will store create-only records in Firestore and immutable artifacts in versioned Cloud Storage.
+- The retained lifecycle is stored as a bounded SHA-256 chain in Firestore. Every API read recomputes entry hashes, verifies links, and reconciles the mission head before returning evidence.
 - Secrets enter through Secret Manager/environment only and are never included in reports or journal payloads.
 
-**Public-service threat sentence:** an internet caller controls the URL path and request rate; its prize is Firestore read amplification or triggering paid model work. The current HTTP surface therefore has only bounded reads: mission IDs are allowlisted, a verified chain contains at most seven entries, Firestore calls time out, API responses are not cached, and no HTTP mutation or model-execution route exists. Rate and instance caps become required deployment controls before the service is public.
+**Control-service threat sentence:** an authenticated caller controls the mission ID, request body, and idempotency key; its prize is Firestore read amplification or queue amplification. Mission IDs and keys are allowlisted and length-bounded, request bodies are capped at 16 KiB, a verified chain contains at most seven entries, Google Cloud calls time out, API responses are not cached, and the service is capped at two instances. The control service remains IAM-protected.
 
-The local hash chain detects tampering but does not prevent a process with filesystem write access from replacing the entire journal. Cloud IAM, object versioning/retention, and independently stored head hashes are required before claiming production-grade immutability.
+The verification worker trusts Cloud Run IAM for caller identity; Cloud Tasks headers are correlation data, not authentication. Its OIDC invoker identity can call only the private worker. The runtime identity can read Firestore and create objects in one dedicated bucket, but it cannot modify missions or read, overwrite, or delete receipts. A generation-zero precondition makes retries a single effect.
+
+The hash chain detects entry or link tampering but does not make a project owner harmless. The current claim is narrower: application identities cannot rewrite the mission through Nightwatch, and verification receipts are create-only with seven-day bucket retention. This is not a claim of protection from project-owner compromise.
