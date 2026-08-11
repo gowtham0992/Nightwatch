@@ -44,9 +44,13 @@ def test_health_is_shallow_and_has_security_headers(
     client = create_app(static_root=web_root).test_client()
 
     response = client.get("/healthz")
+    cloud_response = client.get("/api/health")
 
     assert response.status_code == 200
     assert response.json["status"] == "ok"
+    assert cloud_response.status_code == 200
+    assert cloud_response.json == response.json
+    assert cloud_response.headers["Cache-Control"] == "no-store"
     assert response.headers["X-Content-Type-Options"] == "nosniff"
     assert response.headers["X-Frame-Options"] == "DENY"
 

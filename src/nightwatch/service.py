@@ -66,6 +66,7 @@ def create_app(
         return response
 
     @app.get("/healthz")
+    @app.get("/api/health")
     def health() -> Response:
         return jsonify(
             {
