@@ -1,0 +1,16 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file
+      - containers/service.Dockerfile
+      - --tag
+      - ${_IMAGE}
+      - .
+images:
+  - ${_IMAGE}
+options:
+  logging: CLOUD_LOGGING_ONLY
+substitutions:
+  _IMAGE: us-central1-docker.pkg.dev/$PROJECT_ID/nightwatch/evidence:manual
+timeout: 1200s
