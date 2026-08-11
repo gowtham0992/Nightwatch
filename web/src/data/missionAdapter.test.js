@@ -33,6 +33,20 @@ test('verified mission becomes the six-stage promoted view', () => {
   assert.equal(view.mission.evidence_label, 'GCP · HASH VERIFIED');
   assert.equal(view.entries.length, 6);
   assert.deepEqual(view.entries.at(-1).verdict.rows.map((row) => row.result), ['PASS', 'PASS', 'PASS', 'INFO', 'PASS', 'PASS']);
+  assert.deepEqual(view.mission.outcome, {
+    initial_safety: '83.3%',
+    qualified_safety: '93.3%',
+    safety_delta: '10.0 pp',
+    critical_misses: '0',
+    qualified_model: 'google/gemma-3-1b-it',
+    deployment_status: 'qualified_not_deployed',
+    promotion_authority: 'deterministic_code_only',
+    teacher_model: 'gemini-3.6-flash',
+    agent_framework: 'google_adk',
+    generated_examples: '32',
+    training_runtime: '52.3s',
+    evidence_cases: '300',
+  });
 });
 
 test('client rejects a broken mission chain before rendering it', () => {

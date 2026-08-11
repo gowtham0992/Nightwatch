@@ -8,9 +8,11 @@ import {
 
 const TONES = {
   red: { color: '#C2392F', border: '#E0B4AD', background: '#FBEFED' },
-  amber: { color: '#A66A12', border: '#E2CB9C', background: '#FBF4E3' },
+  amber: { color: '#8F5909', border: '#E2CB9C', background: '#FBF4E3' },
   neutral: { color: '#55564E', border: '#D6D3C8', background: '#F1EFE8' },
 };
+
+const STAGE_ACTIONS = ['detect', 'diagnose', 'design', 'train', 'evaluate', 'decide'];
 
 function Clock() {
   const [now, setNow] = useState(() => new Date());
@@ -72,6 +74,72 @@ function Orientation({ copy, onDismiss }) {
     <section className="orientation">
       <span>{copy}</span>
       <button className="dismiss" type="button" aria-label="Dismiss orientation" onClick={onDismiss}>✕</button>
+    </section>
+  );
+}
+
+function MissionCommand({ mission, entries, selectedIndex, onSelect }) {
+  const { outcome } = mission;
+  return (
+    <section className="mission-command" aria-labelledby="mission-title">
+      <div className="command-copy">
+        <span className="command-kicker">AUTONOMOUS REPAIR MISSION · 04 · COMPLETE</span>
+        <h1 id="mission-title">
+          Nightwatch repaired the model.
+          <span>Code decided if it could cross.</span>
+        </h1>
+        <p>
+          A Gemini agent designed one bounded intervention, Modal trained two pinned candidates,
+          and an immutable policy gate promoted only the model that earned it.
+        </p>
+        <div className="stack-line" aria-label="Core implementation stack">
+          <span>{outcome.teacher_model}</span>
+          <span>{outcome.agent_framework.replace('_', ' ')}</span>
+          <span>Modal · Gemma 3</span>
+          <span>Google Cloud</span>
+        </div>
+      </div>
+
+      <div className="outcome-board" aria-label="Verified mission outcome">
+        <div className="outcome-heading">
+          <span>QUALIFICATION OUTCOME</span>
+          <strong>PROMOTED</strong>
+        </div>
+        <div className="safety-shift">
+          <div><span>failed candidate</span><strong>{outcome.initial_safety}</strong></div>
+          <span className="shift-arrow" aria-hidden="true">→</span>
+          <div><span>qualified candidate</span><strong>{outcome.qualified_safety}</strong></div>
+        </div>
+        <div className="outcome-foot">
+          <span><strong>+{outcome.safety_delta}</strong> safety</span>
+          <span><strong>{outcome.critical_misses}</strong> critical misses</span>
+          <span><strong>{outcome.training_runtime}</strong> retained training</span>
+        </div>
+        <div className="authority-line">
+          <span>{outcome.qualified_model}</span>
+          <span>{outcome.promotion_authority.replaceAll('_', ' ')}</span>
+        </div>
+      </div>
+
+      <nav className="mission-lifecycle" aria-label="Autonomous mission lifecycle">
+        {entries.map((entry, index) => (
+          <button
+            className={selectedIndex === index ? 'active' : ''}
+            type="button"
+            key={entry.entry_hash}
+            onClick={() => onSelect(index)}
+            aria-pressed={selectedIndex === index}
+            aria-label={`${STAGE_ACTIONS[index]}: ${entry.summary}`}
+          >
+            <span className="stage-index">0{index + 1}</span>
+            <span className="stage-copy">
+              <strong>{STAGE_ACTIONS[index]}</strong>
+              <small>{entry.agent}</small>
+            </span>
+            <span className="stage-mark" aria-hidden="true">✓</span>
+          </button>
+        ))}
+      </nav>
     </section>
   );
 }
@@ -152,16 +220,40 @@ function LiveProofBand({ mission, state, onVerify }) {
     copy = `${state.entryCount} entries verified · receipt ${state.verificationId.slice(0, 15)}…`;
   }
   if (state.status === 'error') copy = state.message;
+  const cloudSteps = [
+    ['Cloud Run', 'bind head'],
+    ['Cloud Tasks', 'dispatch'],
+    ['Firestore', 're-read chain'],
+    ['Cloud Storage', 'seal receipt'],
+  ];
+  const activeStep = {
+    idle: -1,
+    queueing: 0,
+    pending: 2,
+    verified: 3,
+    error: -1,
+  }[state.status];
   return (
     <section className={`live-proof-band verification-${state.status}`} aria-live="polite">
-      <div>
-        <span className="verification-kicker">LIVE ASYNC PROOF</span>
+      <div className="verification-intro">
+        <span className="verification-kicker">LIVE GOOGLE CLOUD PROOF</span>
+        <strong>Don’t trust the screenshot. Verify the chain.</strong>
         <span className="verification-copy">{copy}</span>
       </div>
-      <span className="verification-head">head {mission.head_hash.slice(0, 10)}…{mission.head_hash.slice(-6)}</span>
-      <button type="button" disabled={busy} onClick={onVerify}>
-        {busy ? 'Verification running' : state.status === 'verified' ? 'Verify again' : 'Verify this head'}
-      </button>
+      <div className="cloud-proof-flow" aria-label="Verification infrastructure">
+        {cloudSteps.map(([name, action], index) => (
+          <div className={`${index <= activeStep ? 'reached' : ''} ${index === activeStep && busy ? 'current' : ''}`} key={name}>
+            <span className="cloud-step-dot" aria-hidden="true" />
+            <span><strong>{name}</strong><small>{action}</small></span>
+          </div>
+        ))}
+      </div>
+      <div className="verification-action">
+        <span className="verification-head">head {mission.head_hash.slice(0, 10)}…{mission.head_hash.slice(-6)}</span>
+        <button type="button" disabled={busy} onClick={onVerify}>
+          {busy ? 'Proof running…' : state.status === 'verified' ? 'Run proof again' : 'Run live proof'}
+        </button>
+      </div>
     </section>
   );
 }
@@ -295,9 +387,15 @@ export default function App() {
   return (
     <div className="ledger" data-screen-label="Nightwatch — Verified Mission Ledger">
       <StatusBand mission={run.mission} />
+      <MissionCommand
+        mission={run.mission}
+        entries={run.entries}
+        selectedIndex={selectedIndex}
+        onSelect={setSelectedIndex}
+      />
       {introVisible && <Orientation copy={run.mission.orientation} onDismiss={() => setIntroVisible(false)} />}
       <LiveProofBand mission={run.mission} state={verificationState} onVerify={verifyCurrentHead} />
-      <div className="workspace">
+      <div className="workspace" id="evidence-ledger">
         <EvidenceLog
           mission={run.mission}
           entries={run.entries}

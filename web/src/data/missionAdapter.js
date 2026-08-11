@@ -29,6 +29,10 @@ function percent(value) {
   return `${(Number(value) * 100).toFixed(1)}%`;
 }
 
+function percentagePointDelta(before, after) {
+  return `${((Number(after) - Number(before)) * 100).toFixed(1)} pp`;
+}
+
 function displayTime(timestamp) {
   const parsed = new Date(timestamp);
   if (Number.isNaN(parsed.valueOf())) return 'TIME N/A';
@@ -202,6 +206,18 @@ export function missionResponseToView(value, requestedMissionId = DEFAULT_MISSIO
   }));
   const first = response.entries[0].payload;
   const newest = response.entries.at(-1);
+  const curriculum = response.entries.find((entry) => entry.stage === 'curriculum_ready')?.payload;
+  const training = response.entries.find((entry) => entry.stage === 'trained')?.payload;
+  const evaluation = response.entries.find((entry) => entry.stage === 'evaluated')?.payload;
+  const qualifiedSafety = newest.payload.scores?.safety?.accuracy;
+  const initialSafety = first.trigger.safety_accuracy;
+  const criticalMissCount = publicRedacted
+    ? newest.payload.critical_miss_count
+    : newest.payload.critical_misses?.length;
+  const trainingRuntime = training?.attempts?.reduce(
+    (total, attempt) => total + Number(attempt.training_runtime_seconds),
+    0,
+  );
   return {
     mission: {
       cycle_id: response.cycle_id,
@@ -218,6 +234,20 @@ export function missionResponseToView(value, requestedMissionId = DEFAULT_MISSIO
         ? 'This public view preserves the verified decisions and aggregate evidence while redacting internal artifact identities. Select any stage to inspect the released proof.'
         : 'This is the verified Google Cloud mission chain built from real Gemini, Modal, and deterministic evaluation artifacts. Select any stage to inspect its evidence.',
       detail_label: publicRedacted ? 'public evidence · redacted' : 'raw evidence · unredacted',
+      outcome: {
+        initial_safety: percent(initialSafety),
+        qualified_safety: percent(qualifiedSafety),
+        safety_delta: percentagePointDelta(initialSafety, qualifiedSafety),
+        critical_misses: String(criticalMissCount),
+        qualified_model: newest.payload.model_id,
+        deployment_status: newest.payload.deployment_status,
+        promotion_authority: newest.payload.promotion_authority,
+        teacher_model: curriculum?.architect?.model,
+        agent_framework: curriculum?.architect?.framework,
+        generated_examples: String(curriculum?.architect?.generated_examples),
+        training_runtime: `${trainingRuntime.toFixed(1)}s`,
+        evidence_cases: String(evaluation?.evidence?.case_count),
+      },
     },
     entries,
   };
