@@ -6,7 +6,7 @@ The deployed slice proves the complete retained qualification story and a secure
 
 Firestore stores one mission head at `missions/{cycle_id}` and one immutable document per stage at `missions/{cycle_id}/entries/{stage}`. A transaction reads both documents before writing the next entry and updated head. The stage document ID makes retries naturally idempotent; the transaction rejects a replay whose payload differs, a skipped transition, a terminal-stage append, an unsafe mission ID, or a payload larger than 256 KiB. Each mission owns an independent SHA-256 chain beginning at the fixed genesis hash.
 
-The application exposes no direct Firestore writes. The private trigger binds each request to the exact observed head and a validated idempotency key. The public trigger accepts only the retained mission head and replaces caller input with one fixed public idempotency key, so arbitrary requests cannot create unbounded task identities. Cloud Tasks uses a content-derived task name, one concurrent dispatch, one dispatch per second, a 30-second retry window, and a private OIDC target. The worker re-reads the entire chain before creating a generation-zero receipt; it cannot overwrite or delete receipts.
+The application exposes no direct Firestore writes. The private trigger binds each request to the exact observed head and a validated idempotency key. The public trigger accepts only the retained mission head and replaces caller input with one fixed public idempotency key, so arbitrary requests cannot create unbounded task identities. The public path has its own queue, OIDC invoker, private verifier service, and receipt bucket. Its worker accepts only the exact bundled mission, head, and content-derived receipt ID. Both queues use one concurrent dispatch, one dispatch per second, a 30-second retry window, and private OIDC targets. A worker re-reads the entire chain before creating a generation-zero receipt; it cannot overwrite or delete receipts.
 
 The control service accepts an allowlisted mission ID, verifies at most seven lifecycle entries through the journal contract, and returns either the complete chain or a fail-closed error. It lazily creates Google Cloud clients so its shallow health endpoint does not amplify dependency failures. Both Cloud Run services scale to zero. The control service is capped at two instances; the single-concurrency worker is capped at one.
 
@@ -17,16 +17,17 @@ The control service accepts an allowlisted mission ID, verifies at most seven li
 | Identity | Can read | Can write | Explicitly denied |
 |---|---|---|---|
 | `nightwatch-evidence` | Firestore mission evidence | one Cloud Tasks queue | Firestore writes, receipt objects, public invocation |
-| `nightwatch-public` | one bundled redacted snapshot; one receipt object | one fixed task identity in one Cloud Tasks queue | Firestore, private evidence, receipt writes, arbitrary task identities |
+| `nightwatch-public` | one bundled redacted snapshot; isolated public receipt bucket | one fixed task identity in the isolated public queue | Firestore, private evidence, receipt writes, arbitrary task identities |
+| `nightwatch-public-invoker` | nothing | nothing | all access except invoking `nightwatch-public-verifier` |
 | `nightwatch-tasks-invoker` | nothing | nothing | all access except invoking `nightwatch-verifier` |
-| `nightwatch-worker` | Firestore mission evidence | create-only objects in one receipt bucket | Firestore writes, object reads/overwrite/delete, model execution |
+| `nightwatch-worker` | Firestore mission evidence | create-only objects in the private and isolated public receipt buckets | Firestore writes, object reads/overwrite/delete, model execution |
 | `nightwatch-diagnostician` | aggregate metrics | diagnosis objects | curriculum and hidden prompts |
 | `nightwatch-curriculum` | diagnoses | curriculum bucket | hidden eval bucket and production pointer |
 | `nightwatch-trainer` | curriculum bucket, base-model secret | candidate adapter prefix | hidden eval bucket and production pointer |
 | `nightwatch-evaluator` | candidate adapters, hidden eval bucket | immutable reports | curriculum bucket and production pointer |
 | `nightwatch-promoter` | reports and fixed policy | production pointer, journal | model generation and policy mutation |
 
-The first four rows are deployed identities. The remaining rows describe the target training and promotion split; they are not deployed security boundaries yet. Agent names inside one ADK process are not a security boundary.
+The first five rows are deployed identities. The remaining rows describe the target training and promotion split; they are not deployed security boundaries yet. Agent names inside one ADK process are not a security boundary.
 
 ## Promotion invariants
 

@@ -6,8 +6,11 @@ Nightwatch separates its private operator surface, public judge surface, and pri
 
 - `nightwatch-evidence`: control API and UI, Firestore read-only, maximum two instances.
 - `nightwatch-public`: public redacted UI/API, no Firestore permission, maximum one instance.
+- `nightwatch-public-verifier`: private fixed-proof worker, existing Firestore read-only worker identity, maximum one instance and one concurrent request.
 - `nightwatch-verifier`: Cloud Tasks worker, Firestore read-only, maximum one instance and one concurrent request.
+- `nightwatch-public-verifications`: isolated public queue with the same one-per-second, one-concurrent, 30-second retry limits.
 - `nightwatch-verifications`: one dispatch per second, one concurrent dispatch, three configured attempts within a 30-second retry window.
+- `nightwatch-agentic-0992-public-verification-receipts`: isolated public-proof bucket with public access prevention and seven-day deletion.
 - `nightwatch-agentic-0992-verification-receipts`: uniform bucket-level access, public access prevention, seven-day retention.
 - `nightwatch-tasks-invoker`: OIDC identity whose only application permission is invoking `nightwatch-verifier`.
 
@@ -49,7 +52,7 @@ gcloud artifacts docker images describe "${IMAGE}" \
 
 Deploy only an immutable `IMAGE@sha256:...` reference. Preserve the existing service accounts, min/max instance limits, concurrency, timeouts, queue configuration, and private IAM policies shown above.
 
-The public service uses the same immutable image with `NIGHTWATCH_PUBLIC_MODE=1`. Its runtime identity may enqueue to `nightwatch-verifications`, attach `nightwatch-tasks-invoker` to that task, and read the receipt bucket. Do not grant it a Firestore role. Public mode serves only `/app/public-mission.json`, replaces caller idempotency with `public:nightwatch-v2-proof`, and permits only the matching content-derived receipt ID.
+The public service uses the same immutable image with `NIGHTWATCH_PUBLIC_MODE=1`. Its runtime identity may enqueue only to `nightwatch-public-verifications`, attach only `nightwatch-public-invoker`, and read only the isolated public-proof receipt bucket. Do not grant it a Firestore role. The private public-proof verifier runs with both `NIGHTWATCH_WORKER_MODE=1` and `NIGHTWATCH_PUBLIC_WORKER_MODE=1`; it refuses every task except the exact bundled mission, head, and content-derived receipt ID. Public mode serves only `/app/public-mission.json`, replaces caller idempotency with `public:nightwatch-v2-proof`, and permits only the matching receipt ID.
 
 ## Roll back
 

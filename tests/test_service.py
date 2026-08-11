@@ -360,6 +360,49 @@ def test_worker_requires_cloud_tasks_envelope_and_records_receipt(
     assert verifier.calls == [("mission-001", "b" * 64, receipt_id)]
 
 
+def test_public_worker_accepts_only_the_fixed_public_proof(
+    web_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("NIGHTWATCH_WORKER_MODE", "1")
+    monkeypatch.setenv("NIGHTWATCH_PUBLIC_WORKER_MODE", "1")
+    snapshot = public_snapshot()
+    expected_id = build_verification_id(
+        PUBLIC_MISSION_ID,
+        snapshot["head_hash"],
+        PUBLIC_IDEMPOTENCY_KEY,
+    )
+    verifier = StubVerifier()
+    client = create_app(
+        verification_store=verifier,
+        public_snapshot=snapshot,
+        static_root=web_root,
+    ).test_client()
+
+    forged = client.post(
+        "/internal/tasks/verify-mission",
+        headers={"X-CloudTasks-TaskName": "verify-" + "f" * 40},
+        json={
+            "cycle_id": "another-mission",
+            "expected_head_hash": "f" * 64,
+            "verification_id": "verify-" + "f" * 40,
+        },
+    )
+    accepted = client.post(
+        "/internal/tasks/verify-mission",
+        headers={"X-CloudTasks-TaskName": expected_id},
+        json={
+            "cycle_id": PUBLIC_MISSION_ID,
+            "expected_head_hash": snapshot["head_hash"],
+            "verification_id": expected_id,
+        },
+    )
+
+    assert forged.status_code == 400
+    assert accepted.status_code == 200
+    assert verifier.calls == [(PUBLIC_MISSION_ID, snapshot["head_hash"], expected_id)]
+
+
 def test_mutation_routes_reject_oversized_bodies(web_root: Path) -> None:
     client = create_app(StubJournal(), task_queue=StubQueue(), static_root=web_root).test_client()
 

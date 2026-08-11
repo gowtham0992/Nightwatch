@@ -318,6 +318,29 @@ def create_app(
             or task_name.rsplit("/", 1)[-1] != body.get("verification_id")
         ):
             return _error("invalid_task", "The task envelope is invalid.", 400)
+        if os.environ.get("NIGHTWATCH_PUBLIC_WORKER_MODE") == "1":
+            from nightwatch.cloud_tasks import verification_id as build_verification_id
+
+            try:
+                public_head = get_public_snapshot()["head_hash"]
+                public_verification_id = build_verification_id(
+                    PUBLIC_MISSION_ID,
+                    public_head,
+                    PUBLIC_IDEMPOTENCY_KEY,
+                )
+            except JournalError:
+                app.logger.exception("public mission snapshot integrity failure")
+                return _error(
+                    "evidence_integrity_failure",
+                    "The public mission evidence failed its integrity check.",
+                    503,
+                )
+            if body != {
+                "cycle_id": PUBLIC_MISSION_ID,
+                "expected_head_hash": public_head,
+                "verification_id": public_verification_id,
+            }:
+                return _error("invalid_task", "The task envelope is invalid.", 400)
         try:
             receipt = get_verifier().verify(
                 body["cycle_id"],
