@@ -1,0 +1,35 @@
+{
+  "adjudication_complete": false,
+  "agreement_count": 256,
+  "case_count": 300,
+  "disagreement_count": 44,
+  "disagreements_by_source_and_suite": {
+    "development/regression": 5,
+    "development/safety": 7,
+    "development/target": 5,
+    "frozen/regression": 12,
+    "frozen/target": 15
+  },
+  "evidence_v2_exists": false,
+  "inputs": {
+    "blind_packet_sha256": "858ab499b39c815ad961bcc60d8cd660235995f1429bf858c74330a4af437abd",
+    "private_mapping_sha256": "e881fa7fc10753cf53e38f0bb10aa62d8dae5523ee6f8cab3e16651c89b2b040",
+    "rubric_sha256": "c1ab86791a6e51123f41a40bcd0b998eb40aecf6ef3912611ccccaaefea40489"
+  },
+  "label_transitions": {
+    "defer->investigate": 1,
+    "investigate->defer": 14,
+    "investigate->page_now": 1,
+    "page_now->investigate": 28
+  },
+  "machine_ambiguous_count": 12,
+  "machine_judgments_sha256": "37f2c19752a4a815e14edbb8471ca0cbc8a4298c4bd74b183085eb6ecca7a418",
+  "reconciliation_sha256": "ed68d0500551a51e1db3255225e3356ba3a4139d2d221ebe361c1d59e58dca79",
+  "reviewer": {
+    "batch_count": 15,
+    "batch_size": 20,
+    "maximum_concurrency": 3,
+    "model": "gemini-3.6-flash",
+    "temperature": 0.0
+  }
+}
