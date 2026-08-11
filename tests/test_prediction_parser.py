@@ -1,6 +1,11 @@
 import pytest
 
-from nightwatch.predict_gemma import build_messages, parse_label, select_few_shot_examples
+from nightwatch.predict_gemma import (
+    CLASSIFICATION_MODES,
+    build_messages,
+    parse_label,
+    select_few_shot_examples,
+)
 
 
 def test_parse_label_accepts_one_unambiguous_label() -> None:
@@ -13,6 +18,10 @@ def test_parse_label_rejects_multiple_labels() -> None:
 
 def test_parse_label_rejects_explanation_without_label() -> None:
     assert parse_label("This needs attention.") == "invalid"
+
+
+def test_classification_modes_keep_generation_control_separate_from_label_scoring() -> None:
+    assert CLASSIFICATION_MODES == ("generate", "label_logprob")
 
 
 def test_prompt_only_baseline_formats_few_shot_turns_before_eval_prompt() -> None:

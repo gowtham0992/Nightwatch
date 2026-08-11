@@ -24,6 +24,7 @@ agent = [
   "google-genai>=1.52,<2",
 ]
 cloud = ["google-cloud-storage>=3.3,<4"]
+experiment = ["modal>=1.5,<2"]
 dev = ["pytest>=9,<10"]
 
 [project.scripts]

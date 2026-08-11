@@ -17,6 +17,18 @@ The implemented local feasibility slice has a frozen incident-triage evaluation,
 
 The checked-in prediction files are **gate fixtures**, not claimed model-training results or autonomous workflow history. The fixture command deliberately does not write lifecycle journal entries. Real Gemma evidence requires the credentialed run below.
 
+## Run the evidence logbook UI
+
+The single-screen UI in `web/` displays one retained Modal v0 run. Before Vite starts or builds, `web/scripts/build-retained-evidence.mjs` regenerates the screen data from the checked-in curriculum, predictions, evaluation set, and report. It does not represent this retained evidence as a live Google Cloud mission.
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+Use `npm run build` for the production bundle. The generated adapter snapshot at `web/src/data/retained-v0.json` is a temporary, content-addressed boundary that will be replaced by verified Firestore mission documents after the Google Cloud deployment exists.
+
 ## Run the deterministic proof
 
 Python 3.11+ is sufficient and the core has no runtime dependencies.
@@ -50,6 +62,28 @@ The pinned architect model is `gemini-3.6-flash`; `gemini-3.5-flash` is the fall
 ## Run the real Gemma spike
 
 Gemma access requires accepting its Hugging Face terms and providing `HF_TOKEN` through the environment or Secret Manager. Generate the 96-example curriculum above first; every prompt and LoRA arm below uses that same file.
+
+Before the targeted repair, generate and qualify the target-withheld v0 student. This prevents the experiment from describing an unsafe untuned model as deployed:
+
+```bash
+uv sync --extra agent --extra train --extra experiment --extra dev
+
+uv run python -m nightwatch.v0_curriculum_agent \
+  --examples-per-label 80 \
+  --output artifacts/v0-curriculum.jsonl
+
+uv run modal run src/nightwatch/modal_v0.py \
+  --curriculum artifacts/v0-curriculum.jsonl
+
+# Development-only sequence-classifier arm; do not point this at the frozen set.
+uv run modal run src/nightwatch/modal_classifier.py \
+  --curriculum artifacts/v0-curriculum.jsonl \
+  --dev artifacts/v0-dev.jsonl \
+  --rank 8 \
+  --learning-rate 0.001
+```
+
+The Modal run requires a named secret, `nightwatch-huggingface`, containing `HF_TOKEN`. It persists the immutable adapter and report in the `nightwatch-experiment-artifacts` Modal Volume and writes predictions plus the acceptance report locally under `artifacts/`.
 
 ```bash
 uv sync --extra train --extra dev

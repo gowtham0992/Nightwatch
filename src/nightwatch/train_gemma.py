@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
-from nightwatch.datasets import load_curriculum
+from nightwatch.datasets import dataset_sha256, load_curriculum
+from nightwatch.model_config import GEMMA_MODEL_ID, GEMMA_MODEL_REVISION
 
 
 def train(
@@ -16,7 +18,8 @@ def train(
     batch_size: int,
     gradient_accumulation_steps: int,
     seed: int,
-) -> None:
+    model_revision: str | None = None,
+) -> dict[str, object]:
     try:
         import torch
         from datasets import Dataset
@@ -44,11 +47,12 @@ def train(
         for row in examples
     ]
     dataset = Dataset.from_list(rows)
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokenizer = AutoTokenizer.from_pretrained(model_id, revision=model_revision)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
+        revision=model_revision,
         dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
         device_map="auto",
     )
@@ -85,11 +89,28 @@ def train(
     trainer.train()
     trainer.save_model(str(output_dir))
     tokenizer.save_pretrained(str(output_dir))
+    manifest = {
+        "model_id": model_id,
+        "model_revision": model_revision,
+        "curriculum_sha256": dataset_sha256(curriculum_path),
+        "examples": len(examples),
+        "epochs": epochs,
+        "learning_rate": learning_rate,
+        "batch_size": batch_size,
+        "gradient_accumulation_steps": gradient_accumulation_steps,
+        "seed": seed,
+    }
+    (output_dir / "nightwatch-training.json").write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return manifest
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Train a Gemma 3 270M Nightwatch LoRA adapter")
-    parser.add_argument("--model-id", default="google/gemma-3-270m-it")
+    parser.add_argument("--model-id", default=GEMMA_MODEL_ID)
+    parser.add_argument("--model-revision", default=GEMMA_MODEL_REVISION)
     parser.add_argument("--curriculum", type=Path, default=Path("data/curriculum/silent_failure.jsonl"))
     parser.add_argument("--output-dir", type=Path, default=Path("artifacts/adapter"))
     parser.add_argument("--epochs", type=float, default=8.0)
@@ -107,9 +128,9 @@ def main() -> None:
         batch_size=args.batch_size,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         seed=args.seed,
+        model_revision=args.model_revision,
     )
 
 
 if __name__ == "__main__":
     main()
-

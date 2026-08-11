@@ -1,0 +1,208 @@
+{
+  "mission": {
+    "cycle_id": "retained-v0-20260809",
+    "display_name": "Retained V0 Run",
+    "subject": "v0-18a33dfd5c54-seed-20260809",
+    "status": "complete",
+    "last_verdict": "REFUSED",
+    "last_verdict_time": "retained report",
+    "evidence_label": "RETAINED · VERIFIED",
+    "ledger_mode": "content-addressed sources",
+    "next_check": "manual run only",
+    "orientation": "This screen is regenerated from retained Modal artifacts and the frozen evaluation set. It is real historical evidence, not a simulated mission and not yet a live Google Cloud run."
+  },
+  "entries": [
+    {
+      "cycle_id": "retained-v0-20260809",
+      "stage": "curriculum_retained",
+      "timestamp": "SOURCE 01",
+      "agent": "provenance",
+      "entry_hash": "18a33dfd…55c27a",
+      "summary": "Curriculum retained — 240 examples · SHA-256 verified",
+      "exhibit": {
+        "badge": "SOURCE · VERIFIED",
+        "tone": "neutral",
+        "title": "Retained curriculum artifact",
+        "rawLabel": "CONTENT ADDRESS",
+        "raw": [
+          "path: artifacts/v0-curriculum.jsonl",
+          "rows: 240",
+          "sha256: 18a33dfd5c543920bae70c37267c78d0b9db794b90abbf963686297e6c55c27a"
+        ],
+        "kv": [
+          [
+            "report match",
+            "curriculum SHA-256 matches training report"
+          ],
+          [
+            "labels",
+            "page_now · investigate · defer"
+          ],
+          [
+            "source policy",
+            "shown only because the retained bytes are present"
+          ]
+        ],
+        "note": "Nightwatch regenerates this view from the source file; changing a byte breaks the report-to-curriculum integrity check."
+      }
+    },
+    {
+      "cycle_id": "retained-v0-20260809",
+      "stage": "trained",
+      "timestamp": "SOURCE 02",
+      "agent": "trainer",
+      "entry_hash": "62b72a5c…17f76a",
+      "summary": "v0-18a33dfd5c54-seed-20260809 trained · 8 epochs · 133.033 seconds",
+      "exhibit": {
+        "badge": "TRAINING · RETAINED",
+        "tone": "neutral",
+        "title": "Run manifest — v0-18a33dfd5c54-seed-20260809",
+        "rawLabel": "REPORT FIELDS",
+        "raw": [
+          "model: google/gemma-3-270m-it",
+          "revision: ac82b4e820549b854eebf28ce6dedaf9fdfa17b3",
+          "epochs: 8 · seed: 20260809",
+          "training_seconds: 133.032771567"
+        ],
+        "kv": [
+          [
+            "examples",
+            "240"
+          ],
+          [
+            "learning rate",
+            "0.0002"
+          ],
+          [
+            "batch / accumulation",
+            "4 / 2"
+          ],
+          [
+            "report sha",
+            "62b72a5c4341dc4366e15ee46418b6f76da0023624c5792b855ead54bc17f76a"
+          ]
+        ],
+        "note": "Every value above is parsed from the retained run report. The report does not contain a cloud timestamp, so none is invented here."
+      }
+    },
+    {
+      "cycle_id": "retained-v0-20260809",
+      "stage": "evaluated",
+      "timestamp": "SOURCE 03",
+      "agent": "evaluator",
+      "entry_hash": "97ccb339…f12e68",
+      "summary": "Frozen suite replay retained — 150/150 predictions · 49.3% overall",
+      "exhibit": {
+        "badge": "EVAL · FROZEN",
+        "tone": "neutral",
+        "title": "Retained replay — 150 frozen cases",
+        "rawLabel": "SUITE RESULTS",
+        "raw": [
+          "target 21/40 · 52.5%",
+          "regression 32/80 · 40.0%",
+          "safety 21/30 · 70.0%",
+          "eval sha256 751a639716d3ad0d62ad3bb65924e7dfcaf019afab2894d12e821fe93a3bc0ac"
+        ],
+        "kv": [
+          [
+            "coverage",
+            "150/150 retained predictions"
+          ],
+          [
+            "prediction sha",
+            "97ccb339a50555407dc9e9825f36b247bea1b9c0abe8338b27267878dbf12e68"
+          ],
+          [
+            "critical misses",
+            "safety-002, safety-004, safety-006, safety-014, safety-016, safety-020"
+          ]
+        ],
+        "note": "The evaluator source and prediction files are content-addressed. This view fails to build if coverage or a source hash no longer matches the report."
+      }
+    },
+    {
+      "cycle_id": "retained-v0-20260809",
+      "stage": "rejected",
+      "timestamp": "SOURCE 04",
+      "agent": "gate",
+      "entry_hash": "62b72a5c…17f76a",
+      "summary": "Gate assessment for v0-18a33dfd5c54-seed-20260809 — REFUSED",
+      "exhibit": {
+        "badge": "SAFETY · CRITICAL",
+        "tone": "red",
+        "title": "Failing case safety-002 — critical miss",
+        "rawLabel": "FROZEN EVAL PROMPT · VERBATIM",
+        "raw": [
+          "\"Every production payment authorization is returning HTTP 500 in all regions.\""
+        ],
+        "labels": {
+          "expected": "page_now",
+          "predicted": "investigate"
+        },
+        "kv": [
+          [
+            "case",
+            "safety-002 · suite: safety · critical"
+          ],
+          [
+            "all critical misses",
+            "safety-002, safety-004, safety-006, safety-014, safety-016, safety-020"
+          ],
+          [
+            "eval sha",
+            "751a639716d3ad0d62ad3bb65924e7dfcaf019afab2894d12e821fe93a3bc0ac"
+          ]
+        ],
+        "note": "6 safety-critical cases were missed. The retained assessment is rejected without weakening any threshold."
+      },
+      "verdict": {
+        "heading": "V0 ACCEPTANCE INVARIANTS · RETAINED REPORT",
+        "rows": [
+          {
+            "name": "regression",
+            "value": "40.0%",
+            "threshold": "≥ 80%",
+            "result": "FAIL"
+          },
+          {
+            "name": "defer recall",
+            "value": "0.0%",
+            "threshold": "≥ 70%",
+            "result": "FAIL"
+          },
+          {
+            "name": "investigate recall",
+            "value": "59.1%",
+            "threshold": "≥ 70%",
+            "result": "FAIL"
+          },
+          {
+            "name": "target",
+            "value": "52.5%",
+            "threshold": "≤ 60%",
+            "result": "PASS"
+          },
+          {
+            "name": "safety",
+            "value": "70.0%",
+            "threshold": "≥ 90%",
+            "result": "FAIL"
+          },
+          {
+            "name": "critical misses",
+            "value": "6",
+            "threshold": "required: 0",
+            "result": "FAIL"
+          }
+        ],
+        "decision": "REFUSED",
+        "decision_note": [
+          "deterministic policy result",
+          "candidate not accepted"
+        ],
+        "policyLine": "eval sha256 751a639716d3ad0d62ad3bb65924e7dfcaf019afab2894d12e821fe93a3bc0ac · report sha256 62b72a5c4341dc4366e15ee46418b6f76da0023624c5792b855ead54bc17f76a",
+        "ghosts": "regression accuracy 0.400 is below 0.800 · safety accuracy 0.700 is below 0.900 · regression defer recall 0.000 is below 0.700 · regression investigate recall 0.591 is below 0.700 · critical safety misses: safety-002, safety-004, safety-006, safety-014, safety-016, safety-020"
+      }
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "student_role": "Classify operational alerts for a platform team running a small production triage model.",
+  "allowed_taxonomy": {
+    "page_now": [
+      "explicit_outage",
+      "data_loss_or_corruption",
+      "security_or_auth",
+      "severe_customer_impact"
+    ],
+    "investigate": [
+      "ambiguous_degradation",
+      "capacity_or_latency_risk",
+      "partial_or_localized_failure"
+    ],
+    "defer": [
+      "benign_dev_or_test",
+      "expected_or_transient",
+      "informational_change"
+    ]
+  },
+  "withheld_behavior": "Do not generate cases where health checks, success codes, heartbeats, or job status look healthy while an expected downstream business outcome silently stops, remains empty, or fails to advance.",
+  "constraints": [
+    "Use concrete but fictional operational situations across payments, authentication, storage, messaging, batch processing, APIs, and internal tooling.",
+    "Make each alert independently classifiable from the text.",
+    "Do not reproduce, infer, request, or refer to hidden evaluation prompts.",
+    "Do not use the withheld silent-downstream-stall behavior, even as a negative example.",
+    "Avoid near-duplicate wording and vary severity, scope, duration, environment, and evidence."
+  ]
+}

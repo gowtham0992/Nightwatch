@@ -4,4 +4,9 @@ __pycache__/
 *.py[cod]
 artifacts/*
 !artifacts/.gitkeep
-
+!artifacts/v0-curriculum.jsonl
+!artifacts/v0-18a33dfd5c54-seed-20260809-predictions.jsonl
+!artifacts/v0-18a33dfd5c54-seed-20260809-report.json
+web/node_modules/
+web/dist/
+web/coverage/

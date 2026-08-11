@@ -1,0 +1,240 @@
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "Primary Postgres cluster node disk failure resulted in unrecoverable table truncation on user_profiles table; WAL archives corrupted."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "S3 bucket lifecycle rule misconfiguration permanently deleted production customer document storage bucket prod-user-docs-us-east-1."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "Kafka retention policy bug purged uncommitted transaction logs for accounting topics before offset commit."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "Cassandra node repair process corrupted SSTables across 3 nodes in cluster analytics-db-01, causing checksum errors on read."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "ElasticSearch cluster split-brain condition led to conflicting document updates and loss of 4 hours of audit log entries."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "Redis cluster failover failed during primary crash; un-replicated write queue lost 150,000 active session records."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "Database migration script V4.2__drop_legacy.sql executed against prod replica without schema lock, zeroing out billing history entries."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "Backup restoration drill failed: nightly snapshot tarballs for db-orders-prod are empty zero-byte files since last Tuesday."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "Block storage volume corruption on main object store node ceph-osd-12 rendered user uploads unreadable across 12 shards."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "DynamoDB table SubscriptionState suffered unrecoverable item deletion due to faulty admin cleanup script execution."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "GlusterFS split-brain state corrupted customer file attachments uploaded over the past 6 hours."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "Aurora PostgreSQL storage node disk degradation resulted in page corruption errors on account_balances relation."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "MongoDB cluster primary force-pushed incompatible chunk migration, destroying shard key indexes and corrupting user metadata."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "ClickHouse analytics cluster disk write errors caused checksum failure and dropped 2 million conversion tracking events."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "Vault storage backend DB file corrupted after unexpected power event on HSM cluster, destroying master keys."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "RabbitMQ persistent queue disk log corrupted during forced restart, dropping all persistent payment processing messages."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "MySQL InnoDB tablespace file ibdata1 corrupted due to underlying SAN storage controller write cache error."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "EFS filesystem payload truncation detected across app-shared-media mount point affecting active user avatar files."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "InfluxDB metric storage TSI index corruption led to permanent loss of historical telemetry data for customer dashboards."}
+{"category": "data_loss_or_corruption", "label": "page_now", "prompt": "Blob storage snapshot retention filter improperly purged all production customer export archives older than 1 hour."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Production core ingress gateway down; 100% of external traffic returning HTTP 502 Bad Gateway across all regions."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Kubernetes control plane API server unresponsive in primary cluster prod-us-west-2, preventing pod scheduling and scaling."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Primary DNS provider BGP route leak caused global resolution failure for api.service.com."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Datacenter power loss: Core router rack offline in EU-Central datacenter, dropping all connection pools."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Authentication microservice auth-identity-api crashed completely due to OOM kill loop on all 50 replicas."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Main load balancer cluster high availability failover failed; both active and standby nodes unresponsive."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Cloud region outage: AWS us-east-1 EC2 networking issue causing total unavailability of host instances."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Core payment gateway proxy crash loop blocking 100% of outbound transaction requests globally."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Storage area network (SAN) storage array offline; all mounted database volumes in read-only / dead state."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Global CDN edge routing table wiped due to bad deployment; all edge locations returning 503 Service Unavailable."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Internal service mesh control plane (Istio) crashed, dropping all inter-service TLS connections platform-wide."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Postgres primary database node down hard due to kernel panic; standby promote automated failover hung."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Customer portal frontend application serving static blank 500 pages due to broken bundle deployment across CDN."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Core search engine service cluster offline; index nodes uncontactable and search API endpoints timing out completely."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Enterprise messaging bridge service process died on all nodes; webhooks and SMS routing completely halted."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Identity provider OAuth endpoint throwing 500 Internal Error on 100% of authentication attempts globally."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Kafka broker cluster loss of quorum; all produce and consume requests failing with LeaderNotAvailableException."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Main internal API gateway cluster crashed after out-of-memory crash loop on router instances."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Cloudflare SSL/TLS certificate expired on main domain app.company.com, breaking all client web traffic connections."}
+{"category": "explicit_outage", "label": "page_now", "prompt": "Redis main caching and session cluster completely unreachable due to core switch failure in rack B04."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Critical security breach: Active API key leak detected on public GitHub repository with full cluster admin privileges."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Unauthorized administrative access detected from unknown IP 198.51.100.44 using compromised root credentials on Vault."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Ransomware footprint detected on internal backup storage server; encryption extension .locked appended to volumes."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Massive credential stuffing attack detected: 50,000 logins/min targeting /api/v1/login with high auth bypass success rate."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Suspicious privilege escalation alert: Non-admin service account svc-analytics granted cluster-admin role in K8s."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Unauthenticated remote code execution vulnerability exploited on edge API gateway /upload endpoint."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Mass exfiltration of customer PII data detected via compromised internal staging database export pipeline."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Security telemetry alert: Internal signing keys for JWT tokens compromised and used to sign unauthorized admin tokens."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Rogue SSH key added to production jump host root authorized_keys from unverified external origin."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Database audit log alerted on unauthorized SELECT query against unencrypted credit_cards table by external IP."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Production AWS IAM root account login detected without MFA enforcement from untrusted geographic location."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "SQL injection exploit actively dumping users credentials table via public search endpoint /api/search?q=."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Rogue container executing cryptomining process identified inside production Kubernetes namespace payments-prod."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Cross-site scripting (XSS) payload stored in user profile field executing administrative actions in customer portal."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Unauthorized modification of production DNS records detected on domain registrar account."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Critical zero-day vulnerability in web application framework being actively exploited against customer login pages."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Cloud storage bucket storing sensitive identity verification documents made publicly readable via ACL misconfiguration."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "TLS private key for primary production domain exported and transmitted to unknown external server."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "DDoS attack targeting authentication servers causing massive firewall drop rates and auth token validation bypass."}
+{"category": "security_or_auth", "label": "page_now", "prompt": "Compromised employee laptop attempting lateral movement and port scanning inside PCI-DSS isolated network segment."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Major payment processing pipeline failure charging customer credit cards multiple times for single purchases."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Customer checkout pipeline failing at step 3; 100% of order submissions returning card processing errors."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Mobile app push notification system sending corrupted emergency broadcast messages to all 2 million active users."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "B2B enterprise client integration API rejecting 95% of incoming partner calls with invalid schema errors post-release."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "SaaS multi-tenant tenant isolation bug serving Customer A's private dashboard data to Customer B."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "E-commerce platform inventory sync bug setting all product stock to zero, preventing all sales globally."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Real-time emergency healthcare alert system dropping critical patient telemetry alerts due to queue overload."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Automated subscription billing service charged yearly fees instead of monthly fees to 40,000 active subscribers."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Customer data export function sending exported ZIP files containing data belonging to other organizations."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Logistics and delivery service routing engine failing, stranding all driver navigation and order dispatch systems."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Payroll processing platform failed during execution, withholding employee direct deposits for 500 enterprise clients."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Ride-sharing app driver dispatch system pricing all rides at $0.00 while charging drivers transaction fees."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Banking portal displaying incorrect zero balance for all checking account holders following batch update."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Flight booking engine confirming phantom reservations without booking seats on underlying airline GDS."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Customer customer-support portal deleting active user support tickets upon ticket creation."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Telehealth video consultation platform dropping all active doctor-patient video calls after 10 seconds."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Smart home IoT hub issuing lock-open commands to smart door locks on customer homes across North America."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Password reset feature emailing password reset tokens to incorrect email address recipients across platform."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Enterprise SaaS single sign-on (SSO) redirecting enterprise users to incorrect tenant accounts."}
+{"category": "severe_customer_impact", "label": "page_now", "prompt": "Financial trading app failing to execute order cancellations, resulting in unexpected forced market fills for users."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Unusual shift in API gateway status code distribution: 200 OK responses dropped from 98% to 88% while 499 client disconnects rose to 10% in staging-us-east."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Payment webhook processing time median increased from 45ms to 850ms, accompanied by a slight 2% rise in HTTP 502 gateway errors across all web nodes."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Prometheus alert: Cache hit ratio for user session lookup dropped from 94% to 41% over 15 minutes, causing non-uniform response time fluctuations."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "GraphQL endpoint query execution times are showing erratic bimodal distribution with no clear error messages in application logs."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Batch invoice generator logs showing an unexpected high rate of database reconnect attempts without outright job failures."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Auth service reporting anomalous variance in token validation timing between worker pool A and worker pool B."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Search index synchronization daemon latency jittered between 100ms and 14,000ms following the minor configuration update."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Internal metrics show an unexplained 35% decrease in event processing rate on the telemetry pipeline without queue saturation."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "User profile image render service showing sporadic HTTP 500 errors (1.8% rate) alongside normal tail latency metrics."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Database read replica replica_03 reporting fluctuating replication lag between 2 seconds and 180 seconds under standard read load."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Kafka consumer group 'orders-analytics' rebalancing frequently every 3 minutes with no explicit pod restarts observed."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "S3 object retrieval error rate spiked to 3.5% across secondary storage bucket without explicit AWS service health notifications."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Edge router logs indicate a sudden 15% increase in TCP reset packets (RST) for incoming client handshakes."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Inventory check microservice emitting elevated rate of downstream connection reset warnings during periodic catalog refresh."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Redis cluster cluster-prod-02 experiencing sporadic socket timeout exceptions on random read keys."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Background export worker CPU utilization dropped to 5% while memory remains constant and pending queue size is moderately increasing."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Internal deployment tool reporting irregular health check probe timeouts across 12% of canary instances in EU-West."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Audit log collector service recording unexplained drops in log ingestion throughput during peak usage hours."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Notification router reporting elevated retries for SMS dispatch without clear provider error response payloads."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Feature flag service showing inconsistent cache invalidation across distributed nodes, resulting in variable response payloads."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Elasticsearch cluster search thread pool queue length oscillating between 0 and 180 without concurrent indexing spikes."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Third-party address verification API integration returning intermittent parse errors on 4% of valid requests."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Storage gateway service reporting elevated disk write IOPS variance on NVMe pool array-01."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "API portal reporting sporadic 504 Gateway Timeouts (2.1% of traffic) on search routes following TLS certificate renewal."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Metrics ingestion server experiencing transient memory allocation spikes every 20 minutes without clear traffic correlation."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "CDN edge node cluster in South America reporting elevated cache miss rates and elevated origin fetch latency."}
+{"category": "ambiguous_degradation", "label": "investigate", "prompt": "Worker nodes running containerized cron jobs reporting erratic execution durations for nightly reconciliation scripts."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Primary PostgreSQL database disk utilization reached 88% on volume /var/lib/postgresql/data with growth rate of 1.2% per hour."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Order processing microservice p99 latency increased to 2,450ms, approaching the 3,000ms strict SLA limit."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "RabbitMQ queue 'billing-events-high-priority' length surpassed 45,000 messages, nearing maximum memory threshold."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Kubernetes cluster prod-us-central node group node-pool-1 CPU utilization sustained at 91% for over 25 minutes."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Authentication service thread pool usage reached 94% capacity during morning peak login hours."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Redis cache cluster redis-session-store memory usage reached 87% of maxmemory capacity with eviction policy set to noeviction."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Ingress controller connection pool utilization reached 89% with active HTTP/2 connections increasing steadily."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Elasticsearch data node es-data-04 heap usage sustained at 88% with frequent CMS garbage collection pauses."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Payment gateway proxy outbound connection pool saturated at 495 out of 500 maximum connections."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Kafka topic 'user-activity-raw' partition 3 consumer lag exceeded 120,000 offsets during promotional event."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Internal file storage cluster storage-node-08 root partition disk usage hit 92% threshold."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Document rendering service worker queue depth rose to 8,200 pending jobs with average processing rate of 5 jobs/sec."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "AWS Lambda concurrent executions for 'generate-pdf-report' reached 850 out of 1000 account concurrency limit."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "DB pool connection utilization for API service api-prod-east reached 96% of available connections."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Cassandra node cass-03 commitlog disk utilization exceeded 85% capacity under heavy write workload."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "gRPC connection manager thread pool active count at 98% capacity on microservice customer-data-service."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Metrics collector Prometheus server TSDB WAL partition disk space reduced to 12% remaining."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Customer webhook delivery worker queue backpressure building: 35,000 queued items with 15-minute average delay."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Search cluster node search-data-01 swap usage initiated, currently at 450MB swap space allocated."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "API rate limiter storage instance memory usage reached 86% with high key creation rate."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Container registry storage volume utilization reached 89% due to unpurged legacy image tags."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Network interface eth0 on load balancer lb-core-01 approaching 88% bandwidth capacity limit."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Analytics data pipeline batch loader processing time extended to 55 minutes out of 60-minute scheduling window."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Identity provider LDAP connector connection pool active count sustained at 92% over 30 minutes."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "ETL worker cluster memory utilization reached 89% during nightly database snapshot aggregation."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Vault cluster transit engine key cache utilization reached 91% of maximum allocated RAM."}
+{"category": "capacity_or_latency_risk", "label": "investigate", "prompt": "Internal artifact repository storage partition reaching 90% capacity limit."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Payment gateway processing failing exclusively for Visa cards processed through European gateway partner EU-PAY-01 with HTTP 500."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "User authentication failing with 503 Service Unavailable specifically in us-west-2a availability zone while us-west-2b operates normally."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Search API returning HTTP 500 errors for queries targeting the 'books' category while all other categories return HTTP 200."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Notification service SMS deliveries failing for destination country code +44 due to provider carrier endpoint errors."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Canary deployment version v2.4.1 in cluster staging-01 throwing NullPointerException on 100% of calls to /v2/checkout."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Storage service S3 upload failures isolated to us-east-1 region bucket customer-uploads-useast1."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Batch payout processing failed specifically for merchant tier 'Enterprise-Custom' due to missing schema field."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Internal admin portal reporting HTTP 502 Bad Gateway on user management sub-route /admin/users/permissions."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "GraphQL gateway returning field-level errors for 'accountBalance' resolver while returning full data for remaining schema fields."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Mobile app push notification dispatches failing exclusively on iOS APNs sandbox gateway."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Database connection failures restricted to read-replica slave-db-04 following hardware controller alert."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Order creation API failing with 400 Bad Request strictly for requests originating from SDK version 1.2.0."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "OAuth2 login integration failing specifically for GitHub social login provider while Google and SSO function normally."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Fraud detection scoring service timing out on 100% of requests routed to machine learning model instance ml-model-v3."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Localized network routing drop affecting traffic between Kubernetes namespace 'billing' and namespace 'inventory'."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "PDF generation service returning blank pages specifically for invoices generated in currency JPY."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Data ingestion pipeline dropping records exclusively for incoming MQTT messages on topic '/sensors/temperature'."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Third-party shipping rate calculator failing with connection timeout specifically for DHL shipping carrier API."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "User profile updates failing with 500 error when saving localized address strings containing Cyrillic characters."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Real-time chat service message delivery failing for group channels with over 500 members."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Internal CI/CD runner pool 'macOS-build-agents' failing all build jobs due to missing build tools dependency."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Payment refund processing endpoint returning HTTP 403 Forbidden specifically for sub-merchant accounts."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Edge CDN node cluster in Sydney (SYD-01) reporting 100% HTTP 504 origin timeouts while other nodes operate normally."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Email dispatch worker pool failing to process emails containing attachments larger than 10MB."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Metrics collector agent failing to push host metrics specifically on Linux kernel version 5.15 hosts."}
+{"category": "partial_or_localized_failure", "label": "investigate", "prompt": "Secrets manager service failing requests for secrets under path '/prod/db/credentials/' with permission denied errors."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: High latency on payment-sandbox service. P99 latency reached 4500ms on staging-us-east-1 during scheduled synthetic load test execution by QA automation."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: Elevated 500 error rate on sandbox-auth endpoint. Staging environment fuzzing harness is actively running automated payload mutation tests against login endpoints."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: CPU utilization high on staging-db-02 (89%). Performance engineering team running benchmark script 'stress_test_v2.sh' against non-production database."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: Pod restart loop detected on namespace dev-payments, deployment mock-gateway. QA team explicitly injecting fault conditions for resilience testing."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: Elevated HTTP 4xx responses on staging API gateway. Automated security vulnerability scanner running approved fuzzing suite against dev routes."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: High queue depth on dev-order-events-queue. Synthetic message generator flooding staging broker for high-throughput batch testing."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: High disk usage warning on dev-data-node-01 (88%). Automated teardown script scheduled to run at end of nightly build pipeline in 15 minutes."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: Outbound rate limit hit on mock-notification-dispatcher in QA sandbox. Integration test suite sending batch email notifications to blackhole domain."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: Database deadlock spike on dev-postgres-cluster. Integration test framework validating rollback behavior under concurrent mutation scripts."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: High memory usage on staging-redis-cache (92%). Dev load testing framework injecting transient cache saturation payloads."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: Security alert: Repeated authentication failures on keycloak-dev. QA automated regression test harness testing bad password rate limiting."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: Elevated 503 response rate on dev-ingress-proxy. Chaos engineering tool injecting synthetic delay and failure rates on dev cluster canary."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: Bulk key deletion detected in staging S3 bucket dev-test-artifacts. Scheduled script cleaning up ephemeral build artifacts from CI pipeline."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: Circuit breaker opened on staging-inventory-service. Dev team running fault injection test to verify graceful fallback handling."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: High rate of malformed JSON errors on sandbox-order-ingest API. Contract testing tool sending edge-case validation payloads."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: High network egress on dev-worker-node-04. Developers running network bandwidth benchmark between test pods."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: High error rate on mock-stripe-adapter. Synthetic transaction bot validating failure handling routines in non-production sandbox."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: Disk space critical on ephemeral-runner-12. CI workflow executing large Docker image build step before automatic runner destruction."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: Unhandled exceptions spike on staging-user-profile service. Developer running manual boundary value testing on newly added endpoint."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: Node offline in dev-k8s-cluster-01. Planned cluster autoscaling scale-down in progress for idle dev node pool."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: API threshold breach on dev-telemetry-ingest. Performance testing team injecting 50k mock metric points per second."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: Database connection pool exhaustion on sandbox-ledger-db. QA running concurrent transaction isolation tests."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: High CPU utilization on dev-elasticsearch-node-01. Automated index reindexing test running on staging search cluster."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: Webhook dispatch failure rate elevated on dev-partner-emitter. Developer running local webhook receiver test without endpoint active."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: Storage threshold warning on staging-kafka-broker-02. Retention test script rapidly publishing 10GB of synthetic telemetry logs."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: High latency spike on dev-auth-service. QA executing concurrent load test with 500 virtual users against token exchange."}
+{"category": "benign_dev_or_test", "label": "defer", "prompt": "ALERT: Rapid pod termination alert on namespace staging-analytics. Teardown script cleaning up test namespace after night build completed."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: CPU usage spike to 92% on primary billing-db host. Scheduled daily index maintenance job running; expected self-resolution within 3 minutes."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Kubernetes node scaling event triggered in prod-us-west-2 cluster. Memory pressure detected during morning peak traffic spike, autoscaler adding 3 nodes."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Single connection timeout detected between API gateway and auth-service. Transient network jitter auto-recovered after automatic retry."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Brief 503 Service Unavailable spike (0.04% requests) on public API gateway during planned rolling update deployment of core-api version 3.2.1."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Temporary queue buildup on email-notification-queue during 08:00 UTC digest dispatch. Processing rate recovered to normal baseline within 4 minutes."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Transient DNS resolution failure on worker-node-89 contacting internal redis cluster. Resolved immediately on automated retry."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Garbage collection pause caused 800ms latency spike on analytics-ingest worker. Memory usage returned to 45% post-GC sweep."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Elasticsearch cluster status yellow on prod-logging. Transient shard rebalancing triggered after single node replacement; green status expected shortly."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Pod restart on deployment order-processor-v1. Single pod evicted due to memory pressure, replacement pod already healthy and receiving traffic."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Brief HTTP 429 Too Many Requests surge from external partner IP. Throttling active as designed; traffic volume normalizing."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Database replication lag spike to 12 seconds on secondary read-replica. Bulk archive batch running; lag recovering automatically."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Transient lock timeout on table user_sessions during hourly cleanup job. Job succeeded on immediate automatic retry."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Brief disk IOPS burst on block storage volume volume-prod-data-01 during scheduled volume snapshot creation."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Cold start latency warning on serverless function process-receipt. Latency spike observed during initial scheduled invocation burst."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Kafka consumer group rebalance alert for group order-analytics-consumers. Partition rebalancing completed in 18 seconds."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Brief TCP reset rate increase on load balancer ingress-lb-01 during target group socket draining phase."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Short-lived spike in S3 upload retries from video-transcoder service during regional AWS networking maintenance window."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Database vacuum process started on postgres-reporting. Transient query response slowdown expected during table optimization."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Redis cluster cache miss rate elevated to 22% immediately following scheduled cluster node reboot. Cache warming in progress."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Brief pod liveness probe failure on auth-service-pod-x9f2. Container restarted by kubelet and returned to Ready state."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: HTTP 502 Bad Gateway burst (12 responses over 10 seconds) during ingress router configuration re-read."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Read latency spike on storage volume vol-03a1 during automated incremental backup operation."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: High connection pool utilization (88%) on main API service during scheduled end-of-day settlement batch start."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Network interface packet drop rate minor spike on switch-leaf-04 during planned link aggregation protocol adjustment."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Brief queue delay on webhook-dispatcher service following short burst of incoming ecommerce events."}
+{"category": "expected_or_transient", "label": "defer", "prompt": "ALERT: Temporary CPU throttle on batch-worker-08 during heavy PDF generation task. Task completed successfully."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Feature flag 'enable_v2_checkout_flow' set to 15% allocation for production region us-east-1 by operator jdoe."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Deployment completed successfully: Microservice payment-reconciliation deployed version v2.14.0 to production cluster."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Scheduled maintenance notification: Database minor version auto-patching completed successfully on prod-user-db."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Configuration change: Autoscaling policy for web-frontend updated, minimum pod count increased from 10 to 15."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: TLS certificate renewed successfully for *.api.payments.com by Let's Encrypt bot, valid for next 90 days."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: DNS record change: CNAME for legacy-api.company.com updated to point to new ingress route as planned in migration ticket INFRA-4021."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: IAM policy modification: Added read-only access permission to auditing-service-account for compliance logging bucket."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Database schema migration 20231024_add_index_user_id applied successfully to production database customer_db."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: CDN configuration change: Static asset cache TTL increased from 3600s to 86400s across edge locations."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Service mesh routing rule updated: Directing 5% of canary traffic to order-service-v3."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Network security group update: Added inbound IP whitelist rule for new banking partner gateway 198.51.100.45/32."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Storage lifecycle policy updated: S3 bucket prod-raw-logs objects set to transition to Glacier after 30 days."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Environment variable update applied to notification-service: DEFAULT_RETRY_MAX increased from 3 to 5."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Secrets Manager secret rotation completed successfully for prod/database/primary_credentials."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Kubernetes cluster upgrade: Control plane for prod-cluster-eu-west-1 upgraded to v1.28.2."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: New read replica replica-prod-db-03 successfully provisioned and joined MySQL cluster in ap-northeast-1."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Log retention policy change: CloudWatch log group /aws/containerinsights/prod retention changed from 14 to 30 days."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Rate limit ceiling updated for partner account enterprise_acct_882 to 10000 req/min per contract update."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: External library dependency update: Upgraded payment-sdk to v4.2.1 in billing backend release pipeline."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Scheduled maintenance window started for database host db-primary-01 (Duration: 30 minutes)."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Load balancer TLS cipher policy updated to ELBSecurityPolicy-TLS13-1-2-2021-06 across production ingress."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Monitoring threshold change: Adjusted high memory warning trigger on analytics nodes from 80% to 88%."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Identity Provider SSO configuration updated: Added new SAML certificate for corporate Okta integration."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Cloud resource tag update applied: Tag 'CostCenter=Finance' attached to 42 EC2 instances."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Webhook registration: Registered new partner event notification URL https://partner.example.com/events."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Firewall policy update: Egress port 443 opened for new compliance monitoring agent host."}
+{"category": "informational_change", "label": "defer", "prompt": "INFO: Backup retention policy updated: Daily snapshots retain count increased from 7 to 14 days."}
