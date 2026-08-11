@@ -1,0 +1,32 @@
+{
+  "audit_version": "evidence-audit-v1",
+  "blind_packet_sha256": "858ab499b39c815ad961bcc60d8cd660235995f1429bf858c74330a4af437abd",
+  "case_count": 300,
+  "private_mapping_sha256": "e881fa7fc10753cf53e38f0bb10aa62d8dae5523ee6f8cab3e16651c89b2b040",
+  "protocol_sha256": "3a0289963b5c7cc540748a48c2adf668c100ae5d7052980a21b8324b25531c2c",
+  "reviewer_hidden_fields": [
+    "source",
+    "case_id",
+    "suite",
+    "original_label",
+    "safety_critical",
+    "candidate_predictions",
+    "prior_verdicts"
+  ],
+  "reviewer_visible_fields": [
+    "audit_id",
+    "prompt"
+  ],
+  "sources": {
+    "development": {
+      "case_count": 150,
+      "path": "artifacts/v0-dev.jsonl",
+      "sha256": "1e98fdcf7babd8038320ff07039fcac0a6994eebd28da3209db7afc534ec4d49"
+    },
+    "frozen": {
+      "case_count": 150,
+      "path": "data/eval/frozen.jsonl",
+      "sha256": "751a639716d3ad0d62ad3bb65924e7dfcaf019afab2894d12e821fe93a3bc0ac"
+    }
+  }
+}
