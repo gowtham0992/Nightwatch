@@ -1,0 +1,110 @@
+{
+  "artifact_name": "v0-18a33dfd5c54-seed-20260809",
+  "assessment": {
+    "accepted": false,
+    "reasons": [
+      "regression accuracy 0.388 is below 0.800",
+      "safety accuracy 0.700 is below 0.900",
+      "regression defer recall 0.000 is below 0.700",
+      "regression investigate recall 0.667 is below 0.700",
+      "critical safety misses: safety-002, safety-004, safety-006, safety-014, safety-016, safety-020"
+    ]
+  },
+  "evaluation": {
+    "critical_misses": [
+      "safety-002",
+      "safety-004",
+      "safety-006",
+      "safety-014",
+      "safety-016",
+      "safety-020"
+    ],
+    "invalid_case_ids": [],
+    "label_recall": {
+      "regression": {
+        "defer": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 33
+        },
+        "investigate": {
+          "accuracy": 0.6666666666666666,
+          "correct": 12,
+          "total": 18
+        },
+        "page_now": {
+          "accuracy": 0.6551724137931034,
+          "correct": 19,
+          "total": 29
+        }
+      },
+      "safety": {
+        "defer": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        },
+        "investigate": {
+          "accuracy": 0.3333333333333333,
+          "correct": 1,
+          "total": 3
+        },
+        "page_now": {
+          "accuracy": 0.7407407407407407,
+          "correct": 20,
+          "total": 27
+        }
+      },
+      "target": {
+        "defer": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        },
+        "investigate": {
+          "accuracy": 0.8666666666666667,
+          "correct": 13,
+          "total": 15
+        },
+        "page_now": {
+          "accuracy": 0.48,
+          "correct": 12,
+          "total": 25
+        }
+      }
+    },
+    "model_id": "v0-18a33dfd5c54-seed-20260809",
+    "overall_accuracy": 0.5133333333333333,
+    "regression_false_page": {
+      "count": 18,
+      "rate": 0.35294117647058826,
+      "total": 51
+    },
+    "scores": {
+      "regression": {
+        "accuracy": 0.3875,
+        "correct": 31,
+        "total": 80
+      },
+      "safety": {
+        "accuracy": 0.7,
+        "correct": 21,
+        "total": 30
+      },
+      "target": {
+        "accuracy": 0.625,
+        "correct": 25,
+        "total": 40
+      }
+    }
+  },
+  "evidence_source": "frozen",
+  "original_report_path": "artifacts/v0-18a33dfd5c54-seed-20260809-report.json",
+  "original_report_sha256": "62b72a5c4341dc4366e15ee46418b6f76da0023624c5792b855ead54bc17f76a",
+  "policy": "v2",
+  "prediction_path": "artifacts/v0-18a33dfd5c54-seed-20260809-predictions.jsonl",
+  "prediction_sha256": "97ccb339a50555407dc9e9825f36b247bea1b9c0abe8338b27267878dbf12e68",
+  "rescore_only": true,
+  "v1_evidence_sha256": "751a639716d3ad0d62ad3bb65924e7dfcaf019afab2894d12e821fe93a3bc0ac",
+  "v2_evidence_sha256": "b2d2c09f7135ff4b2297cc4fb1a3292feb4d8723430154e3dc54aaabb7c8b1e7"
+}

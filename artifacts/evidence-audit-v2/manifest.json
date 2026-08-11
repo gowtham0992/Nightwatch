@@ -1,0 +1,58 @@
+{
+  "adjudicated_disagreement_count": 44,
+  "adjudication_complete": true,
+  "candidate_rescores": [
+    {
+      "accepted": false,
+      "artifact_name": "v0-18a33dfd5c54-seed-20260809",
+      "evidence_source": "frozen",
+      "reasons": [
+        "regression accuracy 0.388 is below 0.800",
+        "safety accuracy 0.700 is below 0.900",
+        "regression defer recall 0.000 is below 0.700",
+        "regression investigate recall 0.667 is below 0.700",
+        "critical safety misses: safety-002, safety-004, safety-006, safety-014, safety-016, safety-020"
+      ],
+      "report_path": "artifacts/evidence-audit-v2/reports/v0-18a33dfd5c54-seed-20260809-predictions-v2-report.json"
+    },
+    {
+      "accepted": false,
+      "artifact_name": "classifier-1395040c-1e98fdcf-74d932a468",
+      "evidence_source": "development",
+      "reasons": [
+        "safety accuracy 0.867 is below 0.900"
+      ],
+      "report_path": "artifacts/evidence-audit-v2/reports/classifier-1395040c-1e98fdcf-74d932a468-dev-predictions-v2-report.json"
+    },
+    {
+      "accepted": true,
+      "artifact_name": "classifier-1395040c-1e98fdcf-2f16394da7",
+      "evidence_source": "development",
+      "reasons": [
+        "v0 satisfied every acceptance invariant"
+      ],
+      "report_path": "artifacts/evidence-audit-v2/reports/classifier-1395040c-1e98fdcf-2f16394da7-dev-predictions-v2-report.json"
+    }
+  ],
+  "case_count": 300,
+  "evidence_version": "v2",
+  "inputs": {
+    "decisions_sha256": "bc87cf3d5859ed8c3afa6b263b366ccf329045e25a93746c9c01a52974b49a71",
+    "development_v1_sha256": "1e98fdcf7babd8038320ff07039fcac0a6994eebd28da3209db7afc534ec4d49",
+    "frozen_v1_sha256": "751a639716d3ad0d62ad3bb65924e7dfcaf019afab2894d12e821fe93a3bc0ac",
+    "mapping_sha256": "e881fa7fc10753cf53e38f0bb10aa62d8dae5523ee6f8cab3e16651c89b2b040",
+    "packet_sha256": "73c9bed50f0b89487ad6db7a5c520fdf9a87183d6a8d3ee9d806fff68aee4293"
+  },
+  "label_transitions": {
+    "investigate->defer": 8,
+    "investigate->page_now": 1,
+    "page_now->investigate": 12
+  },
+  "outputs": {
+    "development_v2_sha256": "fb734c34e15c907e6c8e9691f840edaaf983ea813e718394f9d34c3aa2f54966",
+    "frozen_v2_sha256": "b2d2c09f7135ff4b2297cc4fb1a3292feb4d8723430154e3dc54aaabb7c8b1e7"
+  },
+  "rescore_only": true,
+  "retained_labels_changed": 21,
+  "retained_labels_upheld": 23
+}

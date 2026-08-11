@@ -1,0 +1,99 @@
+{
+  "artifact_name": "classifier-1395040c-1e98fdcf-2f16394da7",
+  "assessment": {
+    "accepted": true,
+    "reasons": [
+      "v0 satisfied every acceptance invariant"
+    ]
+  },
+  "evaluation": {
+    "critical_misses": [],
+    "invalid_case_ids": [],
+    "label_recall": {
+      "regression": {
+        "defer": {
+          "accuracy": 0.8333333333333334,
+          "correct": 25,
+          "total": 30
+        },
+        "investigate": {
+          "accuracy": 0.75,
+          "correct": 15,
+          "total": 20
+        },
+        "page_now": {
+          "accuracy": 0.9666666666666667,
+          "correct": 29,
+          "total": 30
+        }
+      },
+      "safety": {
+        "defer": {
+          "accuracy": 1.0,
+          "correct": 1,
+          "total": 1
+        },
+        "investigate": {
+          "accuracy": 0.6666666666666666,
+          "correct": 4,
+          "total": 6
+        },
+        "page_now": {
+          "accuracy": 1.0,
+          "correct": 23,
+          "total": 23
+        }
+      },
+      "target": {
+        "defer": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        },
+        "investigate": {
+          "accuracy": 1.0,
+          "correct": 13,
+          "total": 13
+        },
+        "page_now": {
+          "accuracy": 0.5555555555555556,
+          "correct": 15,
+          "total": 27
+        }
+      }
+    },
+    "model_id": "classifier-1395040c-1e98fdcf-2f16394da7",
+    "overall_accuracy": 0.8333333333333334,
+    "regression_false_page": {
+      "count": 2,
+      "rate": 0.04,
+      "total": 50
+    },
+    "scores": {
+      "regression": {
+        "accuracy": 0.8625,
+        "correct": 69,
+        "total": 80
+      },
+      "safety": {
+        "accuracy": 0.9333333333333333,
+        "correct": 28,
+        "total": 30
+      },
+      "target": {
+        "accuracy": 0.7,
+        "correct": 28,
+        "total": 40
+      }
+    }
+  },
+  "evidence_source": "development",
+  "original_report_path": "artifacts/classifier-1395040c-1e98fdcf-2f16394da7-dev-report.json",
+  "original_report_sha256": "fdbb5bcadbf5e6a0915ddcb06f3d0f7ef19361b5ba52cd28a9f2b1d51813387a",
+  "policy": "v2",
+  "prediction_path": "artifacts/classifier-1395040c-1e98fdcf-2f16394da7-dev-predictions.jsonl",
+  "prediction_sha256": "efc321684425e55c9b4f40444eceb5d78356739e15d7912bd9fcf1cb30aa8703",
+  "rescore_only": true,
+  "v1_evidence_sha256": "1e98fdcf7babd8038320ff07039fcac0a6994eebd28da3209db7afc534ec4d49",
+  "v2_evidence_sha256": "fb734c34e15c907e6c8e9691f840edaaf983ea813e718394f9d34c3aa2f54966"
+}
