@@ -1,6 +1,12 @@
 # Nightwatch target architecture
 
-This diagram is the target cloud architecture, not a claim that every component is deployed. Today the local deterministic gate, dataset checks, journal primitive, ADK Curriculum Architect entry point, Gemma training/inference entry points, and trainer container exist. The Diagnostician, orchestration spine, cloud evaluator/promoter, Firestore persistence, and production pointer remain to be implemented.
+This diagram is the target cloud architecture, not a claim that every component is deployed. Today the local deterministic gate, dataset checks, file journal, transaction-safe Firestore journal adapter, ADK Curriculum Architect entry point, Gemma training/inference entry points, and trainer container exist. The Firestore adapter has local contract tests but has not yet been exercised against a deployed database. The Diagnostician, orchestration spine, cloud evaluator/promoter, live Firestore persistence, and production pointer remain to be implemented.
+
+## Mission persistence contract
+
+Firestore stores one mission head at `missions/{cycle_id}` and one immutable document per stage at `missions/{cycle_id}/entries/{stage}`. A transaction reads both documents before writing the next entry and updated head. The stage document ID makes retries naturally idempotent; the transaction rejects a replay whose payload differs, a skipped transition, a terminal-stage append, an unsafe mission ID, or a payload larger than 256 KiB. Each mission owns an independent SHA-256 chain beginning at the fixed genesis hash.
+
+The application will not expose direct public Firestore writes. A future mission trigger must use authenticated Cloud Run IAM, one in-flight mission per subject, an idempotency key, and fixed attempt/token/runtime caps. Until those denial tests exist, the UI remains read-only and the mission trigger remains undeployed.
 
 ![Nightwatch target architecture](images/hb3so.png)
 

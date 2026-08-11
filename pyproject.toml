@@ -23,7 +23,10 @@ agent = [
   "google-adk>=1.18,<2",
   "google-genai>=1.52,<2",
 ]
-cloud = ["google-cloud-storage>=3.3,<4"]
+cloud = [
+  "google-cloud-firestore>=2.21,<3",
+  "google-cloud-storage>=3.3,<4",
+]
 experiment = ["modal>=1.5,<2"]
 dev = ["pytest>=9,<10"]
 
