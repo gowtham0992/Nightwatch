@@ -71,6 +71,28 @@ class StubVerifier:
         )
 
 
+class StubReceiptReader:
+    def __init__(
+        self,
+        receipt: VerificationReceipt | None = None,
+        *,
+        error: Exception | None = None,
+    ) -> None:
+        self.receipt = receipt
+        self.error = error
+        self.calls: list[tuple[str, str]] = []
+
+    def read(
+        self,
+        cycle_id: str,
+        verification_id: str,
+    ) -> VerificationReceipt | None:
+        self.calls.append((cycle_id, verification_id))
+        if self.error:
+            raise self.error
+        return self.receipt
+
+
 @pytest.fixture
 def web_root(tmp_path: Path) -> Path:
     (tmp_path / "index.html").write_text("<main>Nightwatch</main>", encoding="utf-8")
@@ -346,3 +368,52 @@ def test_mutation_routes_reject_oversized_bodies(web_root: Path) -> None:
 
     assert response.status_code == 413
     assert response.json["error"]["code"] == "request_too_large"
+
+
+def test_receipt_endpoint_moves_from_pending_to_verified(web_root: Path) -> None:
+    receipt_id = "verify-" + "a" * 40
+    pending_reader = StubReceiptReader()
+    pending_client = create_app(
+        StubJournal(),
+        verification_reader=pending_reader,
+        static_root=web_root,
+    ).test_client()
+    verified_reader = StubReceiptReader(
+        VerificationReceipt(receipt_id, "mission-001", "b" * 64, 6)
+    )
+    verified_client = create_app(
+        StubJournal(),
+        verification_reader=verified_reader,
+        static_root=web_root,
+    ).test_client()
+    path = f"/api/missions/mission-001/verifications/{receipt_id}"
+
+    pending = pending_client.get(path)
+    verified = verified_client.get(path)
+
+    assert pending.status_code == 202
+    assert pending.json["status"] == "pending"
+    assert verified.status_code == 200
+    assert verified.json == {
+        "cycle_id": "mission-001",
+        "entry_count": 6,
+        "head_hash": "b" * 64,
+        "status": "verified",
+        "verification_id": receipt_id,
+    }
+
+
+def test_receipt_endpoint_rejects_invalid_identity_without_storage_read(
+    web_root: Path,
+) -> None:
+    reader = StubReceiptReader(error=JournalError("verification ID is invalid"))
+    client = create_app(
+        StubJournal(),
+        verification_reader=reader,
+        static_root=web_root,
+    ).test_client()
+
+    response = client.get("/api/missions/mission-001/verifications/attacker-path")
+
+    assert response.status_code == 400
+    assert response.json["error"]["code"] == "invalid_request"

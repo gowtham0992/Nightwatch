@@ -3,11 +3,11 @@ from __future__ import annotations
 import json
 
 import pytest
-from google.api_core.exceptions import PreconditionFailed
+from google.api_core.exceptions import NotFound, PreconditionFailed
 
 from nightwatch.contracts import Stage
 from nightwatch.journal import GENESIS_HASH, JournalEntry, JournalError
-from nightwatch.verification import GCSMissionVerificationStore
+from nightwatch.verification import GCSMissionVerificationStore, GCSVerificationReceiptReader
 
 
 class StubJournal:
@@ -19,9 +19,10 @@ class StubJournal:
 
 
 class FakeBlob:
-    def __init__(self, name: str, *, exists: bool) -> None:
+    def __init__(self, name: str, *, exists: bool, payload: bytes | None = None) -> None:
         self.name = name
         self.exists = exists
+        self.payload = payload
         self.uploads: list[tuple[bytes, dict[str, object]]] = []
 
     def upload_from_string(self, payload: bytes, **kwargs: object) -> None:
@@ -30,14 +31,22 @@ class FakeBlob:
             raise PreconditionFailed("generation-zero precondition failed")
         self.exists = True
 
+    def download_as_bytes(self, **kwargs: object) -> bytes:
+        assert kwargs == {"timeout": 10.0}
+        if not self.exists:
+            raise NotFound("missing")
+        assert self.payload is not None
+        return self.payload
+
 
 class FakeBucket:
-    def __init__(self, *, exists: bool = False) -> None:
+    def __init__(self, *, exists: bool = False, payload: bytes | None = None) -> None:
         self.exists = exists
+        self.payload = payload
         self.blobs: list[FakeBlob] = []
 
     def blob(self, name: str) -> FakeBlob:
-        blob = FakeBlob(name, exists=self.exists)
+        blob = FakeBlob(name, exists=self.exists, payload=self.payload)
         self.blobs.append(blob)
         return blob
 
@@ -85,6 +94,42 @@ def test_existing_create_only_receipt_is_an_idempotent_success() -> None:
 
     assert receipt.head_hash == "b" * 64
     assert bucket.blobs[0].uploads[0][1]["if_generation_match"] == 0
+
+
+def test_receipt_reader_returns_verified_content_or_pending() -> None:
+    receipt_id = "verify-" + "a" * 40
+    payload = json.dumps(
+        {
+            "cycle_id": "mission-001",
+            "entry_count": 6,
+            "head_hash": "b" * 64,
+            "verification_id": receipt_id,
+        }
+    ).encode()
+    reader = GCSVerificationReceiptReader(FakeBucket(exists=True, payload=payload))
+    pending = GCSVerificationReceiptReader(FakeBucket())
+
+    receipt = reader.read("mission-001", receipt_id)
+
+    assert receipt is not None
+    assert receipt.entry_count == 6
+    assert pending.read("mission-001", receipt_id) is None
+
+
+def test_receipt_reader_fails_closed_on_path_content_mismatch() -> None:
+    receipt_id = "verify-" + "a" * 40
+    payload = json.dumps(
+        {
+            "cycle_id": "other-mission",
+            "entry_count": 6,
+            "head_hash": "b" * 64,
+            "verification_id": receipt_id,
+        }
+    ).encode()
+    reader = GCSVerificationReceiptReader(FakeBucket(exists=True, payload=payload))
+
+    with pytest.raises(JournalError, match="object path"):
+        reader.read("mission-001", receipt_id)
 
 
 @pytest.mark.parametrize(

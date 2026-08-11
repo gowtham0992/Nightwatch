@@ -372,6 +372,43 @@ button:focus-visible {
 
 .watching-word { color: var(--amber-text); }
 
+.live-proof-band {
+  flex: none;
+  min-height: 52px;
+  padding: 9px 36px 9px 72px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 20px;
+  border-bottom: 1px solid var(--hairline);
+  box-shadow: inset 3px 0 0 var(--amber);
+  background: var(--panel);
+}
+
+.live-proof-band > div { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+
+.verification-kicker,
+.verification-head { color: var(--ink-tertiary); font: 600 9.5px/14px 'Roboto Mono', monospace; letter-spacing: 0.1em; }
+
+.verification-copy { color: var(--ink-secondary); font-size: 12px; line-height: 17px; overflow-wrap: anywhere; }
+
+.live-proof-band button {
+  padding: 8px 11px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 3px;
+  background: var(--ink);
+  color: var(--panel);
+  cursor: pointer;
+  font: 500 10.5px/14px 'Roboto Mono', monospace;
+}
+
+.live-proof-band button:hover:not(:disabled) { background: #3A3B34; }
+.live-proof-band button:disabled { cursor: wait; opacity: 0.55; }
+.verification-head { font-weight: 400; letter-spacing: 0; white-space: nowrap; }
+.live-proof-band.verification-verified { box-shadow: inset 3px 0 0 var(--green); background: #F5FAF6; }
+.live-proof-band.verification-error { box-shadow: inset 3px 0 0 var(--red); background: var(--red-paper); }
+.verification-error .verification-copy { color: var(--red); }
+
 .detail-panel {
   grid-column: 2;
   padding: 28px 36px 20px 32px;

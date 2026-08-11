@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
-import { DEFAULT_MISSION_ID, loadMission } from './data/missionAdapter.js';
+import {
+  DEFAULT_MISSION_ID,
+  fetchVerificationReceipt,
+  loadMission,
+  requestVerification,
+} from './data/missionAdapter.js';
 
 const TONES = {
   red: { color: '#C2392F', border: '#E0B4AD', background: '#FBEFED' },
@@ -138,6 +143,29 @@ function EntryRow({ entry, selected, onSelect }) {
   );
 }
 
+function LiveProofBand({ mission, state, onVerify }) {
+  const busy = state.status === 'queueing' || state.status === 'pending';
+  let copy = 'Re-read all six entries and seal a create-only receipt.';
+  if (state.status === 'queueing') copy = 'Binding task to the current head…';
+  if (state.status === 'pending') copy = 'Private worker is validating Firestore…';
+  if (state.status === 'verified') {
+    copy = `${state.entryCount} entries verified · receipt ${state.verificationId.slice(0, 15)}…`;
+  }
+  if (state.status === 'error') copy = state.message;
+  return (
+    <section className={`live-proof-band verification-${state.status}`} aria-live="polite">
+      <div>
+        <span className="verification-kicker">LIVE ASYNC PROOF</span>
+        <span className="verification-copy">{copy}</span>
+      </div>
+      <span className="verification-head">head {mission.head_hash.slice(0, 10)}…{mission.head_hash.slice(-6)}</span>
+      <button type="button" disabled={busy} onClick={onVerify}>
+        {busy ? 'Verification running' : state.status === 'verified' ? 'Verify again' : 'Verify this head'}
+      </button>
+    </section>
+  );
+}
+
 function EvidenceLog({ mission, entries, selectedIndex, onSelect }) {
   const newest = entries.at(-1);
   return (
@@ -201,6 +229,7 @@ export default function App() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [introVisible, setIntroVisible] = useState(true);
   const [retryVersion, setRetryVersion] = useState(0);
+  const [verificationState, setVerificationState] = useState({ status: 'idle' });
 
   useEffect(() => {
     let ignore = false;
@@ -225,12 +254,56 @@ export default function App() {
   const { run } = missionState;
   const selectedEntry = run.entries[selectedIndex];
 
+  const verifyCurrentHead = async () => {
+    if (verificationState.status === 'queueing' || verificationState.status === 'pending') return;
+    setVerificationState({ status: 'queueing' });
+    try {
+      const idempotencyKey = `operator:ui-${globalThis.crypto.randomUUID()}`;
+      const scheduled = await requestVerification(
+        run.mission.cycle_id,
+        run.mission.head_hash,
+        idempotencyKey,
+      );
+      setVerificationState({ status: 'pending', verificationId: scheduled.verification_id });
+      for (let attempt = 0; attempt < 16; attempt += 1) {
+        const receipt = await fetchVerificationReceipt(
+          run.mission.cycle_id,
+          scheduled.verification_id,
+        );
+        if (receipt.status === 'verified') {
+          if (receipt.head_hash !== run.mission.head_hash || receipt.entry_count !== run.entries.length) {
+            throw new Error('The receipt does not match the visible mission.');
+          }
+          setVerificationState({
+            status: 'verified',
+            verificationId: receipt.verification_id,
+            entryCount: receipt.entry_count,
+          });
+          return;
+        }
+        await new Promise((resolve) => window.setTimeout(resolve, 750));
+      }
+      throw new Error('The worker did not finish within the verification window.');
+    } catch (error) {
+      setVerificationState({
+        status: 'error',
+        message: error instanceof Error ? error.message : 'Verification failed.',
+      });
+    }
+  };
+
   return (
     <div className="ledger" data-screen-label="Nightwatch — Verified Mission Ledger">
       <StatusBand mission={run.mission} />
       {introVisible && <Orientation copy={run.mission.orientation} onDismiss={() => setIntroVisible(false)} />}
+      <LiveProofBand mission={run.mission} state={verificationState} onVerify={verifyCurrentHead} />
       <div className="workspace">
-        <EvidenceLog mission={run.mission} entries={run.entries} selectedIndex={selectedIndex} onSelect={setSelectedIndex} />
+        <EvidenceLog
+          mission={run.mission}
+          entries={run.entries}
+          selectedIndex={selectedIndex}
+          onSelect={setSelectedIndex}
+        />
         <EvidenceDetail entry={selectedEntry} index={selectedIndex} total={run.entries.length} />
       </div>
     </div>

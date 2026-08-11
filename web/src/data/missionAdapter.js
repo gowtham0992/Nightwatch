@@ -1,6 +1,7 @@
 const STAGES = ['created', 'diagnosed', 'curriculum_ready', 'trained', 'evaluated', 'promoted', 'rejected'];
 const HASH = /^[a-f0-9]{64}$/;
 const MISSION_ID = /^[a-z0-9][a-z0-9_-]{0,127}$/;
+const VERIFICATION_ID = /^verify-[a-f0-9]{40}$/;
 
 export const DEFAULT_MISSION_ID = 'nightwatch-v2-qualification';
 
@@ -192,6 +193,7 @@ export function missionResponseToView(value, requestedMissionId = DEFAULT_MISSIO
   return {
     mission: {
       cycle_id: response.cycle_id,
+      head_hash: response.head_hash,
       display_name: 'Qualification Mission 04',
       subject: first.subject,
       status: response.terminal ? 'complete' : 'active',
@@ -248,4 +250,90 @@ export function loadMission(missionId = DEFAULT_MISSION_ID, { force = false } = 
     missionRequests.set(missionId, request);
   }
   return missionRequests.get(missionId);
+}
+
+async function jsonResponse(response, fallbackMessage) {
+  let body;
+  try {
+    body = await response.json();
+  } catch {
+    throw new MissionApiError('invalid_response', 'The evidence service returned an invalid response.', response.status);
+  }
+  if (!response.ok) {
+    const error = body?.error;
+    throw new MissionApiError(
+      typeof error?.code === 'string' ? error.code : 'request_failed',
+      typeof error?.message === 'string' ? error.message : fallbackMessage,
+      response.status,
+    );
+  }
+  return body;
+}
+
+export async function requestVerification(
+  missionId,
+  headHash,
+  idempotencyKey,
+  { fetchImpl = globalThis.fetch } = {},
+) {
+  if (!MISSION_ID.test(missionId) || !HASH.test(headHash) || typeof idempotencyKey !== 'string') {
+    throw new MissionApiError('invalid_request', 'The verification request is invalid.');
+  }
+  let response;
+  try {
+    response = await fetchImpl(`/api/missions/${encodeURIComponent(missionId)}/verifications`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'Idempotency-Key': idempotencyKey,
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify({ expected_head_hash: headHash }),
+    });
+  } catch {
+    throw new MissionApiError('offline', 'Nightwatch could not reach the verification queue.');
+  }
+  const body = await jsonResponse(response, 'The verification could not be queued.');
+  if (
+    body.cycle_id !== missionId
+    || body.expected_head_hash !== headHash
+    || !VERIFICATION_ID.test(body.verification_id)
+    || typeof body.duplicate !== 'boolean'
+    || !['queued', 'already_accepted'].includes(body.status)
+  ) {
+    throw new MissionApiError('invalid_response', 'The verification queue returned an invalid receipt identity.');
+  }
+  return body;
+}
+
+export async function fetchVerificationReceipt(
+  missionId,
+  verificationId,
+  { fetchImpl = globalThis.fetch } = {},
+) {
+  if (!MISSION_ID.test(missionId) || !VERIFICATION_ID.test(verificationId)) {
+    throw new MissionApiError('invalid_request', 'The verification receipt ID is invalid.');
+  }
+  let response;
+  try {
+    response = await fetchImpl(
+      `/api/missions/${encodeURIComponent(missionId)}/verifications/${verificationId}`,
+      { headers: { Accept: 'application/json' }, credentials: 'same-origin' },
+    );
+  } catch {
+    throw new MissionApiError('offline', 'Nightwatch could not read the verification receipt.');
+  }
+  const body = await jsonResponse(response, 'The verification receipt could not be read.');
+  if (
+    body.cycle_id !== missionId
+    || body.verification_id !== verificationId
+    || !['pending', 'verified'].includes(body.status)
+  ) {
+    throw new MissionApiError('invalid_response', 'The verification receipt response is invalid.');
+  }
+  if (body.status === 'verified' && (!HASH.test(body.head_hash) || !Number.isInteger(body.entry_count))) {
+    throw new MissionApiError('invalid_response', 'The completed verification receipt is malformed.');
+  }
+  return body;
 }

@@ -11,7 +11,11 @@ from google.auth.exceptions import GoogleAuthError
 
 from nightwatch.firestore_journal import FirestoreJournal, validate_cycle_id
 from nightwatch.journal import ALLOWED_TRANSITIONS, JournalEntry, JournalError
-from nightwatch.verification import GCSMissionVerificationStore, VerificationReceipt
+from nightwatch.verification import (
+    GCSMissionVerificationStore,
+    GCSVerificationReceiptReader,
+    VerificationReceipt,
+)
 
 
 class JournalReader(Protocol):
@@ -38,6 +42,14 @@ class VerificationStore(Protocol):
     ) -> VerificationReceipt: ...
 
 
+class VerificationReceiptReader(Protocol):
+    def read(
+        self,
+        cycle_id: str,
+        verification_id: str,
+    ) -> VerificationReceipt | None: ...
+
+
 def _entry_json(entry: JournalEntry) -> dict[str, object]:
     return {
         "cycle_id": entry.cycle_id,
@@ -58,6 +70,7 @@ def create_app(
     *,
     task_queue: VerificationQueue | None = None,
     verification_store: VerificationStore | None = None,
+    verification_reader: VerificationReceiptReader | None = None,
     static_root: Path | None = None,
 ) -> Flask:
     web_root = static_root or Path(os.environ.get("NIGHTWATCH_WEB_ROOT", "/app/web-dist"))
@@ -69,6 +82,8 @@ def create_app(
     queue_lock = threading.Lock()
     verifier = verification_store
     verifier_lock = threading.Lock()
+    receipt_reader = verification_reader
+    receipt_reader_lock = threading.Lock()
 
     def get_journal() -> JournalReader:
         nonlocal journal
@@ -114,6 +129,20 @@ def create_app(
                         bucket_name=bucket_name,
                     )
         return verifier
+
+    def get_receipt_reader() -> VerificationReceiptReader:
+        nonlocal receipt_reader
+        if receipt_reader is None:
+            with receipt_reader_lock:
+                if receipt_reader is None:
+                    bucket_name = os.environ.get("NIGHTWATCH_RECEIPTS_BUCKET")
+                    if not bucket_name:
+                        raise RuntimeError("verification receipt bucket is not configured")
+                    receipt_reader = GCSVerificationReceiptReader.from_default(
+                        project=os.environ.get("GOOGLE_CLOUD_PROJECT"),
+                        bucket_name=bucket_name,
+                    )
+        return receipt_reader
 
     @app.after_request
     def secure_response(response: Response) -> Response:
@@ -261,6 +290,42 @@ def create_app(
                 "status": "verified",
                 "cycle_id": receipt.cycle_id,
                 "head_hash": receipt.head_hash,
+                "verification_id": receipt.verification_id,
+            }
+        )
+
+    @app.get("/api/missions/<path:cycle_id>/verifications/<verification_id>")
+    def verification_receipt(
+        cycle_id: str,
+        verification_id: str,
+    ) -> tuple[Response, int] | Response:
+        try:
+            receipt = get_receipt_reader().read(cycle_id, verification_id)
+        except JournalError:
+            return _error("invalid_request", "The verification receipt ID is invalid.", 400)
+        except (GoogleAPICallError, GoogleAuthError, RetryError, RuntimeError):
+            app.logger.exception("verification receipt unavailable")
+            return _error(
+                "dependency_unavailable",
+                "The verification receipt is temporarily unavailable.",
+                503,
+            )
+        if receipt is None:
+            response = jsonify(
+                {
+                    "status": "pending",
+                    "cycle_id": cycle_id,
+                    "verification_id": verification_id,
+                }
+            )
+            response.status_code = 202
+            return response
+        return jsonify(
+            {
+                "status": "verified",
+                "cycle_id": receipt.cycle_id,
+                "head_hash": receipt.head_hash,
+                "entry_count": receipt.entry_count,
                 "verification_id": receipt.verification_id,
             }
         )

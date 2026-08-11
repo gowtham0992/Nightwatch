@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { MissionApiError, fetchMission, missionResponseToView } from './missionAdapter.js';
+import {
+  MissionApiError,
+  fetchMission,
+  fetchVerificationReceipt,
+  missionResponseToView,
+  requestVerification,
+} from './missionAdapter.js';
 
 function apiMission() {
   const hashes = Array.from({ length: 6 }, (_, index) => String(index + 1).repeat(64));
@@ -41,4 +47,51 @@ test('API errors stay explicit and do not fall back to fixture evidence', async 
     fetchMission('nightwatch-v2-qualification', { fetchImpl }),
     (error) => error instanceof MissionApiError && error.code === 'evidence_integrity_failure',
   );
+});
+
+test('verification request binds the exact head and idempotency key', async () => {
+  const receiptId = `verify-${'a'.repeat(40)}`;
+  let captured;
+  const fetchImpl = async (url, options) => {
+    captured = { url, options };
+    return {
+      ok: true,
+      status: 202,
+      json: async () => ({
+        cycle_id: 'nightwatch-v2-qualification',
+        expected_head_hash: '6'.repeat(64),
+        verification_id: receiptId,
+        duplicate: false,
+        status: 'queued',
+      }),
+    };
+  };
+
+  const result = await requestVerification(
+    'nightwatch-v2-qualification',
+    '6'.repeat(64),
+    'operator:ui-request-001',
+    { fetchImpl },
+  );
+
+  assert.equal(result.verification_id, receiptId);
+  assert.equal(captured.url, '/api/missions/nightwatch-v2-qualification/verifications');
+  assert.equal(captured.options.headers['Idempotency-Key'], 'operator:ui-request-001');
+  assert.deepEqual(JSON.parse(captured.options.body), { expected_head_hash: '6'.repeat(64) });
+});
+
+test('receipt polling distinguishes pending from verified content', async () => {
+  const receiptId = `verify-${'b'.repeat(40)}`;
+  const responses = [
+    { status: 'pending', cycle_id: 'nightwatch-v2-qualification', verification_id: receiptId },
+    { status: 'verified', cycle_id: 'nightwatch-v2-qualification', verification_id: receiptId, head_hash: '6'.repeat(64), entry_count: 6 },
+  ];
+  const fetchImpl = async () => ({ ok: true, status: 200, json: async () => responses.shift() });
+
+  const pending = await fetchVerificationReceipt('nightwatch-v2-qualification', receiptId, { fetchImpl });
+  const verified = await fetchVerificationReceipt('nightwatch-v2-qualification', receiptId, { fetchImpl });
+
+  assert.equal(pending.status, 'pending');
+  assert.equal(verified.status, 'verified');
+  assert.equal(verified.entry_count, 6);
 });
