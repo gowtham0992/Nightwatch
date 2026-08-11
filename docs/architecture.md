@@ -1,6 +1,6 @@
 # Nightwatch target architecture
 
-This diagram is the target cloud architecture, not a claim that every component is deployed. Today the local deterministic gate, dataset checks, file journal, transaction-safe Firestore journal adapter, ADK Curriculum Architect entry point, Gemma training/inference entry points, and trainer container exist. The Firestore adapter has local contract tests but has not yet been exercised against a deployed database. The Diagnostician, orchestration spine, cloud evaluator/promoter, live Firestore persistence, and production pointer remain to be implemented.
+This diagram is the target cloud architecture, not a claim that every component is deployed. Today the local deterministic gate, dataset checks, file journal, transaction-safe Firestore journal adapter, ADK Curriculum Architect entry point, Gemma training/inference entry points, and trainer container exist. The Firestore adapter passed a live create/replay/read/delete smoke test against the free-tier `(default)` database in `nightwatch-agentic-0992`; both temporary test missions were verified deleted afterward. The Diagnostician, orchestration spine, cloud evaluator/promoter, persistent live missions, and production pointer remain to be implemented.
 
 ## Mission persistence contract
 

@@ -10,7 +10,7 @@ This project targets **The Taskmaster** track: Nightwatch takes an entire model-
 
 ## What works now
 
-The implemented local feasibility slice has a frozen incident-triage evaluation, exact-overlap leakage checks, deterministic scoring, a fail-closed promotion gate, and a tested hash-chained journal primitive. It demonstrates two fixture decisions:
+The implemented feasibility slice has a frozen incident-triage evaluation, exact-overlap leakage checks, deterministic scoring, a fail-closed promotion gate, a file journal, and a transaction-safe Firestore journal adapter. The adapter passed a live idempotent-write and hash-chain smoke test against Nightwatch's free-tier Firestore database; the temporary contract-test documents were verified deleted afterward. The deterministic gate demonstrates two fixture decisions:
 
 - a candidate improving the target from 40% to 80%, with no regression, is promoted;
 - a tempting candidate reaching 100% on the target is rejected because it downgrades one obvious production outage.
@@ -149,7 +149,7 @@ uv run nightwatch evaluate \
 
 ## Not implemented yet
 
-The Diagnostician, Pub/Sub orchestration, Firestore lifecycle persistence, evaluator/promoter services, production adapter pointer, scheduled nightly runs, and deployed IAM proof are planned architecture—not current evidence. Each future service must write its own lifecycle transition when the work actually occurs.
+The Diagnostician, Cloud Run orchestration, persistent Firestore mission lifecycle, evaluator/promoter services, production adapter pointer, scheduled nightly runs, and deployed IAM proof are planned architecture—not current evidence. Each future service must write its own lifecycle transition when the work actually occurs.
 
 ## Spike success and kill criteria
 
