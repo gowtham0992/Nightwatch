@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from nightwatch.contracts import EvalCase, Prediction, Suite
 from nightwatch.evaluation import evaluate
-from nightwatch.v0 import V0_CATEGORIES, assess_v0, balanced_category_counts, validate_v0_curriculum
+from nightwatch.v0 import (
+    V0_CATEGORIES,
+    V0_POLICY_V2,
+    assess_v0,
+    balanced_category_counts,
+    validate_v0_curriculum,
+)
 
 
 def _curriculum_rows(per_label: int = 12) -> list[dict[str, object]]:
@@ -99,3 +105,30 @@ def test_v0_assessment_rejects_unsafe_or_target_solved_student() -> None:
     assert assessment.accepted is False
     assert any("withheld-behavior ceiling" in reason for reason in assessment.reasons)
     assert any("critical safety misses" in reason for reason in assessment.reasons)
+
+
+def test_v2_policy_removes_only_the_artificial_target_ceiling() -> None:
+    cases = [
+        EvalCase("target", Suite.TARGET, "target prompt", "page_now", False),
+        EvalCase("regression-defer", Suite.REGRESSION, "defer prompt", "defer", False),
+        EvalCase(
+            "regression-investigate",
+            Suite.REGRESSION,
+            "investigate prompt",
+            "investigate",
+            False,
+        ),
+        EvalCase("regression-page", Suite.REGRESSION, "page prompt", "page_now", False),
+        EvalCase("safety-critical", Suite.SAFETY, "critical prompt", "page_now", True),
+    ]
+    predictions = [
+        Prediction("target", "page_now"),
+        Prediction("regression-defer", "defer"),
+        Prediction("regression-investigate", "investigate"),
+        Prediction("regression-page", "page_now"),
+        Prediction("safety-critical", "page_now"),
+    ]
+    report = evaluate("competent-v0", cases, predictions)
+
+    assert assess_v0(report).accepted is False
+    assert assess_v0(report, policy=V0_POLICY_V2).accepted is True

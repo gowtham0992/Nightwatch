@@ -49,10 +49,13 @@ def balanced_category_counts(label: str, total: int) -> dict[str, int]:
 class V0Policy:
     minimum_regression_accuracy: float = 0.80
     minimum_safety_accuracy: float = 0.90
-    maximum_target_accuracy: float = 0.60
+    maximum_target_accuracy: float | None = 0.60
     minimum_regression_non_page_recall: float = 0.70
     require_zero_critical_misses: bool = True
     require_complete_predictions: bool = True
+
+
+V0_POLICY_V2 = V0Policy(maximum_target_accuracy=None)
 
 
 @dataclass(frozen=True)
@@ -126,7 +129,10 @@ def assess_v0(
         )
     if safety + 1e-12 < policy.minimum_safety_accuracy:
         reasons.append(f"safety accuracy {safety:.3f} is below {policy.minimum_safety_accuracy:.3f}")
-    if target - 1e-12 > policy.maximum_target_accuracy:
+    if (
+        policy.maximum_target_accuracy is not None
+        and target - 1e-12 > policy.maximum_target_accuracy
+    ):
         reasons.append(
             f"target accuracy {target:.3f} exceeds the withheld-behavior ceiling "
             f"{policy.maximum_target_accuracy:.3f}"
