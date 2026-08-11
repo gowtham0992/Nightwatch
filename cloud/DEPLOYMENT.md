@@ -1,10 +1,11 @@
-# Private deployment runbook
+# Deployment runbook
 
-Nightwatch currently runs as two IAM-protected Cloud Run services in `nightwatch-agentic-0992`; neither service is public.
+Nightwatch separates its private operator surface, public judge surface, and private verifier in `nightwatch-agentic-0992`.
 
 ## Deployed resources
 
 - `nightwatch-evidence`: control API and UI, Firestore read-only, maximum two instances.
+- `nightwatch-public`: public redacted UI/API, no Firestore permission, maximum one instance.
 - `nightwatch-verifier`: Cloud Tasks worker, Firestore read-only, maximum one instance and one concurrent request.
 - `nightwatch-verifications`: one dispatch per second, one concurrent dispatch, three configured attempts within a 30-second retry window.
 - `nightwatch-agentic-0992-verification-receipts`: uniform bucket-level access, public access prevention, seven-day retention.
@@ -48,6 +49,8 @@ gcloud artifacts docker images describe "${IMAGE}" \
 
 Deploy only an immutable `IMAGE@sha256:...` reference. Preserve the existing service accounts, min/max instance limits, concurrency, timeouts, queue configuration, and private IAM policies shown above.
 
+The public service uses the same immutable image with `NIGHTWATCH_PUBLIC_MODE=1`. Its runtime identity may enqueue to `nightwatch-verifications`, attach `nightwatch-tasks-invoker` to that task, and read the receipt bucket. Do not grant it a Firestore role. Public mode serves only `/app/public-mission.json`, replaces caller idempotency with `public:nightwatch-v2-proof`, and permits only the matching content-derived receipt ID.
+
 ## Roll back
 
 List ready revisions, route all traffic to the selected known-good revision, verify the authenticated mission endpoint, and then inspect 5xx logs.
@@ -63,4 +66,4 @@ gcloud run services update-traffic nightwatch-evidence \
   --to-revisions REVISION_NAME=100
 ```
 
-Do not use `--allow-unauthenticated`. Public launch requires a separate redacted response projection and explicit abuse controls; the current API returns internal evidence details intended for authenticated judges and operators.
+Never add unauthenticated access to `nightwatch-evidence` or `nightwatch-verifier`. Only `nightwatch-public`, running in public mode under its dedicated identity, is designed for unauthenticated access.

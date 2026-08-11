@@ -95,3 +95,33 @@ test('receipt polling distinguishes pending from verified content', async () => 
   assert.equal(verified.status, 'verified');
   assert.equal(verified.entry_count, 6);
 });
+
+test('public projection renders redacted copy without private artifact fields', () => {
+  const mission = apiMission();
+  mission.visibility = 'public_redacted';
+  mission.entries.forEach((entry) => { entry.payload.public_summary = true; });
+  mission.entries[0].payload.trigger.candidate = 'Gemma 3 270M';
+  delete mission.entries[0].payload.trigger.artifact_name;
+  delete mission.entries[2].payload.curriculum_sha256;
+  mission.entries[3].payload.attempts.forEach((attempt) => {
+    delete attempt.model_revision;
+    delete attempt.seed;
+  });
+  mission.entries[4].payload.attempts.forEach((attempt, index) => {
+    attempt.candidate = index === 0 ? 'Gemma 3 270M' : 'Gemma 3 1B';
+    delete attempt.artifact_name;
+  });
+  delete mission.entries[5].payload.artifact_name;
+  delete mission.entries[5].payload.model_revision;
+  mission.entries[5].payload.critical_miss_count = mission.entries[5].payload.critical_misses.length;
+  mission.entries[5].payload.invalid_prediction_count = mission.entries[5].payload.invalid_case_ids.length;
+  delete mission.entries[5].payload.critical_misses;
+  delete mission.entries[5].payload.invalid_case_ids;
+
+  const view = missionResponseToView(mission);
+
+  assert.equal(view.mission.evidence_label, 'PUBLIC · REDACTED PROOF');
+  assert.match(view.entries[2].exhibit.raw.at(-1), /redacted/);
+  assert.match(view.entries.at(-1).exhibit.raw.at(-1), /redacted/);
+  assert.equal(view.mission.detail_label, 'public evidence · redacted');
+});

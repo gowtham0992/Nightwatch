@@ -188,7 +188,7 @@ function EvidenceLog({ mission, entries, selectedIndex, onSelect }) {
   );
 }
 
-function EvidenceDetail({ entry, index, total }) {
+function EvidenceDetail({ entry, index, total, detailLabel }) {
   const exhibit = entry.exhibit;
   const tone = TONES[exhibit.tone];
   return (
@@ -219,7 +219,7 @@ function EvidenceDetail({ entry, index, total }) {
       </div>
       <p className="exhibit-note">{exhibit.note}</p>
       <div className="detail-spacer" />
-      <div className="detail-footer">raw evidence · unredacted · entry {String(index + 1).padStart(2, '0')} of {String(total).padStart(2, '0')}</div>
+      <div className="detail-footer">{detailLabel} · entry {String(index + 1).padStart(2, '0')} of {String(total).padStart(2, '0')}</div>
     </aside>
   );
 }
@@ -304,7 +304,12 @@ export default function App() {
           selectedIndex={selectedIndex}
           onSelect={setSelectedIndex}
         />
-        <EvidenceDetail entry={selectedEntry} index={selectedIndex} total={run.entries.length} />
+        <EvidenceDetail
+          entry={selectedEntry}
+          index={selectedIndex}
+          total={run.entries.length}
+          detailLabel={run.mission.detail_label}
+        />
       </div>
     </div>
   );

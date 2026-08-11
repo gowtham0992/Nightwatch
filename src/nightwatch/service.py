@@ -11,6 +11,12 @@ from google.auth.exceptions import GoogleAuthError
 
 from nightwatch.firestore_journal import FirestoreJournal, validate_cycle_id
 from nightwatch.journal import ALLOWED_TRANSITIONS, JournalEntry, JournalError
+from nightwatch.public_evidence import (
+    PUBLIC_IDEMPOTENCY_KEY,
+    PUBLIC_MISSION_ID,
+    load_public_snapshot,
+    validate_public_snapshot,
+)
 from nightwatch.verification import (
     GCSMissionVerificationStore,
     GCSVerificationReceiptReader,
@@ -71,11 +77,13 @@ def create_app(
     task_queue: VerificationQueue | None = None,
     verification_store: VerificationStore | None = None,
     verification_reader: VerificationReceiptReader | None = None,
+    public_snapshot: dict[str, Any] | None = None,
     static_root: Path | None = None,
 ) -> Flask:
     web_root = static_root or Path(os.environ.get("NIGHTWATCH_WEB_ROOT", "/app/web-dist"))
     app = Flask(__name__, static_folder=str(web_root), static_url_path="")
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024
+    public_mode = os.environ.get("NIGHTWATCH_PUBLIC_MODE") == "1"
     journal = reader
     journal_lock = threading.Lock()
     queue = task_queue
@@ -84,6 +92,8 @@ def create_app(
     verifier_lock = threading.Lock()
     receipt_reader = verification_reader
     receipt_reader_lock = threading.Lock()
+    redacted_snapshot = public_snapshot
+    redacted_snapshot_lock = threading.Lock()
 
     def get_journal() -> JournalReader:
         nonlocal journal
@@ -144,6 +154,21 @@ def create_app(
                     )
         return receipt_reader
 
+    def get_public_snapshot() -> dict[str, Any]:
+        nonlocal redacted_snapshot
+        if redacted_snapshot is None:
+            with redacted_snapshot_lock:
+                if redacted_snapshot is None:
+                    redacted_snapshot = load_public_snapshot(
+                        Path(
+                            os.environ.get(
+                                "NIGHTWATCH_PUBLIC_MISSION_PATH",
+                                "/app/public-mission.json",
+                            )
+                        )
+                    )
+        return validate_public_snapshot(redacted_snapshot)
+
     @app.after_request
     def secure_response(response: Response) -> Response:
         response.headers["X-Content-Type-Options"] = "nosniff"
@@ -154,7 +179,15 @@ def create_app(
             "connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
         )
         if request.path.startswith("/api/"):
-            response.headers["Cache-Control"] = "no-store"
+            if (
+                public_mode
+                and request.method == "GET"
+                and request.path == f"/api/missions/{PUBLIC_MISSION_ID}"
+                and response.status_code == 200
+            ):
+                response.headers["Cache-Control"] = "public, max-age=60"
+            else:
+                response.headers["Cache-Control"] = "no-store"
         return response
 
     @app.get("/healthz")
@@ -163,8 +196,9 @@ def create_app(
         return jsonify(
             {
                 "status": "ok",
-                "service": "nightwatch-evidence",
+                "service": "nightwatch-public" if public_mode else "nightwatch-evidence",
                 "release": os.environ.get("NIGHTWATCH_RELEASE", "dev"),
+                "visibility": "public_redacted" if public_mode else "private",
             }
         )
 
@@ -174,6 +208,18 @@ def create_app(
             validate_cycle_id(cycle_id)
         except JournalError:
             return _error("invalid_cycle_id", "The mission ID is invalid.", 400)
+        if public_mode:
+            if cycle_id != PUBLIC_MISSION_ID:
+                return _error("mission_not_found", "No public mission exists with that ID.", 404)
+            try:
+                return jsonify(get_public_snapshot())
+            except JournalError:
+                app.logger.exception("public mission snapshot integrity failure")
+                return _error(
+                    "evidence_integrity_failure",
+                    "The public mission evidence failed its integrity check.",
+                    503,
+                )
         try:
             entries = get_journal().read_cycle(cycle_id)
         except JournalError:
@@ -217,10 +263,17 @@ def create_app(
                 400,
             )
         try:
-            entries = get_journal().read_cycle(cycle_id)
-            if not entries:
-                return _error("mission_not_found", "No verified mission exists with that ID.", 404)
-            if body["expected_head_hash"] != entries[-1].entry_hash:
+            if public_mode:
+                if cycle_id != PUBLIC_MISSION_ID:
+                    return _error("mission_not_found", "No public mission exists with that ID.", 404)
+                current_head = get_public_snapshot()["head_hash"]
+                idempotency_key = PUBLIC_IDEMPOTENCY_KEY
+            else:
+                entries = get_journal().read_cycle(cycle_id)
+                if not entries:
+                    return _error("mission_not_found", "No verified mission exists with that ID.", 404)
+                current_head = entries[-1].entry_hash
+            if body["expected_head_hash"] != current_head:
                 return _error(
                     "mission_head_changed",
                     "Refresh the mission before requesting verification.",
@@ -228,7 +281,7 @@ def create_app(
                 )
             scheduled = get_task_queue().enqueue_verification(
                 cycle_id,
-                entries[-1].entry_hash,
+                current_head,
                 idempotency_key,
             )
         except JournalError:
@@ -243,7 +296,7 @@ def create_app(
         response = jsonify(
             {
                 "cycle_id": cycle_id,
-                "expected_head_hash": entries[-1].entry_hash,
+                "expected_head_hash": current_head,
                 "verification_id": scheduled.verification_id,
                 "duplicate": scheduled.duplicate,
                 "status": "already_accepted" if scheduled.duplicate else "queued",
@@ -299,6 +352,24 @@ def create_app(
         cycle_id: str,
         verification_id: str,
     ) -> tuple[Response, int] | Response:
+        if public_mode:
+            from nightwatch.cloud_tasks import verification_id as build_verification_id
+
+            try:
+                expected_id = build_verification_id(
+                    PUBLIC_MISSION_ID,
+                    get_public_snapshot()["head_hash"],
+                    PUBLIC_IDEMPOTENCY_KEY,
+                )
+            except JournalError:
+                app.logger.exception("public mission snapshot integrity failure")
+                return _error(
+                    "evidence_integrity_failure",
+                    "The public mission evidence failed its integrity check.",
+                    503,
+                )
+            if cycle_id != PUBLIC_MISSION_ID or verification_id != expected_id:
+                return _error("not_found", "The verification receipt does not exist.", 404)
         try:
             receipt = get_receipt_reader().read(cycle_id, verification_id)
         except JournalError:

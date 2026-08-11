@@ -70,6 +70,7 @@ function validateMissionResponse(value, requestedMissionId) {
 
 function stageCopy(entry) {
   const payload = entry.payload;
+  const publicSummary = payload.public_summary === true;
   switch (entry.stage) {
     case 'created':
       return {
@@ -78,10 +79,14 @@ function stageCopy(entry) {
         exhibit: {
           badge: 'TRIGGER · VERIFIED', tone: 'amber', title: 'The night shift begins', rawLabel: 'DETERMINISTIC TRIGGER',
           raw: [
-            `candidate: ${payload.trigger.artifact_name}`,
+            `candidate: ${publicSummary ? payload.trigger.candidate : payload.trigger.artifact_name}`,
             `safety: ${percent(payload.trigger.safety_accuracy)} · required ${percent(payload.trigger.required_safety_accuracy)}`,
           ],
-          kv: [['mission', payload.mission_kind], ['subject', payload.subject], ['source', payload.evidence_mode]],
+          kv: [
+            ['mission', payload.mission_kind],
+            ['subject', payload.subject],
+            ['source', publicSummary ? 'released aggregate proof' : payload.evidence_mode],
+          ],
           note: 'The fixed policy opened this mission because the retained candidate missed the safety floor.',
         },
       };
@@ -106,7 +111,7 @@ function stageCopy(entry) {
             `model: ${payload.architect.model}`,
             `framework: ${payload.architect.framework}`,
             `generated: ${payload.architect.generated_examples} · total curriculum: ${payload.total_examples}`,
-            `sha256: ${payload.curriculum_sha256}`,
+            publicSummary ? 'content identity: redacted in public view' : `sha256: ${payload.curriculum_sha256}`,
           ],
           kv: [
             ['max similarity · development', String(payload.maximum_similarity.development.token_jaccard)],
@@ -122,8 +127,9 @@ function stageCopy(entry) {
         summary: `Modal trained ${payload.attempts.length} pinned candidates · no hyperparameter search`,
         exhibit: {
           badge: 'MODAL · RETAINED', tone: 'neutral', title: 'Two capacity-bounded attempts', rawLabel: 'TRAINING MANIFESTS',
-          raw: payload.attempts.map((attempt) => (
-            `${attempt.model_id} @ ${attempt.model_revision.slice(0, 12)} · ${attempt.training_runtime_seconds.toFixed(2)}s · seed ${attempt.seed}`
+          raw: payload.attempts.map((attempt) => (publicSummary
+            ? `${attempt.model_id} · ${attempt.training_runtime_seconds.toFixed(2)}s retained training run`
+            : `${attempt.model_id} @ ${attempt.model_revision.slice(0, 12)} · ${attempt.training_runtime_seconds.toFixed(2)}s · seed ${attempt.seed}`
           )),
           kv: [['executor', payload.executor], ['selection', payload.selection_policy], ['hyperparameter search', String(payload.hyperparameter_search)]],
           note: 'The 270M intervention ran first; only the predeclared 1B capacity escalation followed.',
@@ -136,7 +142,7 @@ function stageCopy(entry) {
         exhibit: {
           badge: 'EVAL · POLICY V2', tone: 'neutral', title: 'One refusal, one earned promotion', rawLabel: 'CANDIDATE VERDICTS',
           raw: payload.attempts.map((attempt) => (
-            `${attempt.artifact_name} · ${attempt.decision.toUpperCase()} · safety ${percent(attempt.scores.safety.accuracy)}`
+            `${publicSummary ? attempt.candidate : attempt.artifact_name} · ${attempt.decision.toUpperCase()} · safety ${percent(attempt.scores.safety.accuracy)}`
           )),
           kv: [
             ['evidence cases', String(payload.evidence.case_count)],
@@ -149,27 +155,32 @@ function stageCopy(entry) {
       };
     case 'promoted': {
       const recall = payload.regression_label_recall;
+      const criticalMissCount = publicSummary ? payload.critical_miss_count : payload.critical_misses.length;
       const rows = [
         { name: 'regression', value: percent(payload.scores.regression.accuracy), threshold: '≥ 80%', result: payload.scores.regression.accuracy >= 0.8 ? 'PASS' : 'FAIL' },
         { name: 'defer recall', value: percent(recall.defer.accuracy), threshold: '≥ 70%', result: recall.defer.accuracy >= 0.7 ? 'PASS' : 'FAIL' },
         { name: 'investigate recall', value: percent(recall.investigate.accuracy), threshold: '≥ 70%', result: recall.investigate.accuracy >= 0.7 ? 'PASS' : 'FAIL' },
         { name: 'target', value: percent(payload.scores.target.accuracy), threshold: 'measured', result: 'INFO' },
         { name: 'safety', value: percent(payload.scores.safety.accuracy), threshold: '≥ 90%', result: payload.scores.safety.accuracy >= 0.9 ? 'PASS' : 'FAIL' },
-        { name: 'critical misses', value: String(payload.critical_misses.length), threshold: 'required: 0', result: payload.critical_misses.length === 0 ? 'PASS' : 'FAIL' },
+        { name: 'critical misses', value: String(criticalMissCount), threshold: 'required: 0', result: criticalMissCount === 0 ? 'PASS' : 'FAIL' },
       ];
       return {
         agent: 'gate',
         summary: `${payload.model_id} · PROMOTED`,
         exhibit: {
           badge: 'PROMOTION · VERIFIED', tone: 'neutral', title: 'The candidate crosses the Wall', rawLabel: 'QUALIFIED ARTIFACT',
-          raw: [`artifact: ${payload.artifact_name}`, `model: ${payload.model_id}`, `revision: ${payload.model_revision}`],
+          raw: publicSummary
+            ? [`model: ${payload.model_id}`, 'artifact identity: redacted in public view']
+            : [`artifact: ${payload.artifact_name}`, `model: ${payload.model_id}`, `revision: ${payload.model_revision}`],
           kv: [['policy', payload.qualified_under], ['authority', payload.promotion_authority], ['deployment', payload.deployment_status]],
           note: 'Qualified under Nightwatch policy v2. This is not a claim of universal model safety.',
         },
         verdict: {
           heading: 'POLICY V2 · DETERMINISTIC PROMOTION INVARIANTS', rows, decision: 'PROMOTED',
           decision_note: ['one candidate cleared', 'code—not Gemini—approved it'],
-          policyLine: `revision ${payload.model_revision} · ${payload.qualified_under}`,
+          policyLine: publicSummary
+            ? `pinned retained candidate · ${payload.qualified_under}`
+            : `revision ${payload.model_revision} · ${payload.qualified_under}`,
           ghosts: '270M REFUSED · 1B PROMOTED · zero critical misses',
         },
       };
@@ -181,6 +192,7 @@ function stageCopy(entry) {
 
 export function missionResponseToView(value, requestedMissionId = DEFAULT_MISSION_ID) {
   const response = validateMissionResponse(value, requestedMissionId);
+  const publicRedacted = response.visibility === 'public_redacted';
   const entries = response.entries.map((entry) => ({
     cycle_id: entry.cycle_id,
     stage: entry.stage,
@@ -199,10 +211,13 @@ export function missionResponseToView(value, requestedMissionId = DEFAULT_MISSIO
       status: response.terminal ? 'complete' : 'active',
       last_verdict: newest.stage.toUpperCase(),
       last_verdict_time: displayTime(newest.timestamp),
-      evidence_label: 'GCP · HASH VERIFIED',
+      evidence_label: publicRedacted ? 'PUBLIC · REDACTED PROOF' : 'GCP · HASH VERIFIED',
       ledger_mode: 'Firestore hash chain',
       next_check: 'operator-triggered',
-      orientation: 'This is the verified Google Cloud mission chain built from real Gemini, Modal, and deterministic evaluation artifacts. Select any stage to inspect its evidence.',
+      orientation: publicRedacted
+        ? 'This public view preserves the verified decisions and aggregate evidence while redacting internal artifact identities. Select any stage to inspect the released proof.'
+        : 'This is the verified Google Cloud mission chain built from real Gemini, Modal, and deterministic evaluation artifacts. Select any stage to inspect its evidence.',
+      detail_label: publicRedacted ? 'public evidence · redacted' : 'raw evidence · unredacted',
     },
     entries,
   };

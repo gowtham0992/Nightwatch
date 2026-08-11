@@ -14,7 +14,7 @@ One real qualification mission is deployed on Google Cloud. Gemini 3.6 Flash and
 
 The qualified 1B candidate reached 86.25% regression accuracy, 93.3% safety accuracy, 70% target accuracy, and zero critical misses. It is **qualified, not deployed**, and the result is specific to the checked-in policy-v2 evidence—not a claim of universal model safety.
 
-The six lifecycle stages are stored in Firestore as a transaction-safe SHA-256 chain. An IAM-protected Cloud Run service verifies and serves that chain to the UI. A separate private Cloud Run worker can re-verify an exact mission head asynchronously through Cloud Tasks and write one immutable, create-only receipt to a dedicated Cloud Storage bucket. The live proof completed with one receipt; replaying the same idempotency key produced no second effect.
+The six lifecycle stages are stored in Firestore as a transaction-safe SHA-256 chain. An IAM-protected Cloud Run service verifies and serves that chain to the operator UI. A separate public mode serves a checked-in, allowlisted redaction of that exact mission: it has no Firestore permission, exposes one mission and one content-derived verification receipt, and can enqueue only one stable proof task. The private worker re-verifies the live Firestore head asynchronously through Cloud Tasks and writes one immutable, create-only receipt to Cloud Storage. The live proof completed with one receipt; replaying the same task identity produced no second effect.
 
 ## Run the evidence logbook UI
 
@@ -39,7 +39,7 @@ docker run --rm --publish 127.0.0.1:8080:8080 nightwatch-service:local
 
 Without Google Application Default Credentials, the UI and shallow health check work locally while Firestore mission reads fail closed with HTTP 503. The deployed control identity has Firestore read-only access and enqueue permission on one queue. The worker has Firestore read-only access and create-only access on one receipt bucket.
 
-The live service remains IAM-protected; it is not a public demo URL yet. See [the deployment runbook](cloud/DEPLOYMENT.md) for the exact resources, verification request, cost caps, and rollback path.
+The operator service remains IAM-protected. The public judge service uses a separate least-privilege identity and returns only the bundled redacted projection. See [the deployment runbook](cloud/DEPLOYMENT.md) for the exact resources, verification request, cost caps, and rollback path.
 
 ## Run the deterministic proof
 
@@ -161,7 +161,7 @@ uv run nightwatch evaluate \
 
 ## What is still deliberately absent
 
-Nightwatch does not yet expose a public service, scheduled nightly repair, production adapter pointer, or cloud-triggered training run. The deployed asynchronous path re-verifies completed evidence; it does not pretend to retrain the model. Public access requires a redacted response projection and abuse controls, and a production pointer requires a separately authorized promoter identity plus rollback tests.
+Nightwatch does not yet schedule nightly repair, update a production adapter pointer, or launch training from the public service. The asynchronous judge path re-verifies completed evidence; it does not pretend to retrain the model. A production pointer still requires a separately authorized promoter identity plus rollback tests.
 
 ## Spike success and kill criteria
 

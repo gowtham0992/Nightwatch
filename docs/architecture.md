@@ -1,12 +1,12 @@
 # Nightwatch target architecture
 
-The deployed slice proves the complete retained qualification story and a secure asynchronous verification path. Firestore holds a real six-stage mission built from Gemini/ADK curriculum evidence, Modal training reports, and deterministic policy-v2 evaluation. An IAM-protected Cloud Run control service serves the verified chain; Cloud Tasks invokes a separate private worker that can read the chain and create one immutable receipt object. Cloud-triggered training, a production pointer, and public access remain intentionally absent.
+The deployed slice proves the complete retained qualification story and a secure asynchronous verification path. Firestore holds a real six-stage mission built from Gemini/ADK curriculum evidence, Modal training reports, and deterministic policy-v2 evaluation. An IAM-protected Cloud Run control service serves the complete verified chain. A separate public Cloud Run service serves a checked-in redacted projection tied to that chain's exact head; it cannot read Firestore. Cloud Tasks invokes a private worker that re-reads the live chain and creates one immutable receipt object. Cloud-triggered training and a production pointer remain intentionally absent.
 
 ## Mission persistence contract
 
 Firestore stores one mission head at `missions/{cycle_id}` and one immutable document per stage at `missions/{cycle_id}/entries/{stage}`. A transaction reads both documents before writing the next entry and updated head. The stage document ID makes retries naturally idempotent; the transaction rejects a replay whose payload differs, a skipped transition, a terminal-stage append, an unsafe mission ID, or a payload larger than 256 KiB. Each mission owns an independent SHA-256 chain beginning at the fixed genesis hash.
 
-The application exposes no direct Firestore writes. Its authenticated verification trigger binds each request to the exact observed head and a validated idempotency key. Cloud Tasks uses a content-derived task name, one concurrent dispatch, one dispatch per second, a 30-second retry window, and a private OIDC target. The worker re-reads the entire chain before creating a generation-zero receipt; it cannot overwrite or delete receipts.
+The application exposes no direct Firestore writes. The private trigger binds each request to the exact observed head and a validated idempotency key. The public trigger accepts only the retained mission head and replaces caller input with one fixed public idempotency key, so arbitrary requests cannot create unbounded task identities. Cloud Tasks uses a content-derived task name, one concurrent dispatch, one dispatch per second, a 30-second retry window, and a private OIDC target. The worker re-reads the entire chain before creating a generation-zero receipt; it cannot overwrite or delete receipts.
 
 The control service accepts an allowlisted mission ID, verifies at most seven lifecycle entries through the journal contract, and returns either the complete chain or a fail-closed error. It lazily creates Google Cloud clients so its shallow health endpoint does not amplify dependency failures. Both Cloud Run services scale to zero. The control service is capped at two instances; the single-concurrency worker is capped at one.
 
@@ -17,6 +17,7 @@ The control service accepts an allowlisted mission ID, verifies at most seven li
 | Identity | Can read | Can write | Explicitly denied |
 |---|---|---|---|
 | `nightwatch-evidence` | Firestore mission evidence | one Cloud Tasks queue | Firestore writes, receipt objects, public invocation |
+| `nightwatch-public` | one bundled redacted snapshot; one receipt object | one fixed task identity in one Cloud Tasks queue | Firestore, private evidence, receipt writes, arbitrary task identities |
 | `nightwatch-tasks-invoker` | nothing | nothing | all access except invoking `nightwatch-verifier` |
 | `nightwatch-worker` | Firestore mission evidence | create-only objects in one receipt bucket | Firestore writes, object reads/overwrite/delete, model execution |
 | `nightwatch-diagnostician` | aggregate metrics | diagnosis objects | curriculum and hidden prompts |
@@ -25,7 +26,7 @@ The control service accepts an allowlisted mission ID, verifies at most seven li
 | `nightwatch-evaluator` | candidate adapters, hidden eval bucket | immutable reports | curriculum bucket and production pointer |
 | `nightwatch-promoter` | reports and fixed policy | production pointer, journal | model generation and policy mutation |
 
-The first three rows are deployed identities. The remaining rows describe the target training and promotion split; they are not deployed security boundaries yet. Agent names inside one ADK process are not a security boundary.
+The first four rows are deployed identities. The remaining rows describe the target training and promotion split; they are not deployed security boundaries yet. Agent names inside one ADK process are not a security boundary.
 
 ## Promotion invariants
 

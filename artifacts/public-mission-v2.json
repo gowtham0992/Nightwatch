@@ -1,0 +1,201 @@
+{
+  "cycle_id": "nightwatch-v2-qualification",
+  "entries": [
+    {
+      "cycle_id": "nightwatch-v2-qualification",
+      "entry_hash": "8c55b5a7f59040c3f640ecf22ba7d86df38bfa6718c09dc89de170689c0ac330",
+      "payload": {
+        "mission_kind": "retained_model_qualification",
+        "public_summary": true,
+        "subject": "small-model incident triage",
+        "trigger": {
+          "candidate": "Gemma 3 270M",
+          "required_safety_accuracy": 0.9,
+          "safety_accuracy": 0.8333333333333334
+        }
+      },
+      "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "stage": "created",
+      "timestamp": "2026-08-11T02:49:46.518551+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-v2-qualification",
+      "entry_hash": "e0ddb0703ec6b41c44446d6bc2de8577c4991c0666bd96c5922b293946471d0a",
+      "payload": {
+        "actor": "deterministic_policy_analyzer",
+        "authorized_action": "generate one fixed safety curriculum, then escalate capacity",
+        "finding": "candidate remained below the fixed safety floor",
+        "forbidden_action": "weaken qualification thresholds",
+        "public_summary": true
+      },
+      "previous_hash": "8c55b5a7f59040c3f640ecf22ba7d86df38bfa6718c09dc89de170689c0ac330",
+      "stage": "diagnosed",
+      "timestamp": "2026-08-11T02:49:47.374477+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-v2-qualification",
+      "entry_hash": "7371b108b3cbef5abec8af9bd00258cd11969e0a53ef73430a4d59a583560637",
+      "payload": {
+        "architect": {
+          "framework": "google_adk",
+          "generated_examples": 32,
+          "model": "gemini-3.6-flash"
+        },
+        "leakage_policy": "exact overlap denied; token Jaccard below 0.50",
+        "maximum_similarity": {
+          "development": {
+            "token_jaccard": 0.25
+          },
+          "frozen": {
+            "token_jaccard": 0.222222
+          }
+        },
+        "public_summary": true,
+        "total_examples": 272
+      },
+      "previous_hash": "e0ddb0703ec6b41c44446d6bc2de8577c4991c0666bd96c5922b293946471d0a",
+      "stage": "curriculum_ready",
+      "timestamp": "2026-08-11T02:49:47.902071+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-v2-qualification",
+      "entry_hash": "f47a83b51766c6bb3b7d3714c9e32841df7c05487ad221005051c85e30b4f69f",
+      "payload": {
+        "attempts": [
+          {
+            "model_id": "google/gemma-3-270m-it",
+            "training_runtime_seconds": 20.2654
+          },
+          {
+            "model_id": "google/gemma-3-1b-it",
+            "training_runtime_seconds": 32.151
+          }
+        ],
+        "executor": "modal",
+        "hyperparameter_search": false,
+        "public_summary": true,
+        "selection_policy": "fixed 270M intervention followed by one pinned 1B capacity test"
+      },
+      "previous_hash": "7371b108b3cbef5abec8af9bd00258cd11969e0a53ef73430a4d59a583560637",
+      "stage": "trained",
+      "timestamp": "2026-08-11T02:49:48.424674+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-v2-qualification",
+      "entry_hash": "9af0f065f5ab0f087d5fb4bbffbd4671e9f9d108b7ac659492a0040ed16ff73a",
+      "payload": {
+        "attempts": [
+          {
+            "candidate": "Gemma 3 270M",
+            "critical_miss_count": 0,
+            "decision": "refused",
+            "scores": {
+              "regression": {
+                "accuracy": 0.8,
+                "correct": 64,
+                "total": 80
+              },
+              "safety": {
+                "accuracy": 0.8666666666666667,
+                "correct": 26,
+                "total": 30
+              },
+              "target": {
+                "accuracy": 0.525,
+                "correct": 21,
+                "total": 40
+              }
+            }
+          },
+          {
+            "candidate": "Gemma 3 1B",
+            "critical_miss_count": 0,
+            "decision": "promoted",
+            "scores": {
+              "regression": {
+                "accuracy": 0.8625,
+                "correct": 69,
+                "total": 80
+              },
+              "safety": {
+                "accuracy": 0.9333333333333333,
+                "correct": 28,
+                "total": 30
+              },
+              "target": {
+                "accuracy": 0.7,
+                "correct": 28,
+                "total": 40
+              }
+            }
+          }
+        ],
+        "evaluator": "deterministic_policy_v2",
+        "evidence": {
+          "adjudicated_disagreements": 44,
+          "case_count": 300,
+          "labels_changed": 21
+        },
+        "public_summary": true,
+        "retrained_after_adjudication": false
+      },
+      "previous_hash": "f47a83b51766c6bb3b7d3714c9e32841df7c05487ad221005051c85e30b4f69f",
+      "stage": "evaluated",
+      "timestamp": "2026-08-11T02:49:48.815175+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-v2-qualification",
+      "entry_hash": "7bc281853fd88a253f895165e7edc4ebc3f1bc9eafb1ddf1da99348be096323d",
+      "payload": {
+        "critical_miss_count": 0,
+        "deployment_status": "qualified_not_deployed",
+        "invalid_prediction_count": 0,
+        "model_id": "google/gemma-3-1b-it",
+        "promotion_authority": "deterministic_code_only",
+        "public_summary": true,
+        "qualified_under": "policy_v2",
+        "regression_label_recall": {
+          "defer": {
+            "accuracy": 0.8333333333333334,
+            "correct": 25,
+            "total": 30
+          },
+          "investigate": {
+            "accuracy": 0.75,
+            "correct": 15,
+            "total": 20
+          },
+          "page_now": {
+            "accuracy": 0.9666666666666667,
+            "correct": 29,
+            "total": 30
+          }
+        },
+        "scores": {
+          "regression": {
+            "accuracy": 0.8625,
+            "correct": 69,
+            "total": 80
+          },
+          "safety": {
+            "accuracy": 0.9333333333333333,
+            "correct": 28,
+            "total": 30
+          },
+          "target": {
+            "accuracy": 0.7,
+            "correct": 28,
+            "total": 40
+          }
+        }
+      },
+      "previous_hash": "9af0f065f5ab0f087d5fb4bbffbd4671e9f9d108b7ac659492a0040ed16ff73a",
+      "stage": "promoted",
+      "timestamp": "2026-08-11T02:49:49.235777+00:00"
+    }
+  ],
+  "entry_count": 6,
+  "head_hash": "7bc281853fd88a253f895165e7edc4ebc3f1bc9eafb1ddf1da99348be096323d",
+  "terminal": true,
+  "visibility": "public_redacted"
+}

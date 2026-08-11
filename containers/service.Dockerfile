@@ -23,6 +23,7 @@ COPY src ./src
 RUN pip install --no-cache-dir ".[service]" \
     && useradd --create-home --uid 10001 nightwatch
 COPY --from=web-builder /workspace/web/dist ./web-dist
+COPY artifacts/public-mission-v2.json ./public-mission.json
 COPY containers/gunicorn.conf.py ./containers/gunicorn.conf.py
 
 USER nightwatch

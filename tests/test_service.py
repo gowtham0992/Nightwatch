@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -7,9 +8,11 @@ from google.api_core.exceptions import ServiceUnavailable
 from google.auth.exceptions import DefaultCredentialsError
 
 from nightwatch.cloud_tasks import ScheduledVerification
+from nightwatch.cloud_tasks import verification_id as build_verification_id
 from nightwatch.contracts import Stage
 from nightwatch.journal import GENESIS_HASH, JournalEntry, JournalError
 from nightwatch.service import create_app
+from nightwatch.public_evidence import PUBLIC_IDEMPOTENCY_KEY, PUBLIC_MISSION_ID
 from nightwatch.verification import VerificationReceipt
 
 
@@ -417,3 +420,114 @@ def test_receipt_endpoint_rejects_invalid_identity_without_storage_read(
 
     assert response.status_code == 400
     assert response.json["error"]["code"] == "invalid_request"
+
+
+def public_snapshot() -> dict[str, object]:
+    path = Path(__file__).resolve().parents[1] / "artifacts" / "public-mission-v2.json"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def test_public_mode_serves_only_fixed_redacted_snapshot_without_firestore(
+    web_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("NIGHTWATCH_PUBLIC_MODE", "1")
+    journal = StubJournal(error=AssertionError("public service must not read Firestore"))
+    client = create_app(
+        journal,
+        public_snapshot=public_snapshot(),
+        static_root=web_root,
+    ).test_client()
+
+    response = client.get(f"/api/missions/{PUBLIC_MISSION_ID}")
+    missing = client.get("/api/missions/other-mission")
+
+    assert response.status_code == 200
+    assert response.json["visibility"] == "public_redacted"
+    assert response.headers["Cache-Control"] == "public, max-age=60"
+    assert "artifact_name" not in response.get_data(as_text=True)
+    assert missing.status_code == 404
+    assert journal.calls == []
+
+
+def test_public_verification_uses_fixed_task_identity_without_firestore(
+    web_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("NIGHTWATCH_PUBLIC_MODE", "1")
+    journal = StubJournal(error=AssertionError("public trigger must not read Firestore"))
+    queue = StubQueue()
+    snapshot = public_snapshot()
+    client = create_app(
+        journal,
+        task_queue=queue,
+        public_snapshot=snapshot,
+        static_root=web_root,
+    ).test_client()
+
+    response = client.post(
+        f"/api/missions/{PUBLIC_MISSION_ID}/verifications",
+        headers={"Idempotency-Key": "attacker:unbounded-key"},
+        json={"expected_head_hash": snapshot["head_hash"]},
+    )
+
+    assert response.status_code == 202
+    assert queue.calls == [(PUBLIC_MISSION_ID, snapshot["head_hash"], PUBLIC_IDEMPOTENCY_KEY)]
+    assert journal.calls == []
+
+
+def test_public_receipt_endpoint_is_pinned_to_one_content_derived_id(
+    web_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("NIGHTWATCH_PUBLIC_MODE", "1")
+    snapshot = public_snapshot()
+    expected_id = build_verification_id(
+        PUBLIC_MISSION_ID,
+        snapshot["head_hash"],
+        PUBLIC_IDEMPOTENCY_KEY,
+    )
+    reader = StubReceiptReader(
+        VerificationReceipt(expected_id, PUBLIC_MISSION_ID, snapshot["head_hash"], 6)
+    )
+    client = create_app(
+        StubJournal(),
+        verification_reader=reader,
+        public_snapshot=snapshot,
+        static_root=web_root,
+    ).test_client()
+
+    denied = client.get(
+        f"/api/missions/{PUBLIC_MISSION_ID}/verifications/verify-{'f' * 40}"
+    )
+    accepted = client.get(
+        f"/api/missions/{PUBLIC_MISSION_ID}/verifications/{expected_id}"
+    )
+
+    assert denied.status_code == 404
+    assert accepted.status_code == 200
+    assert reader.calls == [(PUBLIC_MISSION_ID, expected_id)]
+
+
+def test_public_receipt_fails_closed_when_snapshot_is_invalid(
+    web_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("NIGHTWATCH_PUBLIC_MODE", "1")
+    snapshot = public_snapshot()
+    snapshot["head_hash"] = "f" * 64
+    reader = StubReceiptReader()
+    client = create_app(
+        StubJournal(),
+        verification_reader=reader,
+        public_snapshot=snapshot,
+        static_root=web_root,
+    ).test_client()
+
+    response = client.get(
+        f"/api/missions/{PUBLIC_MISSION_ID}/verifications/verify-{'a' * 40}"
+    )
+
+    assert response.status_code == 503
+    assert response.json["error"]["code"] == "evidence_integrity_failure"
+    assert reader.calls == []
