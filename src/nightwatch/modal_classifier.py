@@ -15,6 +15,11 @@ from nightwatch.modal_v0 import (
     hf_secret,
     image,
 )
+from nightwatch.model_config import (
+    GEMMA_MODEL_ID,
+    GEMMA_MODEL_REVISION,
+    validate_gemma_checkpoint,
+)
 
 
 @app.function(
@@ -31,6 +36,8 @@ def train_classifier_arm(
     curriculum_jsonl: str,
     dev_jsonl: str,
     *,
+    model_id: str = GEMMA_MODEL_ID,
+    model_revision: str = GEMMA_MODEL_REVISION,
     rank: int = 4,
     epochs: float = 3.0,
     learning_rate: float = 5e-5,
@@ -45,6 +52,7 @@ def train_classifier_arm(
 
     if rank not in {4, 8, 16}:
         raise ValueError("rank must be one of 4, 8, or 16")
+    validate_gemma_checkpoint(model_id, model_revision)
     if not 1.0 <= epochs <= 6.0:
         raise ValueError("epochs must be between 1 and 6")
     if learning_rate not in {5e-5, 1e-4, 2e-4, 5e-4, 1e-3}:
@@ -55,6 +63,8 @@ def train_classifier_arm(
     dev_sha = hashlib.sha256(dev_bytes).hexdigest()
     config = {
         "pipeline_version": CLASSIFIER_PIPELINE_VERSION,
+        "model_id": model_id,
+        "model_revision": model_revision,
         "rank": rank,
         "epochs": epochs,
         "learning_rate": learning_rate,
@@ -85,8 +95,16 @@ def train_classifier_arm(
         epochs=epochs,
         learning_rate=learning_rate,
         seed=seed,
+        model_id=model_id,
+        model_revision=model_revision,
     )
-    predict_classifier(adapter_path, dev_path, prediction_path)
+    predict_classifier(
+        adapter_path,
+        dev_path,
+        prediction_path,
+        model_id=model_id,
+        model_revision=model_revision,
+    )
     report = evaluate(
         artifact_name,
         load_eval_cases(dev_path),
@@ -118,6 +136,8 @@ def classifier_arm(
     curriculum: str = "artifacts/v0-curriculum.jsonl",
     dev: str = "artifacts/v0-dev.jsonl",
     output_dir: str = "artifacts",
+    model_id: str = GEMMA_MODEL_ID,
+    model_revision: str = GEMMA_MODEL_REVISION,
     rank: int = 4,
     epochs: float = 3.0,
     learning_rate: float = 5e-5,
@@ -126,6 +146,8 @@ def classifier_arm(
     result = train_classifier_arm.remote(
         Path(curriculum).read_text(encoding="utf-8"),
         Path(dev).read_text(encoding="utf-8"),
+        model_id=model_id,
+        model_revision=model_revision,
         rank=rank,
         epochs=epochs,
         learning_rate=learning_rate,
