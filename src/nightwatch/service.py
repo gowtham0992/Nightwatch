@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import threading
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
 from flask import Flask, Response, jsonify, request
 from google.api_core.exceptions import GoogleAPICallError, RetryError
@@ -11,10 +11,31 @@ from google.auth.exceptions import GoogleAuthError
 
 from nightwatch.firestore_journal import FirestoreJournal, validate_cycle_id
 from nightwatch.journal import ALLOWED_TRANSITIONS, JournalEntry, JournalError
+from nightwatch.verification import FirestoreMissionVerificationStore, VerificationReceipt
 
 
 class JournalReader(Protocol):
     def read_cycle(self, cycle_id: str) -> list[JournalEntry]: ...
+
+
+class VerificationQueue(Protocol):
+    def enqueue_verification(
+        self,
+        cycle_id: str,
+        head_hash: str,
+        idempotency_key: str,
+    ) -> Any: ...
+
+
+class VerificationStore(Protocol):
+    def verify(
+        self,
+        cycle_id: str,
+        expected_head_hash: str,
+        verification_id: str,
+        *,
+        timestamp: str | None = None,
+    ) -> VerificationReceipt: ...
 
 
 def _entry_json(entry: JournalEntry) -> dict[str, object]:
@@ -35,12 +56,19 @@ def _error(code: str, message: str, status: int) -> tuple[Response, int]:
 def create_app(
     reader: JournalReader | None = None,
     *,
+    task_queue: VerificationQueue | None = None,
+    verification_store: VerificationStore | None = None,
     static_root: Path | None = None,
 ) -> Flask:
     web_root = static_root or Path(os.environ.get("NIGHTWATCH_WEB_ROOT", "/app/web-dist"))
     app = Flask(__name__, static_folder=str(web_root), static_url_path="")
+    app.config["MAX_CONTENT_LENGTH"] = 16 * 1024
     journal = reader
     journal_lock = threading.Lock()
+    queue = task_queue
+    queue_lock = threading.Lock()
+    verifier = verification_store
+    verifier_lock = threading.Lock()
 
     def get_journal() -> JournalReader:
         nonlocal journal
@@ -51,6 +79,37 @@ def create_app(
                         project=os.environ.get("GOOGLE_CLOUD_PROJECT")
                     )
         return journal
+
+    def get_task_queue() -> VerificationQueue:
+        nonlocal queue
+        if queue is None:
+            with queue_lock:
+                if queue is None:
+                    from nightwatch.cloud_tasks import CloudTasksVerificationQueue
+
+                    required = {
+                        "project": os.environ.get("GOOGLE_CLOUD_PROJECT"),
+                        "location": os.environ.get("NIGHTWATCH_TASKS_LOCATION"),
+                        "queue": os.environ.get("NIGHTWATCH_TASKS_QUEUE"),
+                        "worker_url": os.environ.get("NIGHTWATCH_WORKER_URL"),
+                        "invoker_service_account": os.environ.get(
+                            "NIGHTWATCH_TASKS_INVOKER_SERVICE_ACCOUNT"
+                        ),
+                    }
+                    if not all(required.values()):
+                        raise RuntimeError("Cloud Tasks verification is not configured")
+                    queue = CloudTasksVerificationQueue.from_default(**required)  # type: ignore[arg-type]
+        return queue
+
+    def get_verifier() -> VerificationStore:
+        nonlocal verifier
+        if verifier is None:
+            with verifier_lock:
+                if verifier is None:
+                    verifier = FirestoreMissionVerificationStore.from_default(
+                        project=os.environ.get("GOOGLE_CLOUD_PROJECT")
+                    )
+        return verifier
 
     @app.after_request
     def secure_response(response: Response) -> Response:
@@ -110,6 +169,98 @@ def create_app(
             }
         )
 
+    @app.post("/api/missions/<path:cycle_id>/verifications")
+    def schedule_verification(cycle_id: str) -> tuple[Response, int] | Response:
+        try:
+            validate_cycle_id(cycle_id)
+        except JournalError:
+            return _error("invalid_cycle_id", "The mission ID is invalid.", 400)
+        idempotency_key = request.headers.get("Idempotency-Key", "")
+        body = request.get_json(silent=True)
+        if not isinstance(body, dict) or set(body) != {"expected_head_hash"}:
+            return _error(
+                "invalid_request",
+                "Provide exactly one expected_head_hash field.",
+                400,
+            )
+        try:
+            entries = get_journal().read_cycle(cycle_id)
+            if not entries:
+                return _error("mission_not_found", "No verified mission exists with that ID.", 404)
+            if body["expected_head_hash"] != entries[-1].entry_hash:
+                return _error(
+                    "mission_head_changed",
+                    "Refresh the mission before requesting verification.",
+                    409,
+                )
+            scheduled = get_task_queue().enqueue_verification(
+                cycle_id,
+                entries[-1].entry_hash,
+                idempotency_key,
+            )
+        except JournalError:
+            return _error("invalid_request", "The verification request is invalid.", 400)
+        except (GoogleAPICallError, GoogleAuthError, RetryError, RuntimeError):
+            app.logger.exception("verification queue unavailable", extra={"cycle_id": cycle_id})
+            return _error(
+                "dependency_unavailable",
+                "Mission verification is temporarily unavailable.",
+                503,
+            )
+        response = jsonify(
+            {
+                "cycle_id": cycle_id,
+                "expected_head_hash": entries[-1].entry_hash,
+                "verification_id": scheduled.verification_id,
+                "duplicate": scheduled.duplicate,
+                "status": "queued",
+            }
+        )
+        response.status_code = 202
+        return response
+
+    @app.post("/internal/tasks/verify-mission")
+    def verify_mission_task() -> tuple[Response, int] | Response:
+        if os.environ.get("NIGHTWATCH_WORKER_MODE") != "1":
+            return _error("not_found", "The API route does not exist.", 404)
+        task_name = request.headers.get("X-CloudTasks-TaskName", "")
+        body = request.get_json(silent=True)
+        required = {"cycle_id", "expected_head_hash", "verification_id"}
+        if (
+            not isinstance(body, dict)
+            or set(body) != required
+            or not task_name.endswith(f"/tasks/{body.get('verification_id', '')}")
+        ):
+            return _error("invalid_task", "The task envelope is invalid.", 400)
+        try:
+            receipt = get_verifier().verify(
+                body["cycle_id"],
+                body["expected_head_hash"],
+                body["verification_id"],
+            )
+        except JournalError:
+            app.logger.exception("mission verification refused")
+            return _error(
+                "verification_refused",
+                "The mission could not be verified against the requested head.",
+                409,
+            )
+        except (GoogleAPICallError, GoogleAuthError, RetryError):
+            app.logger.exception("mission verification dependency unavailable")
+            return _error(
+                "dependency_unavailable",
+                "Mission verification is temporarily unavailable.",
+                503,
+            )
+        return jsonify(
+            {
+                "status": "verified",
+                "cycle_id": receipt.cycle_id,
+                "head_hash": receipt.head_hash,
+                "verification_id": receipt.verification_id,
+            }
+        )
+
     @app.errorhandler(404)
     def not_found(_error_value: object) -> tuple[Response, int] | Response:
         if request.path.startswith("/api/"):
@@ -121,7 +272,11 @@ def create_app(
 
     @app.errorhandler(405)
     def method_not_allowed(_error_value: object) -> tuple[Response, int]:
-        return _error("method_not_allowed", "This endpoint is read-only.", 405)
+        return _error("method_not_allowed", "This method is not allowed.", 405)
+
+    @app.errorhandler(413)
+    def request_too_large(_error_value: object) -> tuple[Response, int]:
+        return _error("request_too_large", "The request body is too large.", 413)
 
     @app.get("/")
     def index() -> tuple[Response, int] | Response:
