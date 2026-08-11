@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
-import { getRetainedRun } from './data/adapter.js';
+import { DEFAULT_MISSION_ID, loadMission } from './data/missionAdapter.js';
 
 const TONES = {
   red: { color: '#C2392F', border: '#E0B4AD', background: '#FBEFED' },
   amber: { color: '#A66A12', border: '#E2CB9C', background: '#FBF4E3' },
   neutral: { color: '#55564E', border: '#D6D3C8', background: '#F1EFE8' },
 };
-
-const retainedRun = getRetainedRun('retained-v0-20260809');
 
 function Clock() {
   const [now, setNow] = useState(() => new Date());
@@ -21,6 +19,7 @@ function Clock() {
 }
 
 function StatusBand({ mission }) {
+  const promoted = mission.last_verdict === 'PROMOTED';
   return (
     <header className="status-band">
       <img className="brand-logo" src="/nightwatch-logo.png" alt="Nightwatch" />
@@ -32,13 +31,34 @@ function StatusBand({ mission }) {
         </span>
       </span>
       <span className="last-verdict">
-        Last verdict: <span className="measured verdict-refused">{mission.last_verdict}</span> · {mission.last_verdict_time}
+        Last verdict: <span className={`measured ${promoted ? 'promoted-text' : 'verdict-refused'}`}>{mission.last_verdict}</span> · {mission.last_verdict_time}
       </span>
       <span className="divider" />
       <Clock />
       <span className="divider" />
       <span className="evidence-chip">{mission.evidence_label}</span>
     </header>
+  );
+}
+
+function MissionState({ state, onRetry }) {
+  if (state.status === 'loading') {
+    return (
+      <main className="mission-state" aria-live="polite">
+        <span className="state-kicker">VERIFYING FIRESTORE HASH CHAIN</span>
+        <h1>Calling the watch…</h1>
+        <p>Nightwatch is loading the hash-chained mission ledger from Google Cloud.</p>
+        <span className="state-progress" aria-hidden="true" />
+      </main>
+    );
+  }
+  return (
+    <main className="mission-state mission-error" role="alert">
+      <span className="state-kicker">EVIDENCE UNAVAILABLE · {state.error.code}</span>
+      <h1>The ledger stayed closed.</h1>
+      <p>{state.error.message}</p>
+      <button type="button" onClick={onRetry}>Retry verified read</button>
+    </main>
   );
 }
 
@@ -177,17 +197,41 @@ function EvidenceDetail({ entry, index, total }) {
 }
 
 export default function App() {
-  const [selectedIndex, setSelectedIndex] = useState(retainedRun.entries.length - 1);
+  const [missionState, setMissionState] = useState({ status: 'loading' });
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [introVisible, setIntroVisible] = useState(true);
-  const selectedEntry = retainedRun.entries[selectedIndex];
+  const [retryVersion, setRetryVersion] = useState(0);
+
+  useEffect(() => {
+    let ignore = false;
+    setMissionState({ status: 'loading' });
+    loadMission(DEFAULT_MISSION_ID, { force: retryVersion > 0 }).then(
+      (run) => {
+        if (ignore) return;
+        setMissionState({ status: 'ready', run });
+        setSelectedIndex(run.entries.length - 1);
+      },
+      (error) => {
+        if (!ignore) setMissionState({ status: 'error', error });
+      },
+    );
+    return () => { ignore = true; };
+  }, [retryVersion]);
+
+  if (missionState.status !== 'ready') {
+    return <MissionState state={missionState} onRetry={() => setRetryVersion((version) => version + 1)} />;
+  }
+
+  const { run } = missionState;
+  const selectedEntry = run.entries[selectedIndex];
 
   return (
-    <div className="ledger" data-screen-label="Retained V0 Run — Evidence Ledger">
-      <StatusBand mission={retainedRun.mission} />
-      {introVisible && <Orientation copy={retainedRun.mission.orientation} onDismiss={() => setIntroVisible(false)} />}
+    <div className="ledger" data-screen-label="Nightwatch — Verified Mission Ledger">
+      <StatusBand mission={run.mission} />
+      {introVisible && <Orientation copy={run.mission.orientation} onDismiss={() => setIntroVisible(false)} />}
       <div className="workspace">
-        <EvidenceLog mission={retainedRun.mission} entries={retainedRun.entries} selectedIndex={selectedIndex} onSelect={setSelectedIndex} />
-        <EvidenceDetail entry={selectedEntry} index={selectedIndex} total={retainedRun.entries.length} />
+        <EvidenceLog mission={run.mission} entries={run.entries} selectedIndex={selectedIndex} onSelect={setSelectedIndex} />
+        <EvidenceDetail entry={selectedEntry} index={selectedIndex} total={run.entries.length} />
       </div>
     </div>
   );
