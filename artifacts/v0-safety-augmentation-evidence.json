@@ -1,0 +1,259 @@
+{
+  "base_sha256": "18a33dfd5c543920bae70c37267c78d0b9db794b90abbf963686297e6c55c27a",
+  "generated_examples": 32,
+  "generated_rows": [
+    {
+      "generation_group": "confirmed_total_outage",
+      "label": "page_now",
+      "prompt": "Core authentication cluster auth-prod-01 is completely unresponsive across all availability zones, dropping 100% of user login requests and blocking all customer access nationwide.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "100% of login requests are dropping across all availability zones, confirming a total system outage requiring immediate paging."
+    },
+    {
+      "generation_group": "confirmed_total_outage",
+      "label": "page_now",
+      "prompt": "Primary edge router rtr-core-east is down; BGP session dropped and fallback link failed, resulting in complete network blackout for regional data center us-east-4.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "The failure of both primary and fallback links caused a confirmed complete network blackout for an entire regional data center."
+    },
+    {
+      "generation_group": "confirmed_total_outage",
+      "label": "page_now",
+      "prompt": "Main transactional database cluster pg-db-main experienced primary drive failure and secondary sync failure, leaving all write and read traffic failing with connection refused.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Simultaneous primary and secondary database failures resulted in complete unavailability of read/write operations."
+    },
+    {
+      "generation_group": "confirmed_total_outage",
+      "label": "page_now",
+      "prompt": "Global payment gateway connector service svc-pay-gate is returning HTTP 500 on 100% of incoming checkout transactions across all tenant domains.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "100% failure rate on checkout transactions across all tenants confirms total outage of the payment processing service."
+    },
+    {
+      "generation_group": "confirmed_total_outage",
+      "label": "page_now",
+      "prompt": "Public DNS primary authoritative servers ns1 through ns4 are failing health checks, completely preventing domain name resolution for all customer endpoints.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Failure of all authoritative DNS servers prevents domain resolution globally, constituting a total service outage."
+    },
+    {
+      "generation_group": "confirmed_total_outage",
+      "label": "page_now",
+      "prompt": "Kubernetes ingress controller ingress-prod-01 crashed completely with Kernel Panic, causing total service unreachability for all hosted microservices.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Ingress controller kernel panic resulted in total unreachability across all hosted services."
+    },
+    {
+      "generation_group": "confirmed_severe_customer_harm",
+      "label": "page_now",
+      "prompt": "Automated pharmacy prescription dispensing queue executed duplicate order events, causing 450 patients to be over-dispensed lethal dosages of insulin.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Over-dispensation of lethal drug dosages to 450 patients represents direct, severe physical harm requiring immediate emergency response."
+    },
+    {
+      "generation_group": "confirmed_severe_customer_harm",
+      "label": "page_now",
+      "prompt": "Hospital telemetry monitor controller stopped broadcasting cardiac alarm signals for ICU ward 3, leaving 12 critical patients unmonitored for over 40 minutes.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Unmonitored cardiac signals in an ICU setting present immediate, high-severity life safety risk to critical patients."
+    },
+    {
+      "generation_group": "confirmed_severe_customer_harm",
+      "label": "page_now",
+      "prompt": "Aviation flight dispatch engine calculated invalid fuel payloads due to zero-division error, forcing three airborne commercial flights to declare emergency low-fuel diversions.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Incorrect fuel calculations forced airborne commercial flights into emergency low-fuel diversions, presenting acute safety harm."
+    },
+    {
+      "generation_group": "confirmed_severe_customer_harm",
+      "label": "page_now",
+      "prompt": "Emergency response 911 dispatch routing service dropped 1,200 incoming emergency calls over the last 15 minutes due to unhandled SIP gateway exception.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Dropping 1,200 active 911 emergency calls directly compromises life-safety critical public infrastructure."
+    },
+    {
+      "generation_group": "confirmed_severe_customer_harm",
+      "label": "page_now",
+      "prompt": "Industrial chemical mixing controller safety interlock overridden by faulty firmware update, resulting in toxic gas release at manufacturing plant site B.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "A toxic gas release caused by safety override demonstrates immediate operational and physical safety impact."
+    },
+    {
+      "generation_group": "confirmed_severe_customer_harm",
+      "label": "page_now",
+      "prompt": "Automated trading execution platform submitted inverted buy and sell orders, wiping out $14M from customer margin accounts within a 3-minute window.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Immediate loss of $14M in customer funds from execution errors constitutes severe financial customer harm."
+    },
+    {
+      "generation_group": "confirmed_data_corruption",
+      "label": "page_now",
+      "prompt": "Database migration script db-mig-883 overwrote primary key tables with null values across 85,000 customer accounts, permanently corrupting billing records.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Overwriting primary keys with null values caused confirmed, permanent data corruption across 85,000 billing records."
+    },
+    {
+      "generation_group": "confirmed_data_corruption",
+      "label": "page_now",
+      "prompt": "SAN storage array san-node-04 corrupted file allocation tables during disk rebuilding, corrupting all raw medical imaging files stored since 02:00 UTC.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Corrupted file allocation tables led to irreversible corruption of stored medical imaging files."
+    },
+    {
+      "generation_group": "confirmed_data_corruption",
+      "label": "page_now",
+      "prompt": "Data ingestion pipeline stream-prod-02 corrupted UTF-8 encodings into invalid bytes across all customer CRM records, corrupting all stored names and contact fields.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Encoding corruption directly damaged string fields across all customer CRM records."
+    },
+    {
+      "generation_group": "confirmed_data_corruption",
+      "label": "page_now",
+      "prompt": "Distributed object store block-store-09 truncated object payloads to 0 bytes during background scrub, unrecoverably destroying 4TB of user uploads.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Truncation of object payloads to zero bytes resulted in confirmed, unrecoverable destruction of user data."
+    },
+    {
+      "generation_group": "confirmed_data_corruption",
+      "label": "page_now",
+      "prompt": "Customer inventory database sync bug applied randomized decrement operations, corrupting stock count records for 12,000 retail merchants.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Randomized state modification caused widespread database corruption of merchant inventory counts."
+    },
+    {
+      "generation_group": "confirmed_data_corruption",
+      "label": "page_now",
+      "prompt": "Financial ledger processor ledger-svc applied incorrect cryptographic salt during hash calculation, permanently corrupting audit log chains across all banking ledgers.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Invalid cryptographic salting broke audit chain integrity, permanently corrupting financial ledgers."
+    },
+    {
+      "generation_group": "confirmed_account_compromise",
+      "label": "page_now",
+      "prompt": "Security logs confirm unauthorized root access via exposed API secret on auth-mgmt-01, with attacker actively exporting customer password hashes and PII.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Confirmed unauthorized root access with active exfiltration of credentials and PII demonstrates severe account compromise."
+    },
+    {
+      "generation_group": "confirmed_account_compromise",
+      "label": "page_now",
+      "prompt": "Session token generation service generated static predictable JWT tokens, allowing active session hijacking and confirmed takeover of 1,200 enterprise user accounts.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Predictable token generation led to confirmed account takeover of 1,200 enterprise accounts."
+    },
+    {
+      "generation_group": "confirmed_account_compromise",
+      "label": "page_now",
+      "prompt": "Exposed S3 bucket permissions allowed public unauthorized extraction of 500,000 unencrypted customer identity documents and social security numbers.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Unauthorized extraction of sensitive identity documents and SSNs confirms active breach of customer identity data."
+    },
+    {
+      "generation_group": "confirmed_account_compromise",
+      "label": "page_now",
+      "prompt": "Credential stuffing attack bypassed rate limiter via IP spoofing and successfully compromised 4,500 active customer user accounts within 20 minutes.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Successful compromise of 4,500 accounts via credential stuffing confirms major security breach."
+    },
+    {
+      "generation_group": "confirmed_account_compromise",
+      "label": "page_now",
+      "prompt": "Malicious administrative API key created from breached workstation executed bulk account takeover commands on corporate administrator accounts.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Unauthorized administrative API key usage executing takeover commands confirms direct system administrator compromise."
+    },
+    {
+      "generation_group": "confirmed_account_compromise",
+      "label": "page_now",
+      "prompt": "Database auditor detected unauthorized SQL injection exploitation dumping plaintext credit card data and personal addresses to external IP 198.51.100.44.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Exploitation of SQL injection exfiltrating plaintext financial and personal data confirms active system compromise."
+    },
+    {
+      "generation_group": "ambiguous_multi_signal_risk",
+      "label": "investigate",
+      "prompt": "Latency on order-processing service increased from 45ms to 850ms alongside elevated CPU utilization on node-prod-08, but error rates remain below 0.1% threshold.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Elevated latency and CPU usage present operational performance risk, but error rates remain low and no failure is confirmed."
+    },
+    {
+      "generation_group": "ambiguous_multi_signal_risk",
+      "label": "investigate",
+      "prompt": "Spike in API rate limiting errors observed for external partner endpoints concurrent with minor queue depth buildup on event bus topic trade-events.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Correlated rate limiting and queue depth increases present potential bottleneck risk requiring investigation without proven downtime."
+    },
+    {
+      "generation_group": "ambiguous_multi_signal_risk",
+      "label": "investigate",
+      "prompt": "Memory usage on search-index-03 reached 88% while GC pause duration doubled, though search request throughput and user latency stay within SLA limits.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Increased resource utilization and GC pauses signal resource pressure, but user-facing metrics currently meet SLA standards."
+    },
+    {
+      "generation_group": "ambiguous_multi_signal_risk",
+      "label": "investigate",
+      "prompt": "Intermittent TCP retransmissions detected between web tier and caching layer web-cache-02, accompanied by slight increase in cache miss rates.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Transport-level retransmissions and minor cache miss rate increases represent potential risk requiring diagnosis before impact worsens."
+    },
+    {
+      "generation_group": "verified_resolved_or_test",
+      "label": "defer",
+      "prompt": "Scheduled synthetic traffic test load-gen-suite completed successfully on staging cluster stage-east; all injected test alerts auto-resolved.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Explicitly identified as a completed synthetic test on staging where all alerts have auto-resolved."
+    },
+    {
+      "generation_group": "verified_resolved_or_test",
+      "label": "defer",
+      "prompt": "Transient network drop on backup link wan-opt-02 self-corrected after 12 seconds; route converged and 0 packets were dropped on primary link.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "The transient drop self-corrected within seconds with verified zero packet loss on the primary path."
+    },
+    {
+      "generation_group": "verified_resolved_or_test",
+      "label": "defer",
+      "prompt": "Disk space warning on temp directory /tmp/build-cache cleared automatically following scheduled cleanup cron job at 04:00 UTC.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Disk warning was automatically resolved by a scheduled cleanup task without operational impact."
+    },
+    {
+      "generation_group": "verified_resolved_or_test",
+      "label": "defer",
+      "prompt": "Failover test executed in planned maintenance window for replica db-standby-02 completed; cluster status returned to nominal state.",
+      "teacher_model": "gemini-3.6-flash",
+      "teacher_rationale": "Planned maintenance test completed successfully and cluster status verified nominal."
+    }
+  ],
+  "generation_plan": {
+    "defer": {
+      "verified_resolved_or_test": 4
+    },
+    "investigate": {
+      "ambiguous_multi_signal_risk": 4
+    },
+    "page_now": {
+      "confirmed_account_compromise": 6,
+      "confirmed_data_corruption": 6,
+      "confirmed_severe_customer_harm": 6,
+      "confirmed_total_outage": 6
+    }
+  },
+  "maximum_similarity": {
+    "development": {
+      "curriculum_index": 4,
+      "eval_case_id": "dev-regression-041",
+      "token_jaccard": 0.25
+    },
+    "frozen": {
+      "curriculum_index": 4,
+      "eval_case_id": "safety-002",
+      "token_jaccard": 0.222222
+    }
+  },
+  "output_sha256": "1395040c5f8a6c94e5d9274c8c55d56ffc5c1619670d8359c09b8b2dcf71c11c",
+  "teacher_model": "gemini-3.6-flash",
+  "total_examples": 272
+}
