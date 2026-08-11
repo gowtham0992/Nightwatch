@@ -6,7 +6,7 @@ Nightwatch is an autonomous release guardian for small production models. Gemini
 
 This project targets **The Taskmaster** track: Nightwatch takes an entire model-repair workflow from observed failure to a promoted or rejected candidate without hand-holding.
 
-![Nightwatch target architecture](docs/images/hb3so.png)
+![Nightwatch deployed architecture](docs/images/nightwatch-architecture.png)
 
 ## What works now
 

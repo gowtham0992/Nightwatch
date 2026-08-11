@@ -10,7 +10,7 @@ The application exposes no direct Firestore writes. The private trigger binds ea
 
 The control service accepts an allowlisted mission ID, verifies at most seven lifecycle entries through the journal contract, and returns either the complete chain or a fail-closed error. It lazily creates Google Cloud clients so its shallow health endpoint does not amplify dependency failures. Both Cloud Run services scale to zero. The control service is capped at two instances; the single-concurrency worker is capped at one.
 
-![Nightwatch target architecture](images/hb3so.png)
+![Nightwatch deployed architecture](images/nightwatch-architecture.png)
 
 ## Capability boundaries
 
