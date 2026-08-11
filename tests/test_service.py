@@ -222,6 +222,42 @@ def test_operator_can_queue_idempotent_verification_of_current_head(web_root: Pa
     assert queue.calls == [("mission-001", "b" * 64, "operator:request-001")]
 
 
+def test_duplicate_verification_reports_already_accepted(web_root: Path) -> None:
+    entry = JournalEntry(
+        cycle_id="mission-001",
+        stage=Stage.CREATED,
+        timestamp="2026-08-11T00:00:00Z",
+        payload={},
+        previous_hash=GENESIS_HASH,
+        entry_hash="b" * 64,
+    )
+    queue = StubQueue()
+
+    def duplicate(*_args: str) -> ScheduledVerification:
+        return ScheduledVerification(
+            "projects/p/locations/l/queues/q/tasks/verify-" + "c" * 40,
+            "verify-" + "c" * 40,
+            True,
+        )
+
+    queue.enqueue_verification = duplicate  # type: ignore[method-assign]
+    client = create_app(
+        StubJournal([entry]),
+        task_queue=queue,
+        static_root=web_root,
+    ).test_client()
+
+    response = client.post(
+        "/api/missions/mission-001/verifications",
+        headers={"Idempotency-Key": "operator:request-001"},
+        json={"expected_head_hash": "b" * 64},
+    )
+
+    assert response.status_code == 202
+    assert response.json["duplicate"] is True
+    assert response.json["status"] == "already_accepted"
+
+
 def test_verification_trigger_refuses_stale_head_before_enqueue(web_root: Path) -> None:
     entry = JournalEntry(
         cycle_id="mission-001",

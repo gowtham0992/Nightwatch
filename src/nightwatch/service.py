@@ -217,7 +217,7 @@ def create_app(
                 "expected_head_hash": entries[-1].entry_hash,
                 "verification_id": scheduled.verification_id,
                 "duplicate": scheduled.duplicate,
-                "status": "queued",
+                "status": "already_accepted" if scheduled.duplicate else "queued",
             }
         )
         response.status_code = 202
