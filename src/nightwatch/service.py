@@ -233,7 +233,7 @@ def create_app(
         if (
             not isinstance(body, dict)
             or set(body) != required
-            or not task_name.endswith(f"/tasks/{body.get('verification_id', '')}")
+            or task_name.rsplit("/", 1)[-1] != body.get("verification_id")
         ):
             return _error("invalid_task", "The task envelope is invalid.", 400)
         try:

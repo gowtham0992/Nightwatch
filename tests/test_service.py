@@ -284,7 +284,7 @@ def test_worker_requires_cloud_tasks_envelope_and_records_receipt(
     invalid = client.post("/internal/tasks/verify-mission", json=body)
     response = client.post(
         "/internal/tasks/verify-mission",
-        headers={"X-CloudTasks-TaskName": f"projects/p/locations/l/queues/q/tasks/{receipt_id}"},
+        headers={"X-CloudTasks-TaskName": receipt_id},
         json=body,
     )
 
