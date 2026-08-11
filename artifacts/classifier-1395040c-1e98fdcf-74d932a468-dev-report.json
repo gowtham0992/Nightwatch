@@ -1,0 +1,201 @@
+{
+  "artifact_name": "classifier-1395040c-1e98fdcf-74d932a468",
+  "config": {
+    "epochs": 3.0,
+    "learning_rate": 0.001,
+    "pipeline_version": 2,
+    "rank": 8,
+    "seed": 20260809
+  },
+  "curriculum_sha256": "1395040c5f8a6c94e5d9274c8c55d56ffc5c1619670d8359c09b8b2dcf71c11c",
+  "dev_assessment": {
+    "accepted": false,
+    "reasons": [
+      "safety accuracy 0.833 is below 0.900"
+    ]
+  },
+  "dev_evaluation": {
+    "critical_misses": [],
+    "invalid_case_ids": [],
+    "label_recall": {
+      "regression": {
+        "defer": {
+          "accuracy": 0.7142857142857143,
+          "correct": 20,
+          "total": 28
+        },
+        "investigate": {
+          "accuracy": 0.8181818181818182,
+          "correct": 18,
+          "total": 22
+        },
+        "page_now": {
+          "accuracy": 0.8666666666666667,
+          "correct": 26,
+          "total": 30
+        }
+      },
+      "safety": {
+        "defer": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        },
+        "investigate": {
+          "accuracy": 0.6666666666666666,
+          "correct": 2,
+          "total": 3
+        },
+        "page_now": {
+          "accuracy": 0.8518518518518519,
+          "correct": 23,
+          "total": 27
+        }
+      },
+      "target": {
+        "defer": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        },
+        "investigate": {
+          "accuracy": 1.0,
+          "correct": 11,
+          "total": 11
+        },
+        "page_now": {
+          "accuracy": 0.27586206896551724,
+          "correct": 8,
+          "total": 29
+        }
+      }
+    },
+    "model_id": "classifier-1395040c-1e98fdcf-74d932a468",
+    "overall_accuracy": 0.72,
+    "regression_false_page": {
+      "count": 5,
+      "rate": 0.1,
+      "total": 50
+    },
+    "scores": {
+      "regression": {
+        "accuracy": 0.8,
+        "correct": 64,
+        "total": 80
+      },
+      "safety": {
+        "accuracy": 0.8333333333333334,
+        "correct": 25,
+        "total": 30
+      },
+      "target": {
+        "accuracy": 0.475,
+        "correct": 19,
+        "total": 40
+      }
+    }
+  },
+  "dev_sha256": "1e98fdcf7babd8038320ff07039fcac0a6994eebd28da3209db7afc534ec4d49",
+  "training": {
+    "curriculum_sha256": "1395040c5f8a6c94e5d9274c8c55d56ffc5c1619670d8359c09b8b2dcf71c11c",
+    "dev_metrics": {
+      "epoch": 3.0,
+      "eval_accuracy": 0.7133333333333334,
+      "eval_loss": 1.2746875286102295,
+      "eval_macro_f1": 0.7097432318748568,
+      "eval_runtime": 0.6848,
+      "eval_samples_per_second": 219.033,
+      "eval_steps_per_second": 14.602
+    },
+    "dev_sha256": "1e98fdcf7babd8038320ff07039fcac0a6994eebd28da3209db7afc534ec4d49",
+    "epochs": 3.0,
+    "examples": 272,
+    "learning_rate": 0.001,
+    "model_id": "google/gemma-3-270m-it",
+    "model_revision": "ac82b4e820549b854eebf28ce6dedaf9fdfa17b3",
+    "pipeline_version": 2,
+    "rank": 8,
+    "seed": 20260809,
+    "train_runtime": 20.2654,
+    "trainable_parameters": {
+      "lora": 368640,
+      "names": [
+        "base_model.model.model.layers.0.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.0.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.0.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.0.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.1.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.1.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.1.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.1.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.2.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.2.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.2.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.2.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.3.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.3.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.3.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.3.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.4.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.4.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.4.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.4.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.5.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.5.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.5.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.5.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.6.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.6.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.6.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.6.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.7.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.7.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.7.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.7.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.8.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.8.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.8.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.8.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.9.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.9.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.9.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.9.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.10.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.10.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.10.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.10.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.11.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.11.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.11.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.11.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.12.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.12.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.12.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.12.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.13.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.13.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.13.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.13.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.14.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.14.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.14.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.14.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.15.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.15.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.15.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.15.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.16.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.16.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.16.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.16.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.model.layers.17.self_attn.q_proj.lora_A.default.weight",
+        "base_model.model.model.layers.17.self_attn.q_proj.lora_B.default.weight",
+        "base_model.model.model.layers.17.self_attn.v_proj.lora_A.default.weight",
+        "base_model.model.model.layers.17.self_attn.v_proj.lora_B.default.weight",
+        "base_model.model.score.modules_to_save.default.weight"
+      ],
+      "score_head": 1920,
+      "total": 370560
+    }
+  }
+}

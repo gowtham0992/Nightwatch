@@ -9,6 +9,8 @@ artifacts/*
 !artifacts/v0-18a33dfd5c54-seed-20260809-report.json
 !artifacts/v0-safety-augmented-curriculum.jsonl
 !artifacts/v0-safety-augmentation-evidence.json
+!artifacts/classifier-1395040c-1e98fdcf-74d932a468-dev-predictions.jsonl
+!artifacts/classifier-1395040c-1e98fdcf-74d932a468-dev-report.json
 web/node_modules/
 web/dist/
 web/coverage/
