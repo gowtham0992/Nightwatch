@@ -68,7 +68,6 @@ class StubVerifier:
             cycle_id,
             expected_head_hash,
             1,
-            "2026-08-11T00:00:00Z",
         )
 
 

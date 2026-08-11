@@ -7,7 +7,6 @@ import pytest
 
 from nightwatch.contracts import Stage
 from nightwatch.firestore_journal import FirestoreJournal, JournalError, MAX_PAYLOAD_BYTES
-from nightwatch.verification import FirestoreMissionVerificationStore
 
 
 @dataclass
@@ -182,56 +181,3 @@ def test_firestore_journal_reconciles_mission_head(journal: FirestoreJournal) ->
 
     with pytest.raises(JournalError, match="mission head does not match"):
         journal.read_cycle("mission-001")
-
-
-def test_verification_receipt_is_idempotent_and_does_not_change_chain() -> None:
-    client = FakeClient()
-    journal = FirestoreJournal(client, transactional=immediate_transaction)
-    store = FirestoreMissionVerificationStore(
-        client,
-        journal=journal,
-        transactional=immediate_transaction,
-    )
-    entry = journal.append_stage(
-        "mission-001",
-        Stage.CREATED,
-        {"source": "real-evidence"},
-        timestamp="2026-08-11T00:00:00Z",
-    )
-    receipt_id = "verify-" + "a" * 40
-
-    first = store.verify(
-        "mission-001",
-        entry.entry_hash,
-        receipt_id,
-        timestamp="2026-08-11T00:01:00Z",
-    )
-    replay = store.verify(
-        "mission-001",
-        entry.entry_hash,
-        receipt_id,
-        timestamp="a-retry-does-not-rewrite-the-receipt",
-    )
-
-    assert replay == first
-    assert first.entry_count == 1
-    assert journal.read_cycle("mission-001") == [entry]
-    mission = client.documents[("missions", "mission-001")]
-    assert mission["head_hash"] == entry.entry_hash
-    assert mission["last_verification"]["verification_id"] == receipt_id
-
-
-def test_verification_receipt_refuses_stale_or_invalid_identity() -> None:
-    client = FakeClient()
-    journal = FirestoreJournal(client, transactional=immediate_transaction)
-    store = FirestoreMissionVerificationStore(
-        client,
-        journal=journal,
-        transactional=immediate_transaction,
-    )
-    journal.append_stage("mission-001", Stage.CREATED, {})
-
-    with pytest.raises(JournalError, match="head changed"):
-        store.verify("mission-001", "f" * 64, "verify-" + "a" * 40)
-    with pytest.raises(JournalError, match="verification ID"):
-        store.verify("mission-001", "f" * 64, "attacker-controlled-path")

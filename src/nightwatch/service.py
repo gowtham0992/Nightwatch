@@ -11,7 +11,7 @@ from google.auth.exceptions import GoogleAuthError
 
 from nightwatch.firestore_journal import FirestoreJournal, validate_cycle_id
 from nightwatch.journal import ALLOWED_TRANSITIONS, JournalEntry, JournalError
-from nightwatch.verification import FirestoreMissionVerificationStore, VerificationReceipt
+from nightwatch.verification import GCSMissionVerificationStore, VerificationReceipt
 
 
 class JournalReader(Protocol):
@@ -106,8 +106,12 @@ def create_app(
         if verifier is None:
             with verifier_lock:
                 if verifier is None:
-                    verifier = FirestoreMissionVerificationStore.from_default(
-                        project=os.environ.get("GOOGLE_CLOUD_PROJECT")
+                    bucket_name = os.environ.get("NIGHTWATCH_RECEIPTS_BUCKET")
+                    if not bucket_name:
+                        raise RuntimeError("verification receipt bucket is not configured")
+                    verifier = GCSMissionVerificationStore.from_default(
+                        project=os.environ.get("GOOGLE_CLOUD_PROJECT"),
+                        bucket_name=bucket_name,
                     )
         return verifier
 
@@ -245,7 +249,7 @@ def create_app(
                 "The mission could not be verified against the requested head.",
                 409,
             )
-        except (GoogleAPICallError, GoogleAuthError, RetryError):
+        except (GoogleAPICallError, GoogleAuthError, RetryError, RuntimeError):
             app.logger.exception("mission verification dependency unavailable")
             return _error(
                 "dependency_unavailable",

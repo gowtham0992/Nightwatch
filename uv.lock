@@ -2301,6 +2301,7 @@ experiment = [
 service = [
     { name = "flask" },
     { name = "google-cloud-firestore" },
+    { name = "google-cloud-storage" },
     { name = "google-cloud-tasks" },
     { name = "gunicorn" },
 ]
@@ -2322,6 +2323,7 @@ requires-dist = [
     { name = "google-cloud-firestore", marker = "extra == 'cloud'", specifier = ">=2.21,<3" },
     { name = "google-cloud-firestore", marker = "extra == 'service'", specifier = ">=2.21,<3" },
     { name = "google-cloud-storage", marker = "extra == 'cloud'", specifier = ">=3.3,<4" },
+    { name = "google-cloud-storage", marker = "extra == 'service'", specifier = ">=3.3,<4" },
     { name = "google-cloud-tasks", marker = "extra == 'cloud'", specifier = ">=2.20,<3" },
     { name = "google-cloud-tasks", marker = "extra == 'service'", specifier = ">=2.20,<3" },
     { name = "google-genai", marker = "extra == 'agent'", specifier = ">=1.52,<2" },
