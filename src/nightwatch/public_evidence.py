@@ -11,7 +11,7 @@ from nightwatch.firestore_journal import MAX_MISSION_ENTRIES, validate_cycle_id
 from nightwatch.journal import ALLOWED_TRANSITIONS, GENESIS_HASH, JournalEntry, JournalError
 
 PUBLIC_MISSION_ID = "nightwatch-v2-qualification"
-PUBLIC_IDEMPOTENCY_KEY = "public:nightwatch-v2-proof"
+PUBLIC_IDEMPOTENCY_KEY = "public:nightwatch-v2-proof:isolated-v1"
 _HASH = re.compile(r"^[a-f0-9]{64}$")
 _FORBIDDEN_KEYS = {
     "artifact_name",

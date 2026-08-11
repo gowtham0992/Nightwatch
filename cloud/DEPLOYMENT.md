@@ -52,7 +52,7 @@ gcloud artifacts docker images describe "${IMAGE}" \
 
 Deploy only an immutable `IMAGE@sha256:...` reference. Preserve the existing service accounts, min/max instance limits, concurrency, timeouts, queue configuration, and private IAM policies shown above.
 
-The public service uses the same immutable image with `NIGHTWATCH_PUBLIC_MODE=1`. Its runtime identity may enqueue only to `nightwatch-public-verifications`, attach only `nightwatch-public-invoker`, and read only the isolated public-proof receipt bucket. Do not grant it a Firestore role. The private public-proof verifier runs with both `NIGHTWATCH_WORKER_MODE=1` and `NIGHTWATCH_PUBLIC_WORKER_MODE=1`; it refuses every task except the exact bundled mission, head, and content-derived receipt ID. Public mode serves only `/app/public-mission.json`, replaces caller idempotency with `public:nightwatch-v2-proof`, and permits only the matching receipt ID.
+The public service uses the same immutable image with `NIGHTWATCH_PUBLIC_MODE=1`. Its runtime identity may enqueue only to `nightwatch-public-verifications`, attach only `nightwatch-public-invoker`, and read only the isolated public-proof receipt bucket. Do not grant it a Firestore role. The private public-proof verifier runs with both `NIGHTWATCH_WORKER_MODE=1` and `NIGHTWATCH_PUBLIC_WORKER_MODE=1`; it refuses every task except the exact bundled mission, head, and content-derived receipt ID. Public mode serves only `/app/public-mission.json`, replaces caller idempotency with `public:nightwatch-v2-proof:isolated-v1`, and permits only the matching receipt ID.
 
 ## Roll back
 
