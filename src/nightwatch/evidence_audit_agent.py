@@ -6,7 +6,7 @@ import hashlib
 import json
 from collections import Counter
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, cast
 
 from nightwatch.datasets import ALLOWED_LABELS
 from nightwatch.evidence_audit import BlindAudit, reconcile_machine_judgments
@@ -75,6 +75,59 @@ def validate_batch_judgments(
             f"batch judgment coverage mismatch: expected {len(expected_set)}, received {len(by_id)}"
         )
     return [by_id[audit_id] for audit_id in expected_ids]
+
+
+def build_adjudication_packet(
+    packet: Iterable[dict[str, str]],
+    reconciled: Iterable[dict[str, object]],
+) -> list[dict[str, object]]:
+    prompts: dict[str, str] = {}
+    for index, row in enumerate(packet, start=1):
+        if set(row) != {"audit_id", "prompt"}:
+            raise ValueError(f"blind packet row {index}: unexpected reviewer-visible field")
+        audit_id = row.get("audit_id")
+        prompt = row.get("prompt")
+        if not isinstance(audit_id, str) or not isinstance(prompt, str):
+            raise ValueError(f"blind packet row {index}: audit_id and prompt must be strings")
+        if audit_id in prompts:
+            raise ValueError(f"duplicate blind packet audit ID: {audit_id}")
+        prompts[audit_id] = prompt
+
+    decisions: list[dict[str, object]] = []
+    for index, row in enumerate(reconciled, start=1):
+        if row.get("agreement") is True:
+            continue
+        if row.get("agreement") is not False:
+            raise ValueError(f"reconciliation row {index}: agreement must be boolean")
+        audit_id = row.get("audit_id")
+        if not isinstance(audit_id, str) or audit_id not in prompts:
+            raise ValueError(f"reconciliation row {index}: unknown audit ID {audit_id!r}")
+        decisions.append(
+            {
+                "audit_id": audit_id,
+                "source": row.get("source"),
+                "case_id": row.get("case_id"),
+                "original_suite": row.get("original_suite"),
+                "safety_critical": row.get("safety_critical"),
+                "prompt": prompts[audit_id],
+                "retained_label": row.get("original_label"),
+                "machine_label": row.get("machine_label"),
+                "machine_rationale": row.get("machine_rationale"),
+                "machine_ambiguous": row.get("machine_ambiguous"),
+                "adjudicated_label": None,
+                "adjudicator_rationale": None,
+                "adjudicator": None,
+                "adjudication_status": "pending",
+            }
+        )
+    return sorted(
+        decisions,
+        key=lambda row: (
+            str(row["source"]),
+            str(row["original_suite"]),
+            str(row["case_id"]),
+        ),
+    )
 
 
 async def _judge_batch(
@@ -208,8 +261,10 @@ async def run_machine_audit(
     output_dir.mkdir(parents=True, exist_ok=True)
     judgment_path = output_dir / "machine-judgments.jsonl"
     reconciliation_path = output_dir / "reconciliation.jsonl"
+    adjudication_path = output_dir / "adjudication-packet.jsonl"
     _write_jsonl(judgment_path, judgments)
     _write_jsonl(reconciliation_path, reconciled)
+    _write_jsonl(adjudication_path, build_adjudication_packet(packet, reconciled))
 
     disagreements = [row for row in reconciled if not row["agreement"]]
     ambiguity_count = sum(bool(row["machine_ambiguous"]) for row in reconciled)
@@ -246,6 +301,7 @@ async def run_machine_audit(
         },
         "machine_judgments_sha256": _sha256(judgment_path),
         "reconciliation_sha256": _sha256(reconciliation_path),
+        "adjudication_packet_sha256": _sha256(adjudication_path),
         "adjudication_complete": False,
         "evidence_v2_exists": False,
     }
@@ -273,7 +329,30 @@ def main() -> None:
         default=Path("artifacts/evidence-audit-v1"),
     )
     parser.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE)
+    parser.add_argument(
+        "--adjudication-only",
+        action="store_true",
+        help="Build the pending adjudication packet from existing reconciliation output",
+    )
     args = parser.parse_args()
+    if args.adjudication_only:
+        raw_packet = _read_jsonl(args.packet)
+        packet = cast(list[dict[str, str]], raw_packet)
+        reconciled = _read_jsonl(args.output_dir / "reconciliation.jsonl")
+        adjudication_path = args.output_dir / "adjudication-packet.jsonl"
+        _write_jsonl(adjudication_path, build_adjudication_packet(packet, reconciled))
+        print(
+            json.dumps(
+                {
+                    "adjudication_packet": str(adjudication_path),
+                    "sha256": _sha256(adjudication_path),
+                    "pending_count": sum(row.get("agreement") is False for row in reconciled),
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return
     summary = asyncio.run(
         run_machine_audit(
             args.packet,
