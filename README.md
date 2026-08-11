@@ -12,6 +12,8 @@ This project targets **The Taskmaster** track: Nightwatch takes an entire model-
 
 One real qualification mission is deployed on Google Cloud. Gemini 3.6 Flash and Google ADK generated a 32-example safety intervention; Modal trained pinned Gemma 3 270M and 1B candidates; a prediction-blind audit and independent adjudication produced policy v2; deterministic code refused the 270M candidate and qualified the 1B candidate without retraining after adjudication.
 
+**Hosted judge experience:** [open the public redacted proof](https://nightwatch-public-w3a6oefsma-uc.a.run.app/).
+
 The qualified 1B candidate reached 86.25% regression accuracy, 93.3% safety accuracy, 70% target accuracy, and zero critical misses. It is **qualified, not deployed**, and the result is specific to the checked-in policy-v2 evidence—not a claim of universal model safety.
 
 The six lifecycle stages are stored in Firestore as a transaction-safe SHA-256 chain. An IAM-protected Cloud Run service verifies and serves that chain to the operator UI. A separate public mode serves a checked-in, allowlisted redaction of that exact mission: it has no Firestore permission, exposes one mission and one content-derived verification receipt, and can enqueue only one stable proof task. The private worker re-verifies the live Firestore head asynchronously through Cloud Tasks and writes one immutable, create-only receipt to Cloud Storage. The live proof completed with one receipt; replaying the same task identity produced no second effect.

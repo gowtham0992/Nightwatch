@@ -16,6 +16,8 @@ Nightwatch separates its private operator surface, public judge surface, and pri
 
 The canonical private control URL is `https://nightwatch-evidence-w3a6oefsma-uc.a.run.app`. Use the canonical `*.a.run.app` worker URL as both the Cloud Tasks target and OIDC audience; the alternate numeric hostname is not interchangeable for this purpose.
 
+The canonical public judge URL is `https://nightwatch-public-w3a6oefsma-uc.a.run.app`. The verified release is `7c38dba`, deployed from immutable image digest `sha256:c3a3774e8d2e0df41b1780c97ab8a5f8fc94b53dcb25a9310831f0f865da30a7`. Its final public receipt is `verify-d673364f9273799f6839145608ff28d195c13a9e` for Firestore head `7bc281853fd88a253f895165e7edc4ebc3f1bc9eafb1ddf1da99348be096323d`.
+
 ## Verify the live mission
 
 This request binds the task to the exact Firestore head. Keep the identity token in memory and change the idempotency key for a new verification intent.
