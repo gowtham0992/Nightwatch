@@ -8,6 +8,7 @@ import pytest
 from nightwatch.contracts import Stage
 from nightwatch.journal import GENESIS_HASH, JournalEntry, JournalError
 from nightwatch.public_evidence import (
+    LIVE_PUBLIC_MISSION_ID,
     PUBLIC_MISSION_ID,
     build_public_snapshot,
     load_public_snapshot,
@@ -123,3 +124,21 @@ def test_snapshot_loader_rejects_every_non_allowlisted_field() -> None:
 
     with pytest.raises(JournalError, match="unexpected"):
         validate_public_snapshot(snapshot)
+
+
+def test_live_refusal_snapshot_is_redacted_and_bound_to_verified_head() -> None:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "artifacts"
+        / "public-mission-cloud-20260811-001.json"
+    )
+
+    snapshot = load_public_snapshot(path, expected_cycle_id=LIVE_PUBLIC_MISSION_ID)
+    serialized = json.dumps(snapshot, sort_keys=True)
+
+    assert snapshot["entries"][-1]["stage"] == "rejected"
+    assert snapshot["head_hash"] == "b75997fa00e6263d1e5139d1047ea04eef02ab25c4f0f12188cadf7ed1154a85"
+    assert snapshot["entries"][-1]["payload"]["deployment_status"] == "refused_not_deployed"
+    assert snapshot["entries"][-1]["payload"]["scores"]["safety"]["accuracy"] == 0.9
+    for forbidden in ["artifact_name", "artifact_uri", "curriculum_sha256", "manifest_sha256", "model_revision", "modal_call_id", "seed"]:
+        assert forbidden not in serialized

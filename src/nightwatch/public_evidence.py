@@ -11,6 +11,8 @@ from nightwatch.firestore_journal import MAX_MISSION_ENTRIES, validate_cycle_id
 from nightwatch.journal import ALLOWED_TRANSITIONS, GENESIS_HASH, JournalEntry, JournalError
 
 PUBLIC_MISSION_ID = "nightwatch-v2-qualification"
+LIVE_PUBLIC_MISSION_ID = "nightwatch-cloud-20260811-001"
+PUBLIC_MISSION_IDS = frozenset({PUBLIC_MISSION_ID, LIVE_PUBLIC_MISSION_ID})
 PUBLIC_IDEMPOTENCY_KEY = "public:nightwatch-v2-proof:isolated-v1"
 _HASH = re.compile(r"^[a-f0-9]{64}$")
 _FORBIDDEN_KEYS = {
@@ -21,13 +23,12 @@ _FORBIDDEN_KEYS = {
     "report_sha256",
     "seed",
 }
-_PUBLIC_STAGE_SEQUENCE = (
+_PUBLIC_STAGE_PREFIX = (
     "created",
     "diagnosed",
     "curriculum_ready",
     "trained",
     "evaluated",
-    "promoted",
 )
 _ALLOWED_KEYS = {
     "accuracy",
@@ -74,6 +75,8 @@ _ALLOWED_KEYS = {
     "qualified_under",
     "regression",
     "regression_label_recall",
+    "reason_count",
+    "reasons",
     "required_safety_accuracy",
     "retrained_after_adjudication",
     "safety",
@@ -98,6 +101,15 @@ def _required(mapping: dict[str, Any], key: str) -> Any:
     if key not in mapping:
         raise JournalError(f"public projection source is missing {key}")
     return mapping[key]
+
+
+def public_idempotency_key(cycle_id: str) -> str:
+    validate_cycle_id(cycle_id)
+    if cycle_id not in PUBLIC_MISSION_IDS:
+        raise JournalError("public mission is not allowlisted")
+    if cycle_id == PUBLIC_MISSION_ID:
+        return PUBLIC_IDEMPOTENCY_KEY
+    return f"public:{cycle_id}:proof:isolated-v1"
 
 
 def _scores(attempt: dict[str, Any]) -> dict[str, Any]:
@@ -179,7 +191,7 @@ def _public_payload(entry: JournalEntry) -> dict[str, Any]:
                     "candidate": "Gemma 3 270M" if index == 0 else "Gemma 3 1B",
                     "decision": _required(attempt, "decision"),
                     "scores": _scores(attempt),
-                    "critical_miss_count": len(_required(attempt, "critical_misses")),
+                    "critical_miss_count": len(attempt.get("critical_misses", [])),
                 }
             )
         evidence = _required(payload, "evidence")
@@ -216,6 +228,15 @@ def _public_payload(entry: JournalEntry) -> dict[str, Any]:
         return {
             "public_summary": True,
             "decision": "rejected",
+            "model_id": _required(payload, "model_id"),
+            "qualified_under": _required(payload, "qualified_under"),
+            "deployment_status": _required(payload, "deployment_status"),
+            "scores": _required(payload, "scores"),
+            "regression_label_recall": _required(payload, "regression_label_recall"),
+            "critical_miss_count": len(_required(payload, "critical_misses")),
+            "invalid_prediction_count": len(_required(payload, "invalid_case_ids")),
+            "promotion_authority": _required(payload, "promotion_authority"),
+            "reasons": _required(payload, "reasons"),
             "reason_count": len(payload.get("reasons", [])),
         }
     raise JournalError(f"unsupported public stage: {entry.stage.value}")
@@ -226,8 +247,8 @@ def build_public_snapshot(
     entries: list[JournalEntry],
 ) -> dict[str, Any]:
     validate_cycle_id(cycle_id)
-    if cycle_id != PUBLIC_MISSION_ID:
-        raise JournalError("public projection only supports the retained qualification mission")
+    if cycle_id not in PUBLIC_MISSION_IDS:
+        raise JournalError("public projection mission is not allowlisted")
     if not entries or len(entries) > MAX_MISSION_ENTRIES:
         raise JournalError("public projection entry coverage is invalid")
     expected_previous = GENESIS_HASH
@@ -271,21 +292,32 @@ def _walk_public_keys(value: object) -> None:
             _walk_public_keys(child)
 
 
-def validate_public_snapshot(value: object) -> dict[str, Any]:
+def validate_public_snapshot(
+    value: object,
+    *,
+    expected_cycle_id: str | None = None,
+) -> dict[str, Any]:
     if not isinstance(value, dict) or value.get("visibility") != "public_redacted":
         raise JournalError("public snapshot envelope is malformed")
-    if value.get("cycle_id") != PUBLIC_MISSION_ID:
+    cycle_id = value.get("cycle_id")
+    if cycle_id not in PUBLIC_MISSION_IDS or (
+        expected_cycle_id is not None and cycle_id != expected_cycle_id
+    ):
         raise JournalError("public snapshot mission identity is invalid")
     entries = value.get("entries")
-    if not isinstance(entries, list) or len(entries) != len(_PUBLIC_STAGE_SEQUENCE):
+    if not isinstance(entries, list) or len(entries) != len(_PUBLIC_STAGE_PREFIX) + 1:
         raise JournalError("public snapshot entry coverage is invalid")
     if value.get("entry_count") != len(entries):
         raise JournalError("public snapshot entry count is invalid")
     expected_previous = GENESIS_HASH
-    for expected_stage, row in zip(_PUBLIC_STAGE_SEQUENCE, entries, strict=True):
+    terminal_stage = entries[-1].get("stage") if isinstance(entries[-1], dict) else None
+    if terminal_stage not in {"promoted", "rejected"}:
+        raise JournalError("public snapshot terminal stage is invalid")
+    stages = (*_PUBLIC_STAGE_PREFIX, terminal_stage)
+    for expected_stage, row in zip(stages, entries, strict=True):
         if (
             not isinstance(row, dict)
-            or row.get("cycle_id") != PUBLIC_MISSION_ID
+            or row.get("cycle_id") != cycle_id
             or row.get("stage") != expected_stage
             or row.get("previous_hash") != expected_previous
             or not isinstance(row.get("entry_hash"), str)
@@ -301,12 +333,16 @@ def validate_public_snapshot(value: object) -> dict[str, Any]:
     return value
 
 
-def load_public_snapshot(path: Path) -> dict[str, Any]:
+def load_public_snapshot(
+    path: Path,
+    *,
+    expected_cycle_id: str | None = None,
+) -> dict[str, Any]:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise JournalError("public snapshot could not be loaded") from exc
-    return validate_public_snapshot(value)
+    return validate_public_snapshot(value, expected_cycle_id=expected_cycle_id)
 
 
 def main() -> None:
@@ -315,12 +351,17 @@ def main() -> None:
     )
     parser.add_argument("--project", required=True)
     parser.add_argument("--cycle-id", default=PUBLIC_MISSION_ID)
+    parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     from nightwatch.firestore_journal import FirestoreJournal
 
     journal = FirestoreJournal.from_default(project=args.project)
     snapshot = build_public_snapshot(args.cycle_id, journal.read_cycle(args.cycle_id))
-    print(json.dumps(snapshot, indent=2, sort_keys=True))
+    rendered = json.dumps(snapshot, indent=2, sort_keys=True) + "\n"
+    if args.output is None:
+        print(rendered, end="")
+    else:
+        args.output.write_text(rendered, encoding="utf-8")
 
 
 if __name__ == "__main__":

@@ -12,7 +12,11 @@ from nightwatch.cloud_tasks import verification_id as build_verification_id
 from nightwatch.contracts import Stage
 from nightwatch.journal import GENESIS_HASH, JournalEntry, JournalError
 from nightwatch.service import create_app
-from nightwatch.public_evidence import PUBLIC_IDEMPOTENCY_KEY, PUBLIC_MISSION_ID
+from nightwatch.public_evidence import (
+    LIVE_PUBLIC_MISSION_ID,
+    PUBLIC_IDEMPOTENCY_KEY,
+    PUBLIC_MISSION_ID,
+)
 from nightwatch.verification import VerificationReceipt
 
 
@@ -470,6 +474,15 @@ def public_snapshot() -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def live_public_snapshot() -> dict[str, object]:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "artifacts"
+        / "public-mission-cloud-20260811-001.json"
+    )
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def test_public_mode_serves_only_fixed_redacted_snapshot_without_firestore(
     web_root: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -487,6 +500,29 @@ def test_public_mode_serves_only_fixed_redacted_snapshot_without_firestore(
 
     assert response.status_code == 200
     assert response.json["visibility"] == "public_redacted"
+    assert response.headers["Cache-Control"] == "public, max-age=60"
+    assert "artifact_name" not in response.get_data(as_text=True)
+    assert missing.status_code == 404
+    assert journal.calls == []
+
+
+def test_public_mode_serves_allowlisted_live_refusal_without_firestore(
+    web_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("NIGHTWATCH_PUBLIC_MODE", "1")
+    journal = StubJournal(error=AssertionError("public service must not read Firestore"))
+    client = create_app(
+        journal,
+        public_snapshot=live_public_snapshot(),
+        static_root=web_root,
+    ).test_client()
+
+    response = client.get(f"/api/missions/{LIVE_PUBLIC_MISSION_ID}")
+    missing = client.get("/api/missions/attacker-controlled-mission")
+
+    assert response.status_code == 200
+    assert response.json["entries"][-1]["stage"] == "rejected"
     assert response.headers["Cache-Control"] == "public, max-age=60"
     assert "artifact_name" not in response.get_data(as_text=True)
     assert missing.status_code == 404

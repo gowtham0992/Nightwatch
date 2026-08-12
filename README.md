@@ -2,21 +2,23 @@
 
 **AI can propose its own upgrade. It cannot approve it.**
 
-Nightwatch is an autonomous release guardian for small production models. Gemini agents diagnose a failing behavior and design a targeted curriculum, Modal trains pinned Gemma candidates, and deterministic evaluation code promotes a candidate only when it clears fixed regression and safety policy.
+Nightwatch is a release guardian for small production models. Deterministic analysis bounds a failing behavior, Gemini with Google ADK designs a targeted curriculum, Modal trains pinned Gemma candidates, and deterministic evaluation code qualifies a candidate only when it clears fixed regression and safety policy.
 
-This project targets **The Taskmaster** track: Nightwatch takes an entire model-repair workflow from observed failure to a promoted or rejected candidate without hand-holding.
+This project targets **The Taskmaster** track. One authenticated request now starts a bounded qualification mission on Google Cloud; Cloud Tasks carries it through diagnosis, Gemini curriculum design, Modal training, deterministic evaluation, and a qualified-or-refused terminal decision without further operator action. Production deployment is never authorized by this workflow.
 
 ![Nightwatch deployed architecture](docs/images/nightwatch-architecture.png)
 
 ## What works now
 
-One real qualification mission is deployed on Google Cloud. Gemini 3.6 Flash and Google ADK generated a 32-example safety intervention; Modal trained pinned Gemma 3 270M and 1B candidates; a prediction-blind audit and independent adjudication produced policy v2; deterministic code refused the 270M candidate and qualified the 1B candidate without retraining after adjudication.
+Two complementary real missions now exist. The retained qualification proves that policy v2 can qualify a candidate: Gemini 3.6 Flash and Google ADK generated a 32-example safety intervention; Modal trained pinned Gemma 3 270M and 1B candidates; and deterministic code refused the 270M candidate while qualifying the 1B candidate after a prediction-blind evidence audit.
+
+The deployed Taskmaster path proves the product runs unattended. Mission `nightwatch-cloud-20260811-001` was started once through the private control service, then advanced through six Cloud Tasks-backed stages from `00:58:16` to `01:00:01 UTC`. Gemini generated a fresh 32-example curriculum, Modal performed one pinned 270M training run, and policy v2 **refused** the candidate because regression accuracy was 73.75% and defer recall was 60%, despite safety reaching the 90% floor. Nothing was deployed. Its six-entry Firestore head is `b75997fa00e6263d1e5139d1047ea04eef02ab25c4f0f12188cadf7ed1154a85`, independently sealed by create-only verification receipt `verify-ae7b0bc76f9623af88ee36746af149ed7fc6f179`.
 
 **Hosted judge experience:** [open the public redacted proof](https://nightwatch-public-w3a6oefsma-uc.a.run.app/).
 
 The qualified 1B candidate reached 86.25% regression accuracy, 93.3% safety accuracy, 70% target accuracy, and zero critical misses. It is **qualified, not deployed**, and the result is specific to the checked-in policy-v2 evidence—not a claim of universal model safety.
 
-The six lifecycle stages are stored in Firestore as a transaction-safe SHA-256 chain. An IAM-protected Cloud Run service verifies and serves that chain to the operator UI. A separate public mode serves a checked-in, allowlisted redaction of that exact mission: it has no Firestore permission, exposes one mission and one content-derived verification receipt, and can enqueue only one stable proof task. The private worker re-verifies the live Firestore head asynchronously through Cloud Tasks and writes one immutable, create-only receipt to Cloud Storage. The live proof completed with one receipt; replaying the same task identity produced no second effect.
+Each mission's six lifecycle stages are stored in Firestore as a transaction-safe SHA-256 chain. A private control service can only enqueue the approved manifest; a separate single-concurrency worker owns Gemini, artifact, and Modal access. Every stage artifact and external-call claim is create-only, so retrying the same task returns existing evidence instead of spending again. The public service still has no Firestore, Gemini, Modal, or mission-start permission and currently serves the retained qualification's checked-in redacted proof.
 
 ## Run the evidence logbook UI
 
@@ -163,7 +165,7 @@ uv run nightwatch evaluate \
 
 ## What is still deliberately absent
 
-Nightwatch does not yet schedule nightly repair, update a production adapter pointer, or launch training from the public service. The asynchronous judge path re-verifies completed evidence; it does not pretend to retrain the model. A production pointer still requires a separately authorized promoter identity plus rollback tests.
+Nightwatch does not yet schedule nightly repair, accept arbitrary model manifests, update a production adapter pointer, or launch training from the public service. Missions are operator-authenticated and restricted to one pinned, budget-capped manifest. A production pointer still requires a separately authorized promoter identity plus rollback tests.
 
 ## Spike success and kill criteria
 

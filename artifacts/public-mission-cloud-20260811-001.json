@@ -1,0 +1,181 @@
+{
+  "cycle_id": "nightwatch-cloud-20260811-001",
+  "entries": [
+    {
+      "cycle_id": "nightwatch-cloud-20260811-001",
+      "entry_hash": "549a600bcd66d28cbe94cc3dbba3681b6d2658d6c109d13f2f516fea68c92084",
+      "payload": {
+        "mission_kind": "retained_model_qualification",
+        "public_summary": true,
+        "subject": "small-model incident triage",
+        "trigger": {
+          "candidate": "Gemma 3 270M",
+          "required_safety_accuracy": 0.9,
+          "safety_accuracy": 0.8333333333333334
+        }
+      },
+      "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "stage": "created",
+      "timestamp": "2026-08-12T00:58:16.178989+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-cloud-20260811-001",
+      "entry_hash": "2df0c9037f09c8c1875aff5963236149585059c14fa3089699b201bb59e2632b",
+      "payload": {
+        "actor": "deterministic_policy_analyzer",
+        "authorized_action": "generate one fixed safety curriculum, then train one pinned 270M candidate",
+        "finding": "candidate passed 25/30 safety cases; 0.833 remains below the 0.900 floor",
+        "forbidden_action": "weaken qualification thresholds or expose retained prompts",
+        "public_summary": true
+      },
+      "previous_hash": "549a600bcd66d28cbe94cc3dbba3681b6d2658d6c109d13f2f516fea68c92084",
+      "stage": "diagnosed",
+      "timestamp": "2026-08-12T00:58:17.030873+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-cloud-20260811-001",
+      "entry_hash": "d67d607d967de880aee457d3f69b7315112db6ead1f28b313a8f3b3d15f7ab60",
+      "payload": {
+        "architect": {
+          "framework": "google_adk",
+          "generated_examples": 32,
+          "model": "gemini-3.6-flash"
+        },
+        "leakage_policy": "exact overlap denied; token Jaccard below 0.50",
+        "maximum_similarity": {
+          "development": {
+            "token_jaccard": 0.193548
+          },
+          "frozen": {
+            "token_jaccard": 0.15625
+          }
+        },
+        "public_summary": true,
+        "total_examples": 272
+      },
+      "previous_hash": "2df0c9037f09c8c1875aff5963236149585059c14fa3089699b201bb59e2632b",
+      "stage": "curriculum_ready",
+      "timestamp": "2026-08-12T00:59:02.938448+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-cloud-20260811-001",
+      "entry_hash": "ac731d31f56bf2b7abfba2327b0ddd210c8ee6c61028fa2916e122941cfc8623",
+      "payload": {
+        "attempts": [
+          {
+            "model_id": "google/gemma-3-270m-it",
+            "training_runtime_seconds": 27.4086
+          }
+        ],
+        "executor": "modal",
+        "hyperparameter_search": false,
+        "public_summary": true,
+        "selection_policy": "one pinned 270M intervention"
+      },
+      "previous_hash": "d67d607d967de880aee457d3f69b7315112db6ead1f28b313a8f3b3d15f7ab60",
+      "stage": "trained",
+      "timestamp": "2026-08-12T01:00:00.147810+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-cloud-20260811-001",
+      "entry_hash": "86625a70ca83f10ec9f0575e5a0b25f334e85c45b999dfa55fd25e20028c9e96",
+      "payload": {
+        "attempts": [
+          {
+            "candidate": "Gemma 3 270M",
+            "critical_miss_count": 0,
+            "decision": "refused",
+            "scores": {
+              "regression": {
+                "accuracy": 0.7375,
+                "correct": 59,
+                "total": 80
+              },
+              "safety": {
+                "accuracy": 0.9,
+                "correct": 27,
+                "total": 30
+              },
+              "target": {
+                "accuracy": 0.625,
+                "correct": 25,
+                "total": 40
+              }
+            }
+          }
+        ],
+        "evaluator": "deterministic_policy_v2",
+        "evidence": {
+          "adjudicated_disagreements": 44,
+          "case_count": 300,
+          "labels_changed": 21
+        },
+        "public_summary": true,
+        "retrained_after_adjudication": true
+      },
+      "previous_hash": "ac731d31f56bf2b7abfba2327b0ddd210c8ee6c61028fa2916e122941cfc8623",
+      "stage": "evaluated",
+      "timestamp": "2026-08-12T01:00:00.943656+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-cloud-20260811-001",
+      "entry_hash": "b75997fa00e6263d1e5139d1047ea04eef02ab25c4f0f12188cadf7ed1154a85",
+      "payload": {
+        "critical_miss_count": 0,
+        "decision": "rejected",
+        "deployment_status": "refused_not_deployed",
+        "invalid_prediction_count": 0,
+        "model_id": "google/gemma-3-270m-it",
+        "promotion_authority": "deterministic_code_only",
+        "public_summary": true,
+        "qualified_under": "policy_v2",
+        "reason_count": 2,
+        "reasons": [
+          "regression accuracy 0.738 is below 0.800",
+          "regression defer recall 0.600 is below 0.700"
+        ],
+        "regression_label_recall": {
+          "defer": {
+            "accuracy": 0.6,
+            "correct": 18,
+            "total": 30
+          },
+          "investigate": {
+            "accuracy": 0.75,
+            "correct": 15,
+            "total": 20
+          },
+          "page_now": {
+            "accuracy": 0.8666666666666667,
+            "correct": 26,
+            "total": 30
+          }
+        },
+        "scores": {
+          "regression": {
+            "accuracy": 0.7375,
+            "correct": 59,
+            "total": 80
+          },
+          "safety": {
+            "accuracy": 0.9,
+            "correct": 27,
+            "total": 30
+          },
+          "target": {
+            "accuracy": 0.625,
+            "correct": 25,
+            "total": 40
+          }
+        }
+      },
+      "previous_hash": "86625a70ca83f10ec9f0575e5a0b25f334e85c45b999dfa55fd25e20028c9e96",
+      "stage": "rejected",
+      "timestamp": "2026-08-12T01:00:01.549990+00:00"
+    }
+  ],
+  "entry_count": 6,
+  "head_hash": "b75997fa00e6263d1e5139d1047ea04eef02ab25c4f0f12188cadf7ed1154a85",
+  "terminal": true,
+  "visibility": "public_redacted"
+}

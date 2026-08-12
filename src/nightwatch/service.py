@@ -12,9 +12,10 @@ from google.auth.exceptions import GoogleAuthError
 from nightwatch.firestore_journal import FirestoreJournal, validate_cycle_id
 from nightwatch.journal import ALLOWED_TRANSITIONS, JournalEntry, JournalError
 from nightwatch.public_evidence import (
-    PUBLIC_IDEMPOTENCY_KEY,
     PUBLIC_MISSION_ID,
+    PUBLIC_MISSION_IDS,
     load_public_snapshot,
+    public_idempotency_key,
     validate_public_snapshot,
 )
 from nightwatch.verification import (
@@ -92,7 +93,11 @@ def create_app(
     verifier_lock = threading.Lock()
     receipt_reader = verification_reader
     receipt_reader_lock = threading.Lock()
-    redacted_snapshot = public_snapshot
+    redacted_snapshots = (
+        {public_snapshot["cycle_id"]: public_snapshot}
+        if public_snapshot is not None and isinstance(public_snapshot.get("cycle_id"), str)
+        else {}
+    )
     redacted_snapshot_lock = threading.Lock()
 
     def get_journal() -> JournalReader:
@@ -154,20 +159,26 @@ def create_app(
                     )
         return receipt_reader
 
-    def get_public_snapshot() -> dict[str, Any]:
-        nonlocal redacted_snapshot
-        if redacted_snapshot is None:
-            with redacted_snapshot_lock:
-                if redacted_snapshot is None:
-                    redacted_snapshot = load_public_snapshot(
-                        Path(
-                            os.environ.get(
-                                "NIGHTWATCH_PUBLIC_MISSION_PATH",
-                                "/app/public-mission.json",
-                            )
+    def get_public_snapshot(cycle_id: str = PUBLIC_MISSION_ID) -> dict[str, Any]:
+        if cycle_id not in PUBLIC_MISSION_IDS:
+            raise JournalError("public mission is not allowlisted")
+        with redacted_snapshot_lock:
+            snapshot = redacted_snapshots.get(cycle_id)
+            if snapshot is None:
+                missions_dir = os.environ.get("NIGHTWATCH_PUBLIC_MISSIONS_DIR")
+                path = (
+                    Path(missions_dir) / f"{cycle_id}.json"
+                    if missions_dir
+                    else Path(
+                        os.environ.get(
+                            "NIGHTWATCH_PUBLIC_MISSION_PATH",
+                            "/app/public-mission.json",
                         )
                     )
-        return validate_public_snapshot(redacted_snapshot)
+                )
+                snapshot = load_public_snapshot(path, expected_cycle_id=cycle_id)
+                redacted_snapshots[cycle_id] = snapshot
+        return validate_public_snapshot(snapshot, expected_cycle_id=cycle_id)
 
     @app.after_request
     def secure_response(response: Response) -> Response:
@@ -182,7 +193,7 @@ def create_app(
             if (
                 public_mode
                 and request.method == "GET"
-                and request.path == f"/api/missions/{PUBLIC_MISSION_ID}"
+                and request.path.removeprefix("/api/missions/") in PUBLIC_MISSION_IDS
                 and response.status_code == 200
             ):
                 response.headers["Cache-Control"] = "public, max-age=60"
@@ -209,10 +220,10 @@ def create_app(
         except JournalError:
             return _error("invalid_cycle_id", "The mission ID is invalid.", 400)
         if public_mode:
-            if cycle_id != PUBLIC_MISSION_ID:
+            if cycle_id not in PUBLIC_MISSION_IDS:
                 return _error("mission_not_found", "No public mission exists with that ID.", 404)
             try:
-                return jsonify(get_public_snapshot())
+                return jsonify(get_public_snapshot(cycle_id))
             except JournalError:
                 app.logger.exception("public mission snapshot integrity failure")
                 return _error(
@@ -264,10 +275,10 @@ def create_app(
             )
         try:
             if public_mode:
-                if cycle_id != PUBLIC_MISSION_ID:
+                if cycle_id not in PUBLIC_MISSION_IDS:
                     return _error("mission_not_found", "No public mission exists with that ID.", 404)
-                current_head = get_public_snapshot()["head_hash"]
-                idempotency_key = PUBLIC_IDEMPOTENCY_KEY
+                current_head = get_public_snapshot(cycle_id)["head_hash"]
+                idempotency_key = public_idempotency_key(cycle_id)
             else:
                 entries = get_journal().read_cycle(cycle_id)
                 if not entries:
@@ -321,12 +332,15 @@ def create_app(
         if os.environ.get("NIGHTWATCH_PUBLIC_WORKER_MODE") == "1":
             from nightwatch.cloud_tasks import verification_id as build_verification_id
 
+            public_cycle_id = body.get("cycle_id") if isinstance(body, dict) else None
+            if public_cycle_id not in PUBLIC_MISSION_IDS:
+                return _error("invalid_task", "The task envelope is invalid.", 400)
             try:
-                public_head = get_public_snapshot()["head_hash"]
+                public_head = get_public_snapshot(public_cycle_id)["head_hash"]
                 public_verification_id = build_verification_id(
-                    PUBLIC_MISSION_ID,
+                    public_cycle_id,
                     public_head,
-                    PUBLIC_IDEMPOTENCY_KEY,
+                    public_idempotency_key(public_cycle_id),
                 )
             except JournalError:
                 app.logger.exception("public mission snapshot integrity failure")
@@ -336,7 +350,7 @@ def create_app(
                     503,
                 )
             if body != {
-                "cycle_id": PUBLIC_MISSION_ID,
+                "cycle_id": public_cycle_id,
                 "expected_head_hash": public_head,
                 "verification_id": public_verification_id,
             }:
@@ -379,10 +393,12 @@ def create_app(
             from nightwatch.cloud_tasks import verification_id as build_verification_id
 
             try:
+                if cycle_id not in PUBLIC_MISSION_IDS:
+                    raise JournalError("public mission is not allowlisted")
                 expected_id = build_verification_id(
-                    PUBLIC_MISSION_ID,
-                    get_public_snapshot()["head_hash"],
-                    PUBLIC_IDEMPOTENCY_KEY,
+                    cycle_id,
+                    get_public_snapshot(cycle_id)["head_hash"],
+                    public_idempotency_key(cycle_id),
                 )
             except JournalError:
                 app.logger.exception("public mission snapshot integrity failure")
@@ -391,7 +407,7 @@ def create_app(
                     "The public mission evidence failed its integrity check.",
                     503,
                 )
-            if cycle_id != PUBLIC_MISSION_ID or verification_id != expected_id:
+            if verification_id != expected_id:
                 return _error("not_found", "The verification receipt does not exist.", 404)
         try:
             receipt = get_receipt_reader().read(cycle_id, verification_id)

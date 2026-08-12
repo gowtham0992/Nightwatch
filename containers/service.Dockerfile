@@ -14,6 +14,7 @@ FROM python:3.13-slim@sha256:ffb752e139c0a19692a43af8d8523b274222dd68eebad5d583b
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    NIGHTWATCH_PUBLIC_MISSIONS_DIR=/app/public-missions \
     NIGHTWATCH_WEB_ROOT=/app/web-dist \
     PORT=8080
 
@@ -23,7 +24,8 @@ COPY src ./src
 RUN pip install --no-cache-dir ".[service]" \
     && useradd --create-home --uid 10001 nightwatch
 COPY --from=web-builder /workspace/web/dist ./web-dist
-COPY artifacts/public-mission-v2.json ./public-mission.json
+COPY artifacts/public-mission-v2.json ./public-missions/nightwatch-v2-qualification.json
+COPY artifacts/public-mission-cloud-20260811-001.json ./public-missions/nightwatch-cloud-20260811-001.json
 COPY containers/gunicorn.conf.py ./containers/gunicorn.conf.py
 
 USER nightwatch

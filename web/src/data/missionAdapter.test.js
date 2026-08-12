@@ -27,9 +27,9 @@ function apiMission() {
   return { cycle_id: 'nightwatch-v2-qualification', entry_count: 6, head_hash: hashes[5], terminal: true, entries };
 }
 
-test('verified mission becomes the six-stage promoted view', () => {
-  const view = missionResponseToView(apiMission());
-  assert.equal(view.mission.last_verdict, 'PROMOTED');
+test('verified mission becomes the six-stage qualified view', () => {
+  const view = missionResponseToView(apiMission(), 'nightwatch-v2-qualification');
+  assert.equal(view.mission.last_verdict, 'QUALIFIED');
   assert.equal(view.mission.evidence_label, 'GCP · HASH VERIFIED');
   assert.equal(view.entries.length, 6);
   assert.deepEqual(view.entries.at(-1).verdict.rows.map((row) => row.result), ['PASS', 'PASS', 'PASS', 'INFO', 'PASS', 'PASS']);
@@ -49,10 +49,58 @@ test('verified mission becomes the six-stage promoted view', () => {
   });
 });
 
+test('real refusal renders as a protected release with failed invariants', () => {
+  const mission = apiMission();
+  mission.cycle_id = 'nightwatch-cloud-20260811-001';
+  mission.entries.forEach((entry) => { entry.cycle_id = mission.cycle_id; });
+  mission.entries[3].payload.attempts = [mission.entries[3].payload.attempts[0]];
+  mission.entries[4].payload.attempts = [{
+    artifact_name: 'candidate-270m',
+    decision: 'refused',
+    scores: {
+      regression: { accuracy: 0.7375 },
+      safety: { accuracy: 0.9 },
+      target: { accuracy: 0.625 },
+    },
+  }];
+  mission.entries[5].stage = 'rejected';
+  mission.entries[5].payload = {
+    artifact_name: 'candidate-270m',
+    model_id: 'google/gemma-3-270m-it',
+    model_revision: 'a'.repeat(40),
+    qualified_under: 'policy_v2',
+    deployment_status: 'refused_not_deployed',
+    promotion_authority: 'deterministic_code_only',
+    scores: {
+      regression: { accuracy: 0.7375 },
+      safety: { accuracy: 0.9 },
+      target: { accuracy: 0.625 },
+    },
+    regression_label_recall: {
+      defer: { accuracy: 0.6 },
+      investigate: { accuracy: 0.75 },
+    },
+    critical_misses: [],
+    reasons: [
+      'regression accuracy 0.738 is below 0.800',
+      'regression defer recall 0.600 is below 0.700',
+    ],
+  };
+
+  const view = missionResponseToView(mission, mission.cycle_id);
+
+  assert.equal(view.mission.last_verdict, 'REFUSED');
+  assert.equal(view.mission.outcome.qualified_safety, '90.0%');
+  assert.equal(view.mission.outcome.deployment_status, 'refused_not_deployed');
+  assert.equal(view.entries.at(-1).verdict.decision, 'REFUSED');
+  assert.deepEqual(view.entries.at(-1).verdict.rows.map((row) => row.result), ['FAIL', 'FAIL', 'PASS', 'INFO', 'PASS', 'PASS']);
+  assert.match(view.entries.at(-1).exhibit.note, /deployed nothing/);
+});
+
 test('client rejects a broken mission chain before rendering it', () => {
   const mission = apiMission();
   mission.entries[3].previous_hash = 'f'.repeat(64);
-  assert.throws(() => missionResponseToView(mission), /failed integrity validation/);
+  assert.throws(() => missionResponseToView(mission, 'nightwatch-v2-qualification'), /failed integrity validation/);
 });
 
 test('API errors stay explicit and do not fall back to fixture evidence', async () => {
@@ -132,7 +180,7 @@ test('public projection renders redacted copy without private artifact fields', 
   delete mission.entries[5].payload.critical_misses;
   delete mission.entries[5].payload.invalid_case_ids;
 
-  const view = missionResponseToView(mission);
+  const view = missionResponseToView(mission, 'nightwatch-v2-qualification');
 
   assert.equal(view.mission.evidence_label, 'PUBLIC · REDACTED PROOF');
   assert.match(view.entries[2].exhibit.raw.at(-1), /redacted/);

@@ -26,7 +26,7 @@ function Clock() {
 }
 
 function StatusBand({ mission }) {
-  const promoted = mission.last_verdict === 'PROMOTED';
+  const qualified = mission.last_verdict === 'QUALIFIED';
   return (
     <header className="status-band">
       <img className="brand-logo" src="/nightwatch-logo.png" alt="Nightwatch" />
@@ -38,7 +38,7 @@ function StatusBand({ mission }) {
         </span>
       </span>
       <span className="last-verdict">
-        Last verdict: <span className={`measured ${promoted ? 'promoted-text' : 'verdict-refused'}`}>{mission.last_verdict}</span> · {mission.last_verdict_time}
+        Last verdict: <span className={`measured ${qualified ? 'qualified-text' : 'verdict-refused'}`}>{mission.last_verdict}</span> · {mission.last_verdict_time}
       </span>
       <span className="divider" />
       <Clock />
@@ -80,17 +80,18 @@ function Orientation({ copy, onDismiss }) {
 
 function MissionCommand({ mission, entries, selectedIndex, onSelect }) {
   const { outcome } = mission;
+  const qualified = mission.last_verdict === 'QUALIFIED';
   return (
     <section className="mission-command" aria-labelledby="mission-title">
       <div className="command-copy">
-        <span className="command-kicker">AUTONOMOUS REPAIR MISSION · 04 · COMPLETE</span>
+        <span className="command-kicker">AUTONOMOUS REPAIR MISSION · COMPLETE</span>
         <h1 id="mission-title">
-          Nightwatch repaired the model.
-          <span>Code decided if it could cross.</span>
+          {qualified ? 'Nightwatch repaired the model.' : 'Nightwatch attempted the repair.'}
+          <span>{qualified ? 'Code qualified it. Nothing auto-deployed.' : 'Code refused to let it ship.'}</span>
         </h1>
         <p>
-          A Gemini agent designed one bounded intervention, Modal trained two pinned candidates,
-          and an immutable policy gate promoted only the model that earned it.
+          A Gemini agent designed one bounded intervention, Modal trained {qualified ? 'the pinned candidates' : 'one pinned candidate'},
+          and an immutable policy gate {qualified ? 'qualified only the model that earned it' : 'blocked release when regression evidence failed'}.
         </p>
         <div className="stack-line" aria-label="Core implementation stack">
           <span>{outcome.teacher_model}</span>
@@ -100,18 +101,18 @@ function MissionCommand({ mission, entries, selectedIndex, onSelect }) {
         </div>
       </div>
 
-      <div className="outcome-board" aria-label="Verified mission outcome">
+      <div className={`outcome-board ${qualified ? 'qualified' : 'refused'}`} aria-label="Verified mission outcome">
         <div className="outcome-heading">
           <span>QUALIFICATION OUTCOME</span>
-          <strong>PROMOTED</strong>
+          <strong>{mission.last_verdict}</strong>
         </div>
         <div className="safety-shift">
           <div><span>failed candidate</span><strong>{outcome.initial_safety}</strong></div>
           <span className="shift-arrow" aria-hidden="true">→</span>
-          <div><span>qualified candidate</span><strong>{outcome.qualified_safety}</strong></div>
+          <div><span>{qualified ? 'qualified candidate' : 'post-training candidate'}</span><strong>{outcome.qualified_safety}</strong></div>
         </div>
         <div className="outcome-foot">
-          <span><strong>+{outcome.safety_delta}</strong> safety</span>
+          <span><strong>{outcome.safety_delta}</strong> safety change</span>
           <span><strong>{outcome.critical_misses}</strong> critical misses</span>
           <span><strong>{outcome.training_runtime}</strong> retained training</span>
         </div>
@@ -146,11 +147,11 @@ function MissionCommand({ mission, entries, selectedIndex, onSelect }) {
 
 function VerdictCard({ entry, selected, onSelect }) {
   const verdict = entry.verdict;
-  const promoted = verdict.decision === 'PROMOTED';
+  const qualified = verdict.decision === 'QUALIFIED';
   const [summaryLead, summaryTail] = entry.summary.split(verdict.decision);
   return (
     <button
-      className={`verdict-card ${selected ? 'selected' : ''} ${promoted ? 'promoted' : 'refused'}`}
+      className={`verdict-card ${selected ? 'selected' : ''} ${qualified ? 'qualified' : 'refused'}`}
       type="button"
       onClick={onSelect}
       aria-pressed={selected}
@@ -163,7 +164,7 @@ function VerdictCard({ entry, selected, onSelect }) {
             <span className="entry-hash">{entry.entry_hash}</span>
           </div>
           <div className="gate-summary">
-            {summaryLead}<span className={promoted ? 'promoted-text' : 'verdict-refused'}>{verdict.decision}</span>{summaryTail}
+            {summaryLead}<span className={qualified ? 'qualified-text' : 'verdict-refused'}>{verdict.decision}</span>{summaryTail}
           </div>
           <div className="invariant-heading">{verdict.heading}</div>
           <div className="invariant-table">

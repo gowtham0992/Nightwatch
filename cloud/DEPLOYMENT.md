@@ -8,15 +8,22 @@ Nightwatch separates its private operator surface, public judge surface, and pri
 - `nightwatch-public`: public redacted UI/API, no Firestore permission, maximum one instance.
 - `nightwatch-public-verifier`: private fixed-proof worker, existing Firestore read-only worker identity, maximum one instance and one concurrent request.
 - `nightwatch-verifier`: Cloud Tasks worker, Firestore read-only, maximum one instance and one concurrent request.
+- `nightwatch-mission-control`: private operator trigger with enqueue-only access, maximum one instance.
+- `nightwatch-mission-worker`: private Gemini/ADK + Modal stage worker, maximum one instance and one concurrent request.
+- `nightwatch-missions`: one dispatch per second, one concurrent stage, and three bounded attempts.
 - `nightwatch-public-verifications`: isolated public queue with the same one-per-second, one-concurrent, 30-second retry limits.
 - `nightwatch-verifications`: one dispatch per second, one concurrent dispatch, three configured attempts within a 30-second retry window.
 - `nightwatch-agentic-0992-public-verification-receipts`: isolated public-proof bucket with public access prevention and seven-day deletion.
 - `nightwatch-agentic-0992-verification-receipts`: uniform bucket-level access, public access prevention, seven-day retention.
+- `nightwatch-agentic-0992-mission-artifacts`: regional create-only mission artifacts and external-call claims, public access prevention, 30-day lifecycle.
 - `nightwatch-tasks-invoker`: OIDC identity whose only application permission is invoking `nightwatch-verifier`.
+- `nightwatch-missions-invoker`: OIDC identity whose only application permission is invoking `nightwatch-mission-worker`.
 
 The canonical private control URL is `https://nightwatch-evidence-w3a6oefsma-uc.a.run.app`. Use the canonical `*.a.run.app` worker URL as both the Cloud Tasks target and OIDC audience; the alternate numeric hostname is not interchangeable for this purpose.
 
-The canonical public judge URL is `https://nightwatch-public-w3a6oefsma-uc.a.run.app`. The verified release is `7c38dba`, deployed from immutable image digest `sha256:c3a3774e8d2e0df41b1780c97ab8a5f8fc94b53dcb25a9310831f0f865da30a7`. Its final public receipt is `verify-d673364f9273799f6839145608ff28d195c13a9e` for Firestore head `7bc281853fd88a253f895165e7edc4ebc3f1bc9eafb1ddf1da99348be096323d`.
+The canonical public judge URL is `https://nightwatch-public-w3a6oefsma-uc.a.run.app`. Release `live-mission-v1` runs revision `nightwatch-public-00003-zcs` from immutable image digest `sha256:75be12c45cd33a66d3328cfecac0a3207c38385b5f8465f4177dd68785e131c2`. Its default mission is the unattended refusal `nightwatch-cloud-20260811-001`; public receipt `verify-e4ddbd80cb6f876654508fa779d4df2384de2f2c` verifies Firestore head `b75997fa00e6263d1e5139d1047ea04eef02ab25c4f0f12188cadf7ed1154a85`. The retained qualification remains available as a second allowlisted redacted artifact.
+
+The mission control and worker run immutable image digest `sha256:7034d7279a0396e10d0d9aaebee4798e042641cc0fb39384a42c46fbfbc0d77f`. Fresh mission `nightwatch-cloud-20260811-001` traversed all six stages unattended in 105 seconds and ended refused; private receipt `verify-ae7b0bc76f9623af88ee36746af149ed7fc6f179` independently sealed the same head.
 
 ## Verify the live mission
 
@@ -54,7 +61,7 @@ gcloud artifacts docker images describe "${IMAGE}" \
 
 Deploy only an immutable `IMAGE@sha256:...` reference. Preserve the existing service accounts, min/max instance limits, concurrency, timeouts, queue configuration, and private IAM policies shown above.
 
-The public service uses the same immutable image with `NIGHTWATCH_PUBLIC_MODE=1`. Its runtime identity may enqueue only to `nightwatch-public-verifications`, attach only `nightwatch-public-invoker`, and read only the isolated public-proof receipt bucket. Do not grant it a Firestore role. The private public-proof verifier runs with both `NIGHTWATCH_WORKER_MODE=1` and `NIGHTWATCH_PUBLIC_WORKER_MODE=1`; it refuses every task except the exact bundled mission, head, and content-derived receipt ID. Public mode serves only `/app/public-mission.json`, replaces caller idempotency with `public:nightwatch-v2-proof:isolated-v1`, and permits only the matching receipt ID.
+The public service uses the same immutable image with `NIGHTWATCH_PUBLIC_MODE=1`. Its runtime identity may enqueue only to `nightwatch-public-verifications`, attach only `nightwatch-public-invoker`, and read only the isolated public-proof receipt bucket. Do not grant it a Firestore role. The private public-proof verifier runs with both `NIGHTWATCH_WORKER_MODE=1` and `NIGHTWATCH_PUBLIC_WORKER_MODE=1`; it refuses every task except one of the two bundled mission IDs with its exact bundled head and content-derived receipt ID. Public mode reads only `/app/public-missions`, replaces caller idempotency with a fixed per-mission proof key, and permits only the matching receipt IDs.
 
 ## Roll back
 
