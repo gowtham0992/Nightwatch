@@ -4,6 +4,27 @@ const MISSION_ID = /^[a-z0-9][a-z0-9_-]{0,127}$/;
 const VERIFICATION_ID = /^verify-[a-f0-9]{40}$/;
 
 export const DEFAULT_MISSION_ID = 'nightwatch-cloud-20260811-001';
+export const PUBLIC_MISSIONS = Object.freeze([
+  Object.freeze({
+    id: DEFAULT_MISSION_ID,
+    label: 'Autonomous refusal',
+    context: 'LIVE TASKMASTER · 105 SEC',
+    verdict: 'REFUSED',
+  }),
+  Object.freeze({
+    id: 'nightwatch-v2-qualification',
+    label: 'Earned qualification',
+    context: 'RETAINED PROOF · POLICY V2',
+    verdict: 'QUALIFIED',
+  }),
+]);
+
+const PUBLIC_MISSION_IDS = new Set(PUBLIC_MISSIONS.map((mission) => mission.id));
+
+export function missionIdFromSearch(search = '') {
+  const missionId = new URLSearchParams(search).get('mission');
+  return PUBLIC_MISSION_IDS.has(missionId) ? missionId : DEFAULT_MISSION_ID;
+}
 
 export class MissionApiError extends Error {
   constructor(code, message, status = 0) {

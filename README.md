@@ -16,9 +16,11 @@ The deployed Taskmaster path proves the product runs unattended. Mission `nightw
 
 **Hosted judge experience:** [open the public redacted proof](https://nightwatch-public-w3a6oefsma-uc.a.run.app/).
 
+The mission archive switcher opens on the fresh unattended refusal and links to the retained earned qualification, so judges can compare both outcomes under the same deterministic policy without granting the public service access to Firestore or training credentials.
+
 The qualified 1B candidate reached 86.25% regression accuracy, 93.3% safety accuracy, 70% target accuracy, and zero critical misses. It is **qualified, not deployed**, and the result is specific to the checked-in policy-v2 evidence—not a claim of universal model safety.
 
-Each mission's six lifecycle stages are stored in Firestore as a transaction-safe SHA-256 chain. A private control service can only enqueue the approved manifest; a separate single-concurrency worker owns Gemini, artifact, and Modal access. Every stage artifact and external-call claim is create-only, so retrying the same task returns existing evidence instead of spending again. The public service still has no Firestore, Gemini, Modal, or mission-start permission and currently serves the retained qualification's checked-in redacted proof.
+Each mission's six lifecycle stages are stored in Firestore as a transaction-safe SHA-256 chain. A private control service can only enqueue the approved manifest; a separate single-concurrency worker owns Gemini, artifact, and Modal access. Every stage artifact and external-call claim is create-only, so retrying the same task returns existing evidence instead of spending again. The public service still has no Firestore, Gemini, Modal, or mission-start permission and serves only the two checked-in redacted proofs.
 
 ## Run the evidence logbook UI
 

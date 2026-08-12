@@ -2,9 +2,12 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  DEFAULT_MISSION_ID,
   MissionApiError,
+  PUBLIC_MISSIONS,
   fetchMission,
   fetchVerificationReceipt,
+  missionIdFromSearch,
   missionResponseToView,
   requestVerification,
 } from './missionAdapter.js';
@@ -26,6 +29,22 @@ function apiMission() {
   }));
   return { cycle_id: 'nightwatch-v2-qualification', entry_count: 6, head_hash: hashes[5], terminal: true, entries };
 }
+
+test('mission URL state accepts only the two public proof IDs', () => {
+  assert.equal(missionIdFromSearch(''), DEFAULT_MISSION_ID);
+  assert.equal(
+    missionIdFromSearch('?mission=nightwatch-v2-qualification'),
+    'nightwatch-v2-qualification',
+  );
+  assert.equal(missionIdFromSearch('?mission=attacker-controlled'), DEFAULT_MISSION_ID);
+  assert.deepEqual(
+    PUBLIC_MISSIONS.map(({ id, verdict }) => [id, verdict]),
+    [
+      ['nightwatch-cloud-20260811-001', 'REFUSED'],
+      ['nightwatch-v2-qualification', 'QUALIFIED'],
+    ],
+  );
+});
 
 test('verified mission becomes the six-stage qualified view', () => {
   const view = missionResponseToView(apiMission(), 'nightwatch-v2-qualification');

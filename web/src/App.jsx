@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
-  DEFAULT_MISSION_ID,
+  PUBLIC_MISSIONS,
   fetchVerificationReceipt,
   loadMission,
+  missionIdFromSearch,
   requestVerification,
 } from './data/missionAdapter.js';
 
@@ -48,6 +49,38 @@ function StatusBand({ mission }) {
   );
 }
 
+function MissionSwitcher({ activeMissionId, onSelect }) {
+  return (
+    <section className="mission-switcher" aria-labelledby="mission-archive-title">
+      <div className="archive-label">
+        <span id="mission-archive-title">VERIFIED MISSION ARCHIVE</span>
+        <strong>Same policy. Two honest outcomes.</strong>
+      </div>
+      <div className="mission-options" role="group" aria-label="Choose a verified mission">
+        {PUBLIC_MISSIONS.map((mission, index) => {
+          const active = mission.id === activeMissionId;
+          return (
+            <button
+              className={`${active ? 'active' : ''} ${mission.verdict.toLowerCase()}`}
+              type="button"
+              key={mission.id}
+              onClick={() => onSelect(mission.id)}
+              aria-pressed={active}
+            >
+              <span className="mission-option-index">0{index + 1}</span>
+              <span className="mission-option-copy">
+                <strong>{mission.label}</strong>
+                <small>{mission.context}</small>
+              </span>
+              <b>{mission.verdict}</b>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function MissionState({ state, onRetry }) {
   if (state.status === 'loading') {
     return (
@@ -87,7 +120,7 @@ function MissionCommand({ mission, entries, selectedIndex, onSelect }) {
         <span className="command-kicker">AUTONOMOUS REPAIR MISSION · COMPLETE</span>
         <h1 id="mission-title">
           {qualified ? 'Nightwatch repaired the model.' : 'Nightwatch attempted the repair.'}
-          <span>{qualified ? 'Code qualified it. Nothing auto-deployed.' : 'Code refused to let it ship.'}</span>
+          <span>{qualified ? 'Code qualified it. Deployment stayed locked.' : 'Code refused to let it ship.'}</span>
         </h1>
         <p>
           A Gemini agent designed one bounded intervention, Modal trained {qualified ? 'the pinned candidates' : 'one pinned candidate'},
@@ -318,20 +351,26 @@ function EvidenceDetail({ entry, index, total, detailLabel }) {
 }
 
 export default function App() {
+  const [activeMissionId, setActiveMissionId] = useState(() => missionIdFromSearch(globalThis.location?.search));
   const [missionState, setMissionState] = useState({ status: 'loading' });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [introVisible, setIntroVisible] = useState(true);
   const [retryVersion, setRetryVersion] = useState(0);
   const [verificationState, setVerificationState] = useState({ status: 'idle' });
+  const verificationGeneration = useRef(0);
 
   useEffect(() => {
     let ignore = false;
     setMissionState({ status: 'loading' });
-    loadMission(DEFAULT_MISSION_ID, { force: retryVersion > 0 }).then(
-      (run) => {
+    Promise.all(
+      PUBLIC_MISSIONS.map(({ id }) => loadMission(id, { force: retryVersion > 0 })),
+    ).then(
+      (runs) => {
         if (ignore) return;
-        setMissionState({ status: 'ready', run });
-        setSelectedIndex(run.entries.length - 1);
+        setMissionState({
+          status: 'ready',
+          runs: Object.fromEntries(runs.map((run) => [run.mission.cycle_id, run])),
+        });
       },
       (error) => {
         if (!ignore) setMissionState({ status: 'error', error });
@@ -340,15 +379,42 @@ export default function App() {
     return () => { ignore = true; };
   }, [retryVersion]);
 
+  useEffect(() => {
+    const syncFromUrl = () => setActiveMissionId(missionIdFromSearch(globalThis.location?.search));
+    globalThis.addEventListener?.('popstate', syncFromUrl);
+    return () => globalThis.removeEventListener?.('popstate', syncFromUrl);
+  }, []);
+
+  useEffect(() => {
+    verificationGeneration.current += 1;
+    setVerificationState({ status: 'idle' });
+    if (missionState.status === 'ready') {
+      setSelectedIndex(missionState.runs[activeMissionId].entries.length - 1);
+    }
+  }, [activeMissionId, missionState]);
+
   if (missionState.status !== 'ready') {
     return <MissionState state={missionState} onRetry={() => setRetryVersion((version) => version + 1)} />;
   }
 
-  const { run } = missionState;
+  const run = missionState.runs[activeMissionId];
   const selectedEntry = run.entries[selectedIndex];
+
+  const selectMission = (missionId) => {
+    if (missionId === activeMissionId) return;
+    verificationGeneration.current += 1;
+    setVerificationState({ status: 'idle' });
+    const nextUrl = new URL(globalThis.location.href);
+    if (missionId === PUBLIC_MISSIONS[0].id) nextUrl.searchParams.delete('mission');
+    else nextUrl.searchParams.set('mission', missionId);
+    globalThis.history.pushState({}, '', nextUrl);
+    setActiveMissionId(missionId);
+  };
 
   const verifyCurrentHead = async () => {
     if (verificationState.status === 'queueing' || verificationState.status === 'pending') return;
+    const generation = verificationGeneration.current + 1;
+    verificationGeneration.current = generation;
     setVerificationState({ status: 'queueing' });
     try {
       const idempotencyKey = `operator:ui-${globalThis.crypto.randomUUID()}`;
@@ -357,12 +423,14 @@ export default function App() {
         run.mission.head_hash,
         idempotencyKey,
       );
+      if (generation !== verificationGeneration.current) return;
       setVerificationState({ status: 'pending', verificationId: scheduled.verification_id });
       for (let attempt = 0; attempt < 16; attempt += 1) {
         const receipt = await fetchVerificationReceipt(
           run.mission.cycle_id,
           scheduled.verification_id,
         );
+        if (generation !== verificationGeneration.current) return;
         if (receipt.status === 'verified') {
           if (receipt.head_hash !== run.mission.head_hash || receipt.entry_count !== run.entries.length) {
             throw new Error('The receipt does not match the visible mission.');
@@ -378,6 +446,7 @@ export default function App() {
       }
       throw new Error('The worker did not finish within the verification window.');
     } catch (error) {
+      if (generation !== verificationGeneration.current) return;
       setVerificationState({
         status: 'error',
         message: error instanceof Error ? error.message : 'Verification failed.',
@@ -388,6 +457,7 @@ export default function App() {
   return (
     <div className="ledger" data-screen-label="Nightwatch — Verified Mission Ledger">
       <StatusBand mission={run.mission} />
+      <MissionSwitcher activeMissionId={activeMissionId} onSelect={selectMission} />
       <MissionCommand
         mission={run.mission}
         entries={run.entries}
