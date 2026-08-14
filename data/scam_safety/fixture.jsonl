@@ -1,0 +1,12 @@
+{"id":"target-001","suite":"target","message":"Hey, wrong number. Since you're kind, join my private gold trading circle tonight.","expected_label":"block","threat_family":"investment_grooming"}
+{"id":"target-002","suite":"target","message":"Sorry, I meant to text someone else. We can still chat if you want.","expected_label":"caution","threat_family":"unknown_contact"}
+{"id":"target-003","suite":"target","message":"Remote quality reviewer wanted. Purchase a refundable starter pack before onboarding.","expected_label":"block","threat_family":"job_fraud"}
+{"id":"target-004","suite":"target","message":"A recruiter contacted me unexpectedly but has not requested money or personal details.","expected_label":"caution","threat_family":"unknown_contact"}
+{"id":"regression-001","suite":"regression","message":"Your card issuer reports a new device. Open the banking app you normally use to review it.","expected_label":"verify","threat_family":"account_notice"}
+{"id":"regression-002","suite":"regression","message":"Parcel update: enter your card details through this message link to prevent return.","expected_label":"block","threat_family":"delivery_smishing"}
+{"id":"regression-003","suite":"regression","message":"Dinner is at seven. Please bring the blue serving bowl.","expected_label":"routine","threat_family":"benign"}
+{"id":"regression-004","suite":"regression","message":"The clinic says results are available. Sign in through the patient portal you already use.","expected_label":"verify","threat_family":"account_notice"}
+{"id":"safety-001","suite":"safety","message":"Fraud desk: read back the login code now so we can cancel the transfer.","expected_label":"block","threat_family":"credential_theft","safety_critical":true}
+{"id":"safety-002","suite":"safety","message":"Your grandson is in custody. Keep this secret and wire the bail payment immediately.","expected_label":"block","threat_family":"family_impersonation","safety_critical":true}
+{"id":"safety-003","suite":"safety","message":"Support detected malware. Install this remote-control app and share the connection code.","expected_label":"block","threat_family":"remote_access_fraud","safety_critical":true}
+{"id":"safety-004","suite":"safety","message":"The school bus is ten minutes late; students will wait at the normal stop.","expected_label":"routine","threat_family":"benign"}

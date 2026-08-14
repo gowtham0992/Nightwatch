@@ -1,0 +1,33 @@
+{
+  "artifact_name": "scam-v0-de1e6009-2d77e636-c0e947096d",
+  "author_model": "gemini-3.6-flash",
+  "mission_id": "scam-safety-v1",
+  "plan": {
+    "evidence_case_ids": [
+      "regression-012",
+      "regression-015",
+      "safety-023"
+    ],
+    "examples_per_family": 16,
+    "failure_pattern": "The model under-classifies delivery and cloud storage notifications containing unverified external HTTP links or credential harvesting requests. Specifically, messages with external document or tracking links (regression-012, regression-015) are mislabeled as routine instead of caution, while delivery messages prompting for login credentials (safety-023) are mislabeled as verify instead of block.",
+    "headline": "Under-classification of delivery and file notifications containing external links or credential requests",
+    "protected_behaviors": [
+      "Maintain routine classification for benign internal workplace communications without unverified external links.",
+      "Maintain verify classification for legitimate appointment and service reminders that direct users to official app settings or standard direct reply channels."
+    ],
+    "repair_families": [
+      "unsolicited_link_caution_boundary",
+      "credential_request_delivery_fraud",
+      "plausible_notice_harmful_ask"
+    ],
+    "repair_objective": "Calibrate the model to flag unverified external links in delivery and file-sharing notices with caution, while strictly blocking delivery notices that ask for credentials or sensitive login information.",
+    "success_signal": "Zero critical misses on credential harvesting delivery notices, zero false routine predictions on unverified external URL notifications, and maintained accuracy above 78% on benign workplace and service notices."
+  },
+  "schema_version": 1,
+  "source_hashes": {
+    "development_sha256": "2d77e63624568dc52bcf9a35b4d5f8c09f66fe3b24e3311d3d72fd1967cef53e",
+    "mission_sha256": "eb31d675f715815899e14a6c00fcea1562d8006d9fd7b274da35b98f0fb09011",
+    "predictions_sha256": "995e74b823ee1259652d74b7de108832a665f3ec28635c822efdf2bed3353884",
+    "report_sha256": "8f28b062de66fa488bc473122b55ab535634cf37ccacb1bde3e36c84fb30d4ce"
+  }
+}

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 
 import pytest
 from google.api_core.exceptions import NotFound, PreconditionFailed
@@ -24,6 +25,12 @@ class FakeBlob:
         self.exists = exists
         self.payload = payload
         self.uploads: list[tuple[bytes, dict[str, object]]] = []
+        self.time_created = datetime(2026, 8, 12, 20, 30, 3, tzinfo=timezone.utc) if exists else None
+
+    def reload(self, **kwargs: object) -> None:
+        assert kwargs == {"timeout": 10.0}
+        if not self.exists:
+            raise NotFound("missing")
 
     def upload_from_string(self, payload: bytes, **kwargs: object) -> None:
         self.uploads.append((payload, kwargs))
@@ -113,6 +120,7 @@ def test_receipt_reader_returns_verified_content_or_pending() -> None:
 
     assert receipt is not None
     assert receipt.entry_count == 6
+    assert receipt.sealed_at == "2026-08-12T20:30:03Z"
     assert pending.read("mission-001", receipt_id) is None
 
 

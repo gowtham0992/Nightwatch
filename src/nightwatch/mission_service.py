@@ -129,8 +129,15 @@ def create_control_app(*, task_queue: MissionQueue | None = None) -> Flask:
 
 
 def _configured_worker() -> tuple[MissionJournal, MissionStageExecutor, MissionQueue]:
+    from nightwatch.modal_scam_training_stage import ModalScamTrainingCampaign
     from nightwatch.modal_training_stage import GCSModalCallStore, ModalClassifierTrainingStage
     from nightwatch.safety_mission_stages import SafetyQualificationStageExecutor
+    from nightwatch.scam_mission_stages import (
+        ManifestStageExecutor,
+        ScamSafetyStageExecutor,
+        retained_verified_curriculum,
+        retained_verified_diagnosis,
+    )
     from nightwatch.stage_artifacts import GCSStageArtifactStore
 
     project = os.environ.get("GOOGLE_CLOUD_PROJECT")
@@ -139,13 +146,25 @@ def _configured_worker() -> tuple[MissionJournal, MissionStageExecutor, MissionQ
         raise RuntimeError("mission worker storage is not configured")
     journal = FirestoreJournal.from_default(project=project)
     artifacts = GCSStageArtifactStore.from_default(project=project, bucket_name=bucket_name)
-    training = ModalClassifierTrainingStage(
-        artifacts,
-        GCSModalCallStore.from_default(project=project, bucket_name=bucket_name),
+    call_store = GCSModalCallStore.from_default(project=project, bucket_name=bucket_name)
+    training = ModalClassifierTrainingStage(artifacts, call_store)
+    scam_training = ModalScamTrainingCampaign(call_store)
+    executor = ManifestStageExecutor(
+        {
+            "incident_triage": SafetyQualificationStageExecutor(
+                artifacts, training_stage=training
+            ),
+            "scam_safety": ScamSafetyStageExecutor(
+                artifacts,
+                diagnostician=retained_verified_diagnosis,
+                curriculum_architect=retained_verified_curriculum,
+                training_campaign=scam_training,
+            ),
+        }
     )
     return (
         journal,
-        SafetyQualificationStageExecutor(artifacts, training_stage=training),
+        executor,
         _configured_queue(),
     )
 

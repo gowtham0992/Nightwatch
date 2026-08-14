@@ -1,0 +1,22 @@
+{
+  "author_model": "gemini-3.6-flash",
+  "combined_curriculum_rows": 416,
+  "combined_curriculum_sha256": "fd2b06dd7de5c1722f9485e428154b19dfaa209907dc9ec1c15041e5d51b9539",
+  "development_sha256": "ffca8c221440c980546c8b8353c307e48d42a94c43290a33583574b7210e305b",
+  "maximum_train_eval_token_jaccard": {
+    "curriculum_index": 87,
+    "evaluation_index": 64,
+    "score": 0.529412
+  },
+  "prior_curriculum_sha256": "0f9324967ff44f6a1ffc40280f694964216d1ad9375fb0ed5db6368441764272",
+  "repair_curriculum_sha256": "0db58db490beaef9678e63af62d7e42b9159ffd3d1e78f45ed1d23f399435542",
+  "repair_families": [
+    "plausible_notice_harmful_ask",
+    "unsolicited_link_caution_boundary",
+    "official_route_safe_contrast"
+  ],
+  "repair_plan_sha256": "323bd54b8e990dc8d07e834996b7b04e4d8f1be947c69969c5eb579e896eff19",
+  "repair_rows": 48,
+  "schema_version": 1,
+  "source_candidate": "scam-candidate-v7-0f932496-ffca8c22-349438eaa4"
+}

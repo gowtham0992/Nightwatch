@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -16,6 +17,7 @@ from nightwatch.public_evidence import (
     LIVE_PUBLIC_MISSION_ID,
     PUBLIC_IDEMPOTENCY_KEY,
     PUBLIC_MISSION_ID,
+    public_verification_idempotency_key,
 )
 from nightwatch.verification import VerificationReceipt
 
@@ -364,23 +366,25 @@ def test_worker_requires_cloud_tasks_envelope_and_records_receipt(
     assert verifier.calls == [("mission-001", "b" * 64, receipt_id)]
 
 
-def test_public_worker_accepts_only_the_fixed_public_proof(
+def test_public_worker_accepts_only_a_recent_server_bounded_public_proof(
     web_root: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("NIGHTWATCH_WORKER_MODE", "1")
     monkeypatch.setenv("NIGHTWATCH_PUBLIC_WORKER_MODE", "1")
     snapshot = public_snapshot()
+    now = datetime(2026, 8, 12, 20, 30, tzinfo=timezone.utc)
     expected_id = build_verification_id(
         PUBLIC_MISSION_ID,
         snapshot["head_hash"],
-        PUBLIC_IDEMPOTENCY_KEY,
+        public_verification_idempotency_key(PUBLIC_MISSION_ID, now),
     )
     verifier = StubVerifier()
     client = create_app(
         verification_store=verifier,
         public_snapshot=snapshot,
         static_root=web_root,
+        clock=lambda: now,
     ).test_client()
 
     forged = client.post(
@@ -390,6 +394,20 @@ def test_public_worker_accepts_only_the_fixed_public_proof(
             "cycle_id": "another-mission",
             "expected_head_hash": "f" * 64,
             "verification_id": "verify-" + "f" * 40,
+        },
+    )
+    expired_id = build_verification_id(
+        PUBLIC_MISSION_ID,
+        snapshot["head_hash"],
+        public_verification_idempotency_key(PUBLIC_MISSION_ID, now - timedelta(minutes=6)),
+    )
+    expired = client.post(
+        "/internal/tasks/verify-mission",
+        headers={"X-CloudTasks-TaskName": expired_id},
+        json={
+            "cycle_id": PUBLIC_MISSION_ID,
+            "expected_head_hash": snapshot["head_hash"],
+            "verification_id": expired_id,
         },
     )
     accepted = client.post(
@@ -403,6 +421,7 @@ def test_public_worker_accepts_only_the_fixed_public_proof(
     )
 
     assert forged.status_code == 400
+    assert expired.status_code == 400
     assert accepted.status_code == 200
     assert verifier.calls == [(PUBLIC_MISSION_ID, snapshot["head_hash"], expected_id)]
 
@@ -429,7 +448,7 @@ def test_receipt_endpoint_moves_from_pending_to_verified(web_root: Path) -> None
         static_root=web_root,
     ).test_client()
     verified_reader = StubReceiptReader(
-        VerificationReceipt(receipt_id, "mission-001", "b" * 64, 6)
+        VerificationReceipt(receipt_id, "mission-001", "b" * 64, 6, "2026-08-12T20:30:03Z")
     )
     verified_client = create_app(
         StubJournal(),
@@ -447,8 +466,9 @@ def test_receipt_endpoint_moves_from_pending_to_verified(web_root: Path) -> None
     assert verified.json == {
         "cycle_id": "mission-001",
         "entry_count": 6,
-        "head_hash": "b" * 64,
-        "status": "verified",
+            "head_hash": "b" * 64,
+            "sealed_at": "2026-08-12T20:30:03Z",
+            "status": "verified",
         "verification_id": receipt_id,
     }
 
@@ -529,7 +549,7 @@ def test_public_mode_serves_allowlisted_live_refusal_without_firestore(
     assert journal.calls == []
 
 
-def test_public_verification_uses_fixed_task_identity_without_firestore(
+def test_public_verification_uses_one_server_controlled_task_identity_per_minute(
     web_root: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -537,11 +557,14 @@ def test_public_verification_uses_fixed_task_identity_without_firestore(
     journal = StubJournal(error=AssertionError("public trigger must not read Firestore"))
     queue = StubQueue()
     snapshot = public_snapshot()
+    now = datetime(2026, 8, 12, 20, 30, 45, tzinfo=timezone.utc)
+    expected_key = public_verification_idempotency_key(PUBLIC_MISSION_ID, now)
     client = create_app(
         journal,
         task_queue=queue,
         public_snapshot=snapshot,
         static_root=web_root,
+        clock=lambda: now,
     ).test_client()
 
     response = client.post(
@@ -551,29 +574,59 @@ def test_public_verification_uses_fixed_task_identity_without_firestore(
     )
 
     assert response.status_code == 202
-    assert queue.calls == [(PUBLIC_MISSION_ID, snapshot["head_hash"], PUBLIC_IDEMPOTENCY_KEY)]
+    assert queue.calls == [(PUBLIC_MISSION_ID, snapshot["head_hash"], expected_key)]
     assert journal.calls == []
 
 
-def test_public_receipt_endpoint_is_pinned_to_one_content_derived_id(
+def test_public_verification_deduplicates_within_a_minute_and_rotates_afterward(
     web_root: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("NIGHTWATCH_PUBLIC_MODE", "1")
     snapshot = public_snapshot()
+    current = [datetime(2026, 8, 12, 20, 30, 1, tzinfo=timezone.utc)]
+    queue = StubQueue()
+    client = create_app(
+        StubJournal(error=AssertionError("public trigger must not read Firestore")),
+        task_queue=queue,
+        public_snapshot=snapshot,
+        static_root=web_root,
+        clock=lambda: current[0],
+    ).test_client()
+    path = f"/api/missions/{PUBLIC_MISSION_ID}/verifications"
+    body = {"expected_head_hash": snapshot["head_hash"]}
+
+    client.post(path, json=body)
+    current[0] = current[0].replace(second=59)
+    client.post(path, json=body)
+    current[0] += timedelta(seconds=1)
+    client.post(path, json=body)
+
+    assert queue.calls[0][2] == queue.calls[1][2]
+    assert queue.calls[2][2] != queue.calls[1][2]
+
+
+def test_public_receipt_endpoint_accepts_only_recent_or_legacy_bounded_ids(
+    web_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("NIGHTWATCH_PUBLIC_MODE", "1")
+    snapshot = public_snapshot()
+    now = datetime(2026, 8, 12, 20, 30, tzinfo=timezone.utc)
     expected_id = build_verification_id(
         PUBLIC_MISSION_ID,
         snapshot["head_hash"],
-        PUBLIC_IDEMPOTENCY_KEY,
+        public_verification_idempotency_key(PUBLIC_MISSION_ID, now - timedelta(minutes=1)),
     )
     reader = StubReceiptReader(
-        VerificationReceipt(expected_id, PUBLIC_MISSION_ID, snapshot["head_hash"], 6)
+        VerificationReceipt(expected_id, PUBLIC_MISSION_ID, snapshot["head_hash"], 6, "2026-08-12T20:29:03Z")
     )
     client = create_app(
         StubJournal(),
         verification_reader=reader,
         public_snapshot=snapshot,
         static_root=web_root,
+        clock=lambda: now,
     ).test_client()
 
     denied = client.get(
@@ -585,6 +638,7 @@ def test_public_receipt_endpoint_is_pinned_to_one_content_derived_id(
 
     assert denied.status_code == 404
     assert accepted.status_code == 200
+    assert accepted.json["sealed_at"] == "2026-08-12T20:29:03Z"
     assert reader.calls == [(PUBLIC_MISSION_ID, expected_id)]
 
 

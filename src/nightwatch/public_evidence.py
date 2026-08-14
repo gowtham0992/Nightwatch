@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +15,7 @@ PUBLIC_MISSION_ID = "nightwatch-v2-qualification"
 LIVE_PUBLIC_MISSION_ID = "nightwatch-cloud-20260811-001"
 PUBLIC_MISSION_IDS = frozenset({PUBLIC_MISSION_ID, LIVE_PUBLIC_MISSION_ID})
 PUBLIC_IDEMPOTENCY_KEY = "public:nightwatch-v2-proof:isolated-v1"
+PUBLIC_VERIFICATION_GRACE_MINUTES = 5
 _HASH = re.compile(r"^[a-f0-9]{64}$")
 _FORBIDDEN_KEYS = {
     "artifact_name",
@@ -110,6 +112,17 @@ def public_idempotency_key(cycle_id: str) -> str:
     if cycle_id == PUBLIC_MISSION_ID:
         return PUBLIC_IDEMPOTENCY_KEY
     return f"public:{cycle_id}:proof:isolated-v1"
+
+
+def public_verification_idempotency_key(cycle_id: str, requested_at: datetime) -> str:
+    """Return one server-controlled public verification intent per UTC minute."""
+    validate_cycle_id(cycle_id)
+    if cycle_id not in PUBLIC_MISSION_IDS:
+        raise JournalError("public mission is not allowlisted")
+    if requested_at.tzinfo is None:
+        raise JournalError("public verification time must include a timezone")
+    minute = requested_at.astimezone(timezone.utc).replace(second=0, microsecond=0)
+    return f"public:{cycle_id}:proof:{minute.strftime('%Y%m%dT%H%MZ')}"
 
 
 def _scores(attempt: dict[str, Any]) -> dict[str, Any]:

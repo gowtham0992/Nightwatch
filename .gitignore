@@ -24,6 +24,13 @@ artifacts/*
 !artifacts/classifier-1395040c-1e98fdcf-74d932a468-dev-report.json
 !artifacts/classifier-1395040c-1e98fdcf-2f16394da7-dev-predictions.jsonl
 !artifacts/classifier-1395040c-1e98fdcf-2f16394da7-dev-report.json
+!artifacts/scam-safety/
+artifacts/scam-safety/*
+!artifacts/scam-safety/repair-authoring-v5.json
+!artifacts/scam-safety/scam-v0-de1e6009-2d77e636-c0e947096d-development-predictions.jsonl
+!artifacts/scam-safety/scam-v0-de1e6009-2d77e636-c0e947096d-development-report.json
+!artifacts/scam-safety/scam-v0-de1e6009-2d77e636-c0e947096d-evidence-ffca8c22-predictions.jsonl
+!artifacts/scam-safety/scam-v0-de1e6009-2d77e636-c0e947096d-repair-plan.json
 web/node_modules/
 web/dist/
 web/coverage/

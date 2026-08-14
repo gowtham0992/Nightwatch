@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
+from datetime import timezone
 from typing import Any
 
 from google.api_core.exceptions import Conflict, NotFound, PreconditionFailed
@@ -21,6 +22,7 @@ class VerificationReceipt:
     cycle_id: str
     head_hash: str
     entry_count: int
+    sealed_at: str | None = None
 
 
 def _validate_receipt_identity(
@@ -90,13 +92,17 @@ class GCSVerificationReceiptReader:
             f"verifications/{cycle_id}/{verification_id}.json"
         )
         try:
+            blob.reload(timeout=GCS_TIMEOUT_SECONDS)
             payload = blob.download_as_bytes(timeout=GCS_TIMEOUT_SECONDS)
         except NotFound:
             return None
         receipt = _receipt_from_bytes(payload)
         if receipt.cycle_id != cycle_id or receipt.verification_id != verification_id:
             raise JournalError("verification receipt identity does not match its object path")
-        return receipt
+        if blob.time_created is None:
+            raise JournalError("verification receipt creation time is unavailable")
+        sealed_at = blob.time_created.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+        return replace(receipt, sealed_at=sealed_at)
 
 
 class GCSMissionVerificationStore:
@@ -156,7 +162,7 @@ class GCSMissionVerificationStore:
             entry_count=len(entries),
         )
         payload = json.dumps(
-            asdict(receipt),
+            {key: value for key, value in asdict(receipt).items() if key != "sealed_at"},
             sort_keys=True,
             separators=(",", ":"),
         ).encode("utf-8")

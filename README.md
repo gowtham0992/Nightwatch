@@ -1,30 +1,28 @@
-# Nightwatch Evolution
+# Nightwatch
 
 **AI can propose its own upgrade. It cannot approve it.**
 
-Nightwatch is a release guardian for small production models. Deterministic analysis bounds a failing behavior, Gemini with Google ADK designs a targeted curriculum, Modal trains pinned Gemma candidates, and deterministic evaluation code qualifies a candidate only when it clears fixed regression and safety policy.
+Nightwatch repairs a failing specialized AI model, but refuses to let AI approve its own work. It detects a concrete failure, binds Gemini and Google ADK to the observed evidence, trains a pinned Gemma candidate on Modal, independently evaluates the result, and records a deterministic qualified-or-refused decision on Google Cloud.
 
-This project targets **The Taskmaster** track. One authenticated request now starts a bounded qualification mission on Google Cloud; Cloud Tasks carries it through diagnosis, Gemini curriculum design, Modal training, deterministic evaluation, and a qualified-or-refused terminal decision without further operator action. Production deployment is never authorized by this workflow.
+This project targets **The Taskmaster** track. One authenticated request starts a bounded mission; Cloud Tasks advances its six durable stages without hand-holding, Firestore stores a hash-chained journal, and create-only Cloud Storage evidence makes retries safe. Production deployment is never authorized by this workflow.
 
 ![Nightwatch deployed architecture](docs/images/nightwatch-architecture.png)
 
-## What works now
+## The working product repairs a real scam-message classifier
 
-Two complementary real missions now exist. The retained qualification proves that policy v2 can qualify a candidate: Gemini 3.6 Flash and Google ADK generated a 32-example safety intervention; Modal trained pinned Gemma 3 270M and 1B candidates; and deterministic code refused the 270M candidate while qualifying the 1B candidate after a prediction-blind evidence audit.
+The product mission starts with pinned `google/gemma-3-1b-it` model evidence that mishandles scam-message boundaries. Gemini 3.6 Flash and Google ADK diagnosed the observed errors and authored bounded, leakage-checked repair curricula. Modal trained the candidates. The final persisted adapter was independently reloaded and reproduced byte-identical predictions before the gate ran.
 
-The deployed Taskmaster path proves the product runs unattended. Mission `nightwatch-cloud-20260811-001` was started once through the private control service, then advanced through six Cloud Tasks-backed stages from `00:58:16` to `01:00:01 UTC`. Gemini generated a fresh 32-example curriculum, Modal performed one pinned 270M training run, and policy v2 **refused** the candidate because regression accuracy was 73.75% and defer recall was 60%, despite safety reaching the 90% floor. Nothing was deployed. Its six-entry Firestore head is `b75997fa00e6263d1e5139d1047ea04eef02ab25c4f0f12188cadf7ed1154a85`, independently sealed by create-only verification receipt `verify-ae7b0bc76f9623af88ee36746af149ed7fc6f179`.
+The earned candidate passed 36/36 target cases, 24/24 safety cases, and 28/32 regression cases. It produced zero critical misses and zero benign blocks, improving target accuracy from 83.3% to 100% while improving regression accuracy from 78.1% to 87.5%. Deterministic code therefore marked it **qualified, not deployed**.
+
+The new scam mission controller is implemented, covered by the full test suite, built as the exact private Cloud Run container, and smoke-tested inside that container. It has not yet been deployed or started in Google Cloud; the hosted URL below still serves the earlier real incident-triage proof until the new release is intentionally rolled out and externally verified.
 
 **Hosted judge experience:** [open the public redacted proof](https://nightwatch-public-w3a6oefsma-uc.a.run.app/).
 
-The mission archive switcher opens on the fresh unattended refusal and links to the retained earned qualification, so judges can compare both outcomes under the same deterministic policy without granting the public service access to Firestore or training credentials.
+The previous deployed Taskmaster mission remains useful evidence: one authenticated start advanced through all six Cloud Tasks-backed stages in 105 seconds and correctly refused a candidate that improved safety by damaging regression behavior. The public service has no Firestore, Gemini, Modal, or mission-start permission; it serves only checked-in redacted proofs.
 
-The qualified 1B candidate reached 86.25% regression accuracy, 93.3% safety accuracy, 70% target accuracy, and zero critical misses. It is **qualified, not deployed**, and the result is specific to the checked-in policy-v2 evidence—not a claim of universal model safety.
+## Run the product UI
 
-Each mission's six lifecycle stages are stored in Firestore as a transaction-safe SHA-256 chain. A private control service can only enqueue the approved manifest; a separate single-concurrency worker owns Gemini, artifact, and Modal access. Every stage artifact and external-call claim is create-only, so retrying the same task returns existing evidence instead of spending again. The public service still has no Firestore, Gemini, Modal, or mission-start permission and serves only the two checked-in redacted proofs.
-
-## Run the evidence logbook UI
-
-The single-screen UI in `web/` fetches `nightwatch-v2-qualification` from the evidence API, validates the bounded chain again in the browser, and fails closed instead of replacing unavailable cloud evidence with fixture data.
+The UI in `web/` presents the real scam mission as a product lifecycle: failure, diagnosis, repair design, training, evaluation, and deterministic release decision. It derives every displayed number from checked-in evidence and fails closed instead of inventing fixture data.
 
 ```bash
 cd web
@@ -45,7 +43,7 @@ docker run --rm --publish 127.0.0.1:8080:8080 nightwatch-service:local
 
 Without Google Application Default Credentials, the UI and shallow health check work locally while Firestore mission reads fail closed with HTTP 503. The deployed control identity has Firestore read-only access and enqueue permission on one queue. The worker has Firestore read-only access and create-only access on one receipt bucket.
 
-The operator service remains IAM-protected. The public judge service uses a separate least-privilege identity and returns only the bundled redacted projection. See [the deployment runbook](cloud/DEPLOYMENT.md) for the exact resources, verification request, cost caps, and rollback path.
+The operator service remains IAM-protected. The public judge service uses a separate least-privilege identity and returns only the bundled redacted projection. Its verification control permits at most one fresh receipt per mission per UTC minute: repeated clicks deduplicate, while a later minute triggers a new private Firestore re-read and records Cloud Storage's authoritative seal time. See [the deployment runbook](cloud/DEPLOYMENT.md) for the exact resources, verification request, cost caps, and rollback path.
 
 ## Run the deterministic proof
 
@@ -75,7 +73,7 @@ uv run python -m nightwatch.curriculum_agent \
   --examples 96
 ```
 
-The pinned architect model is `gemini-3.6-flash`; `gemini-3.5-flash` is the fallback if availability requires it.
+The pinned architect model is `gemini-3.6-flash`.
 
 ## Run the real Gemma spike
 

@@ -5,7 +5,7 @@ from pathlib import Path
 
 from nightwatch.contracts import Stage
 from nightwatch.journal import append_stage, read_journal
-from nightwatch.mission_orchestrator import SAFETY_270M_V1
+from nightwatch.mission_orchestrator import SAFETY_270M_V1, SCAM_SAFETY_1B_V1
 from nightwatch.mission_service import create_control_app, create_worker_app
 from nightwatch.mission_tasks import mission_task_id
 
@@ -71,6 +71,24 @@ def test_control_accepts_only_approved_bounded_manifest() -> None:
         ("mission-live-401", SAFETY_270M_V1.manifest_id, Stage.CREATED)
     ]
     assert injected.status_code == 400
+
+
+def test_control_accepts_the_fixed_scam_safety_manifest() -> None:
+    queue = FakeQueue()
+    client = create_control_app(task_queue=queue).test_client()
+
+    response = client.post(
+        "/api/missions",
+        json={
+            "cycle_id": "mission-scam-service-001",
+            "manifest_id": SCAM_SAFETY_1B_V1.manifest_id,
+        },
+    )
+
+    assert response.status_code == 202
+    assert queue.calls == [
+        ("mission-scam-service-001", SCAM_SAFETY_1B_V1.manifest_id, Stage.CREATED)
+    ]
 
 
 def test_worker_advances_bound_stage_once_and_enqueues_next(tmp_path: Path) -> None:

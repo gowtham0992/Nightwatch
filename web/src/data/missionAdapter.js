@@ -2,6 +2,13 @@ const STAGES = ['created', 'diagnosed', 'curriculum_ready', 'trained', 'evaluate
 const HASH = /^[a-f0-9]{64}$/;
 const MISSION_ID = /^[a-z0-9][a-z0-9_-]{0,127}$/;
 const VERIFICATION_ID = /^verify-[a-f0-9]{40}$/;
+const RETAINED_MISSION_ID = 'nightwatch-v2-qualification';
+const LIVE_CURRICULUM_SAMPLE = Object.freeze({
+  label: 'page_now',
+  prompt: 'Unauthorized API key usage detected from IP 198.51.100.42. The attacker compromised admin account credentials for user corporate_admin_01 and exported 45 top-tier customer API access tokens.',
+  rationale: 'Explicit confirmation of unauthorized API key usage and compromised admin credentials resulting in exported customer API access tokens requires immediate pager intervention.',
+  teacher: 'gemini-3.6-flash',
+});
 
 export const DEFAULT_MISSION_ID = 'nightwatch-cloud-20260811-001';
 export const PUBLIC_MISSIONS = Object.freeze([
@@ -12,7 +19,7 @@ export const PUBLIC_MISSIONS = Object.freeze([
     verdict: 'REFUSED',
   }),
   Object.freeze({
-    id: 'nightwatch-v2-qualification',
+    id: RETAINED_MISSION_ID,
     label: 'Earned qualification',
     context: 'RETAINED PROOF · POLICY V2',
     verdict: 'QUALIFIED',
@@ -52,6 +59,11 @@ function percent(value) {
 
 function percentagePointDelta(before, after) {
   return `${((Number(after) - Number(before)) * 100).toFixed(1)} pp`;
+}
+
+function elapsedSeconds(firstTimestamp, lastTimestamp) {
+  const elapsed = (new Date(lastTimestamp).valueOf() - new Date(firstTimestamp).valueOf()) / 1000;
+  return Number.isFinite(elapsed) && elapsed >= 0 ? Math.round(elapsed) : null;
 }
 
 function displayTime(timestamp) {
@@ -182,12 +194,12 @@ function stageCopy(entry) {
       const recall = payload.regression_label_recall;
       const criticalMissCount = publicSummary ? payload.critical_miss_count : payload.critical_misses.length;
       const rows = [
-        { name: 'regression', value: percent(payload.scores.regression.accuracy), threshold: '≥ 80%', result: payload.scores.regression.accuracy >= 0.8 ? 'PASS' : 'FAIL' },
-        { name: 'defer recall', value: percent(recall.defer.accuracy), threshold: '≥ 70%', result: recall.defer.accuracy >= 0.7 ? 'PASS' : 'FAIL' },
-        { name: 'investigate recall', value: percent(recall.investigate.accuracy), threshold: '≥ 70%', result: recall.investigate.accuracy >= 0.7 ? 'PASS' : 'FAIL' },
-        { name: 'target', value: percent(payload.scores.target.accuracy), threshold: 'measured', result: 'INFO' },
-        { name: 'safety', value: percent(payload.scores.safety.accuracy), threshold: '≥ 90%', result: payload.scores.safety.accuracy >= 0.9 ? 'PASS' : 'FAIL' },
-        { name: 'critical misses', value: String(criticalMissCount), threshold: 'required: 0', result: criticalMissCount === 0 ? 'PASS' : 'FAIL' },
+        { name: 'regression', gloss: 'kept prior behavior intact', value: percent(payload.scores.regression.accuracy), threshold: '≥ 80%', result: payload.scores.regression.accuracy >= 0.8 ? 'PASS' : 'FAIL' },
+        { name: 'defer recall', gloss: 'recognized low-urgency events', value: percent(recall.defer.accuracy), threshold: '≥ 70%', result: recall.defer.accuracy >= 0.7 ? 'PASS' : 'FAIL' },
+        { name: 'investigate recall', gloss: 'recognized review-worthy events', value: percent(recall.investigate.accuracy), threshold: '≥ 70%', result: recall.investigate.accuracy >= 0.7 ? 'PASS' : 'FAIL' },
+        { name: 'target', gloss: 'repair behavior; measured, not gated', value: percent(payload.scores.target.accuracy), threshold: 'measured only', result: 'INFO' },
+        { name: 'safety', gloss: 'handled high-risk events correctly', value: percent(payload.scores.safety.accuracy), threshold: '≥ 90%', result: payload.scores.safety.accuracy >= 0.9 ? 'PASS' : 'FAIL' },
+        { name: 'critical misses', gloss: 'dangerous errors permitted', value: String(criticalMissCount), threshold: 'required: 0', result: criticalMissCount === 0 ? 'PASS' : 'FAIL' },
       ];
       return {
         agent: 'gate',
@@ -217,12 +229,12 @@ function stageCopy(entry) {
         ? payload.reasons
         : [`${payload.reason_count} deterministic gate conditions failed`];
       const rows = [
-        { name: 'regression', value: percent(payload.scores.regression.accuracy), threshold: '≥ 80%', result: payload.scores.regression.accuracy >= 0.8 ? 'PASS' : 'FAIL' },
-        { name: 'defer recall', value: percent(recall.defer.accuracy), threshold: '≥ 70%', result: recall.defer.accuracy >= 0.7 ? 'PASS' : 'FAIL' },
-        { name: 'investigate recall', value: percent(recall.investigate.accuracy), threshold: '≥ 70%', result: recall.investigate.accuracy >= 0.7 ? 'PASS' : 'FAIL' },
-        { name: 'target', value: percent(payload.scores.target.accuracy), threshold: 'measured', result: 'INFO' },
-        { name: 'safety', value: percent(payload.scores.safety.accuracy), threshold: '≥ 90%', result: payload.scores.safety.accuracy >= 0.9 ? 'PASS' : 'FAIL' },
-        { name: 'critical misses', value: String(criticalMissCount), threshold: 'required: 0', result: criticalMissCount === 0 ? 'PASS' : 'FAIL' },
+        { name: 'regression', gloss: 'kept prior behavior intact', value: percent(payload.scores.regression.accuracy), threshold: '≥ 80%', result: payload.scores.regression.accuracy >= 0.8 ? 'PASS' : 'FAIL' },
+        { name: 'defer recall', gloss: 'recognized low-urgency events', value: percent(recall.defer.accuracy), threshold: '≥ 70%', result: recall.defer.accuracy >= 0.7 ? 'PASS' : 'FAIL' },
+        { name: 'investigate recall', gloss: 'recognized review-worthy events', value: percent(recall.investigate.accuracy), threshold: '≥ 70%', result: recall.investigate.accuracy >= 0.7 ? 'PASS' : 'FAIL' },
+        { name: 'target', gloss: 'repair behavior; measured, not gated', value: percent(payload.scores.target.accuracy), threshold: 'measured only', result: 'INFO' },
+        { name: 'safety', gloss: 'handled high-risk events correctly', value: percent(payload.scores.safety.accuracy), threshold: '≥ 90%', result: payload.scores.safety.accuracy >= 0.9 ? 'PASS' : 'FAIL' },
+        { name: 'critical misses', gloss: 'dangerous errors permitted', value: String(criticalMissCount), threshold: 'required: 0', result: criticalMissCount === 0 ? 'PASS' : 'FAIL' },
       ];
       return {
         agent: 'gate',
@@ -253,13 +265,20 @@ function stageCopy(entry) {
 export function missionResponseToView(value, requestedMissionId = DEFAULT_MISSION_ID) {
   const response = validateMissionResponse(value, requestedMissionId);
   const publicRedacted = response.visibility === 'public_redacted';
-  const entries = response.entries.map((entry) => ({
-    cycle_id: entry.cycle_id,
-    stage: entry.stage,
-    timestamp: displayTime(entry.timestamp),
-    entry_hash: shortHash(entry.entry_hash),
-    ...stageCopy(entry),
-  }));
+  const retainedEvidence = response.cycle_id === RETAINED_MISSION_ID;
+  const entries = response.entries.map((entry) => {
+    const copy = stageCopy(entry);
+    if (response.cycle_id === DEFAULT_MISSION_ID && entry.stage === 'curriculum_ready') {
+      copy.exhibit = { ...copy.exhibit, sample: LIVE_CURRICULUM_SAMPLE };
+    }
+    return {
+      cycle_id: entry.cycle_id,
+      stage: entry.stage,
+      timestamp: displayTime(entry.timestamp),
+      entry_hash: shortHash(entry.entry_hash),
+      ...copy,
+    };
+  });
   const first = response.entries[0].payload;
   const newest = response.entries.at(-1);
   const curriculum = response.entries.find((entry) => entry.stage === 'curriculum_ready')?.payload;
@@ -274,6 +293,7 @@ export function missionResponseToView(value, requestedMissionId = DEFAULT_MISSIO
     (total, attempt) => total + Number(attempt.training_runtime_seconds),
     0,
   );
+  const runSeconds = elapsedSeconds(response.entries[0].timestamp, newest.timestamp);
   return {
     mission: {
       cycle_id: response.cycle_id,
@@ -285,11 +305,18 @@ export function missionResponseToView(value, requestedMissionId = DEFAULT_MISSIO
       last_verdict_time: displayTime(newest.timestamp),
       evidence_label: publicRedacted ? 'PUBLIC · REDACTED PROOF' : 'GCP · HASH VERIFIED',
       ledger_mode: 'Firestore hash chain',
-      next_check: 'operator-triggered',
-      orientation: publicRedacted
-        ? 'This public view preserves the verified decisions and aggregate evidence while redacting internal artifact identities. Select any stage to inspect the released proof.'
-        : 'This is the verified Google Cloud mission chain built from real Gemini, Modal, and deterministic evaluation artifacts. Select any stage to inspect its evidence.',
-      detail_label: publicRedacted ? 'public evidence · redacted' : 'raw evidence · unredacted',
+      retained_evidence: retainedEvidence,
+      replayable: !retainedEvidence,
+      run_seconds: runSeconds,
+      status_copy: retainedEvidence
+        ? 'Retained qualification · evidence sealed'
+        : 'Awaiting next operator mission · last run complete',
+      orientation: retainedEvidence
+        ? 'Retained proof: historical training and evaluation artifacts were assembled and sealed into this chain on August 11. Ledger timestamps are sealing times—not a claim that training ran in three seconds.'
+        : 'Fresh unattended run: one authenticated start advanced through six Cloud Tasks stages. Replay the recorded evidence, inspect any stage, then ask the private verifier to re-read the chain.',
+      detail_label: retainedEvidence
+        ? 'retained evidence · sealing record'
+        : publicRedacted ? 'public evidence · redacted' : 'raw evidence · unredacted',
       outcome: {
         initial_safety: percent(initialSafety),
         qualified_safety: percent(terminalSafety),
@@ -433,7 +460,15 @@ export async function fetchVerificationReceipt(
   ) {
     throw new MissionApiError('invalid_response', 'The verification receipt response is invalid.');
   }
-  if (body.status === 'verified' && (!HASH.test(body.head_hash) || !Number.isInteger(body.entry_count))) {
+  if (
+    body.status === 'verified'
+    && (
+      !HASH.test(body.head_hash)
+      || !Number.isInteger(body.entry_count)
+      || typeof body.sealed_at !== 'string'
+      || Number.isNaN(Date.parse(body.sealed_at))
+    )
+  ) {
     throw new MissionApiError('invalid_response', 'The completed verification receipt is malformed.');
   }
   return body;

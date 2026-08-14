@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import os
 import threading
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Callable, Protocol
 
 from flask import Flask, Response, jsonify, request
 from google.api_core.exceptions import GoogleAPICallError, RetryError
@@ -14,8 +15,10 @@ from nightwatch.journal import ALLOWED_TRANSITIONS, JournalEntry, JournalError
 from nightwatch.public_evidence import (
     PUBLIC_MISSION_ID,
     PUBLIC_MISSION_IDS,
+    PUBLIC_VERIFICATION_GRACE_MINUTES,
     load_public_snapshot,
     public_idempotency_key,
+    public_verification_idempotency_key,
     validate_public_snapshot,
 )
 from nightwatch.verification import (
@@ -80,6 +83,7 @@ def create_app(
     verification_reader: VerificationReceiptReader | None = None,
     public_snapshot: dict[str, Any] | None = None,
     static_root: Path | None = None,
+    clock: Callable[[], datetime] | None = None,
 ) -> Flask:
     web_root = static_root or Path(os.environ.get("NIGHTWATCH_WEB_ROOT", "/app/web-dist"))
     app = Flask(__name__, static_folder=str(web_root), static_url_path="")
@@ -99,6 +103,26 @@ def create_app(
         else {}
     )
     redacted_snapshot_lock = threading.Lock()
+    now = clock or (lambda: datetime.now(timezone.utc))
+
+    def allowed_public_verification_ids(cycle_id: str, head_hash: str) -> set[str]:
+        from nightwatch.cloud_tasks import verification_id as build_verification_id
+
+        current = now()
+        ids = {
+            build_verification_id(
+                cycle_id,
+                head_hash,
+                public_verification_idempotency_key(
+                    cycle_id,
+                    current - timedelta(minutes=offset),
+                ),
+            )
+            for offset in range(PUBLIC_VERIFICATION_GRACE_MINUTES + 1)
+        }
+        # Preserve access to the two receipts created before fresh public proof existed.
+        ids.add(build_verification_id(cycle_id, head_hash, public_idempotency_key(cycle_id)))
+        return ids
 
     def get_journal() -> JournalReader:
         nonlocal journal
@@ -278,7 +302,7 @@ def create_app(
                 if cycle_id not in PUBLIC_MISSION_IDS:
                     return _error("mission_not_found", "No public mission exists with that ID.", 404)
                 current_head = get_public_snapshot(cycle_id)["head_hash"]
-                idempotency_key = public_idempotency_key(cycle_id)
+                idempotency_key = public_verification_idempotency_key(cycle_id, now())
             else:
                 entries = get_journal().read_cycle(cycle_id)
                 if not entries:
@@ -330,17 +354,14 @@ def create_app(
         ):
             return _error("invalid_task", "The task envelope is invalid.", 400)
         if os.environ.get("NIGHTWATCH_PUBLIC_WORKER_MODE") == "1":
-            from nightwatch.cloud_tasks import verification_id as build_verification_id
-
             public_cycle_id = body.get("cycle_id") if isinstance(body, dict) else None
             if public_cycle_id not in PUBLIC_MISSION_IDS:
                 return _error("invalid_task", "The task envelope is invalid.", 400)
             try:
                 public_head = get_public_snapshot(public_cycle_id)["head_hash"]
-                public_verification_id = build_verification_id(
+                public_verification_ids = allowed_public_verification_ids(
                     public_cycle_id,
                     public_head,
-                    public_idempotency_key(public_cycle_id),
                 )
             except JournalError:
                 app.logger.exception("public mission snapshot integrity failure")
@@ -349,11 +370,10 @@ def create_app(
                     "The public mission evidence failed its integrity check.",
                     503,
                 )
-            if body != {
-                "cycle_id": public_cycle_id,
-                "expected_head_hash": public_head,
-                "verification_id": public_verification_id,
-            }:
+            if (
+                body.get("expected_head_hash") != public_head
+                or body.get("verification_id") not in public_verification_ids
+            ):
                 return _error("invalid_task", "The task envelope is invalid.", 400)
         try:
             receipt = get_verifier().verify(
@@ -390,15 +410,12 @@ def create_app(
         verification_id: str,
     ) -> tuple[Response, int] | Response:
         if public_mode:
-            from nightwatch.cloud_tasks import verification_id as build_verification_id
-
             try:
                 if cycle_id not in PUBLIC_MISSION_IDS:
                     raise JournalError("public mission is not allowlisted")
-                expected_id = build_verification_id(
+                expected_ids = allowed_public_verification_ids(
                     cycle_id,
                     get_public_snapshot(cycle_id)["head_hash"],
-                    public_idempotency_key(cycle_id),
                 )
             except JournalError:
                 app.logger.exception("public mission snapshot integrity failure")
@@ -407,7 +424,7 @@ def create_app(
                     "The public mission evidence failed its integrity check.",
                     503,
                 )
-            if verification_id != expected_id:
+            if verification_id not in expected_ids:
                 return _error("not_found", "The verification receipt does not exist.", 404)
         try:
             receipt = get_receipt_reader().read(cycle_id, verification_id)
@@ -436,6 +453,7 @@ def create_app(
                 "cycle_id": receipt.cycle_id,
                 "head_hash": receipt.head_hash,
                 "entry_count": receipt.entry_count,
+                "sealed_at": receipt.sealed_at,
                 "verification_id": receipt.verification_id,
             }
         )

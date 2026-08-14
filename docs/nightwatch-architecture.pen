@@ -3,16 +3,1976 @@
   "children": [
     {
       "type": "frame",
-      "id": "bi8Au",
+      "id": "P1Eer",
       "x": 0,
       "y": 0,
-      "name": "Frame",
+      "name": "Nightwatch Architecture — Deployed System",
       "clip": true,
-      "width": 800,
-      "height": 600,
-      "fill": "#FFFFFF",
-      "layout": "none"
+      "width": 1920,
+      "height": 1080,
+      "fill": "$surface",
+      "layout": "vertical",
+      "gap": 24,
+      "padding": [
+        60,
+        100,
+        48,
+        100
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "HbBkr",
+          "name": "Architecture Header",
+          "width": "fill_container",
+          "height": 126,
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "nuLji",
+              "name": "Header Copy",
+              "width": 1120,
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "vL88Y",
+                  "name": "Title",
+                  "fill": "$ink",
+                  "content": "NIGHTWATCH",
+                  "fontFamily": "$font-heading",
+                  "fontSize": 58,
+                  "fontWeight": "800",
+                  "letterSpacing": -2
+                },
+                {
+                  "type": "text",
+                  "id": "N4gTV",
+                  "name": "Subtitle",
+                  "fill": "$muted",
+                  "content": "Autonomous model repair. Deterministic release authority.",
+                  "fontFamily": "$font-body",
+                  "fontSize": 27,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "g1JGim",
+              "name": "Deployment Badges",
+              "layout": "vertical",
+              "gap": 10,
+              "alignItems": "end",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ttFCJ",
+                  "name": "Mandatory Stack",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "xRwF4",
+                      "name": "GEMINI 3.6 FLASH Badge",
+                      "fill": "$accent-soft",
+                      "stroke": "$accent",
+                      "strokeWidth": 1,
+                      "padding": [
+                        8,
+                        12
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "LHBSe",
+                          "name": "GEMINI 3.6 FLASH Label",
+                          "fill": "$ink",
+                          "content": "GEMINI 3.6 FLASH",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 14,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "L5Z1s",
+                      "name": "GOOGLE ADK Badge",
+                      "fill": "$accent-soft",
+                      "stroke": "$accent",
+                      "strokeWidth": 1,
+                      "padding": [
+                        8,
+                        12
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Q34jk",
+                          "name": "GOOGLE ADK Label",
+                          "fill": "$ink",
+                          "content": "GOOGLE ADK",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 14,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "rESNz",
+                      "name": "GOOGLE CLOUD Badge",
+                      "fill": "$accent-soft",
+                      "stroke": "$accent",
+                      "strokeWidth": 1,
+                      "padding": [
+                        8,
+                        12
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "rcQSl",
+                          "name": "GOOGLE CLOUD Label",
+                          "fill": "$ink",
+                          "content": "GOOGLE CLOUD",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 14,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "h81bP",
+                  "name": "Track Label",
+                  "fill": "$success",
+                  "content": "THE TASKMASTER · DEPLOYED PROOF",
+                  "fontFamily": "$font-mono",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "cVo0H",
+          "name": "Autonomous Repair Workflow",
+          "width": "fill_container",
+          "height": 210,
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "frame",
+              "id": "o8PLy",
+              "name": "Workflow Heading",
+              "width": "fill_container",
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "GC4Vf",
+                  "name": "Workflow Label",
+                  "fill": "$ink",
+                  "content": "AUTONOMOUS REPAIR WORKFLOW",
+                  "fontFamily": "$font-mono",
+                  "fontSize": 17,
+                  "fontWeight": "700",
+                  "letterSpacing": 1
+                },
+                {
+                  "type": "text",
+                  "id": "MRPsc",
+                  "name": "Authority Principle",
+                  "fill": "$success",
+                  "content": "Gemini proposes  ·  deterministic code approves",
+                  "fontFamily": "$font-body",
+                  "fontSize": 19,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "b3ZrB",
+              "name": "Workflow Stages",
+              "width": "fill_container",
+              "height": 164,
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "zjS4L",
+                  "name": "WATCHER Stage",
+                  "width": 253,
+                  "height": 154,
+                  "fill": "$warning-soft",
+                  "stroke": "$warning",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": [
+                    16,
+                    17
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "jUVJ5",
+                      "name": "WATCHER Metadata",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "xe3ty",
+                          "name": "WATCHER Number",
+                          "fill": "$warning",
+                          "content": "01",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 15,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "lzQIE",
+                          "name": "WATCHER Role",
+                          "fill": "$warning",
+                          "content": "WATCHER",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700",
+                          "letterSpacing": 0.8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "E8vdW",
+                      "name": "WATCHER Title",
+                      "fill": "$ink",
+                      "content": "Failure detected",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "xujhZ",
+                      "name": "WATCHER Detail",
+                      "fill": "$muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "83.3% safety · floor 90%",
+                      "fontFamily": "$font-body",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "fTnAU",
+                  "name": "Stage Arrow 1",
+                  "width": 30,
+                  "height": 42,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "GJ19m",
+                      "name": "Arrow Right 1",
+                      "width": 24,
+                      "height": 24,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "weight": 1.5,
+                      "fill": "$faint"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "oD52q",
+                  "name": "DIAGNOSTICIAN Stage",
+                  "width": 253,
+                  "height": 154,
+                  "fill": "$surface-secondary",
+                  "stroke": "$ink",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": [
+                    16,
+                    17
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "zHykn",
+                      "name": "DIAGNOSTICIAN Metadata",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "akSKG",
+                          "name": "DIAGNOSTICIAN Number",
+                          "fill": "$ink",
+                          "content": "02",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 15,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "bBcXd",
+                          "name": "DIAGNOSTICIAN Role",
+                          "fill": "$ink",
+                          "content": "DIAGNOSTICIAN",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700",
+                          "letterSpacing": 0.8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "LKctE",
+                      "name": "DIAGNOSTICIAN Title",
+                      "fill": "$ink",
+                      "content": "Gap isolated",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "JHGuQ",
+                      "name": "DIAGNOSTICIAN Detail",
+                      "fill": "$muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Threshold weakening forbidden",
+                      "fontFamily": "$font-body",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "dksNx",
+                  "name": "Stage Arrow 2",
+                  "width": 30,
+                  "height": 42,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "XDYoJ",
+                      "name": "Arrow Right 2",
+                      "width": 24,
+                      "height": 24,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "weight": 1.5,
+                      "fill": "$faint"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "I0p9V6",
+                  "name": "CURRICULUM Stage",
+                  "width": 253,
+                  "height": 154,
+                  "fill": "$accent-soft",
+                  "stroke": "$accent",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": [
+                    16,
+                    17
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "B1L4C",
+                      "name": "CURRICULUM Metadata",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "l8qwe",
+                          "name": "CURRICULUM Number",
+                          "fill": "$accent",
+                          "content": "03",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 15,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "vv6wK",
+                          "name": "CURRICULUM Role",
+                          "fill": "$accent",
+                          "content": "CURRICULUM",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700",
+                          "letterSpacing": 0.8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "aq5Kg",
+                      "name": "CURRICULUM Title",
+                      "fill": "$ink",
+                      "content": "Intervention designed",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Pbqc1",
+                      "name": "CURRICULUM Detail",
+                      "fill": "$muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Gemini 3.6 + ADK · 32 rows",
+                      "fontFamily": "$font-body",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BvgKz",
+                  "name": "Stage Arrow 3",
+                  "width": 30,
+                  "height": 42,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "fNonn",
+                      "name": "Arrow Right 3",
+                      "width": 24,
+                      "height": 24,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "weight": 1.5,
+                      "fill": "$faint"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "OppVb",
+                  "name": "TRAINER Stage",
+                  "width": 253,
+                  "height": 154,
+                  "fill": "$surface-secondary",
+                  "stroke": "$ink",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": [
+                    16,
+                    17
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Jhjwb",
+                      "name": "TRAINER Metadata",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BXt9i",
+                          "name": "TRAINER Number",
+                          "fill": "$ink",
+                          "content": "04",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 15,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "eFKj5",
+                          "name": "TRAINER Role",
+                          "fill": "$ink",
+                          "content": "TRAINER",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700",
+                          "letterSpacing": 0.8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "onzrp",
+                      "name": "TRAINER Title",
+                      "fill": "$ink",
+                      "content": "Candidates trained",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Pg7Of",
+                      "name": "TRAINER Detail",
+                      "fill": "$muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Modal · Gemma 270M → 1B",
+                      "fontFamily": "$font-body",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "u89qoz",
+                  "name": "Stage Arrow 4",
+                  "width": 30,
+                  "height": 42,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "q6Aj9I",
+                      "name": "Arrow Right 4",
+                      "width": 24,
+                      "height": 24,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "weight": 1.5,
+                      "fill": "$faint"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "a7oOb",
+                  "name": "EVALUATOR Stage",
+                  "width": 253,
+                  "height": 154,
+                  "fill": "$surface-secondary",
+                  "stroke": "$ink",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": [
+                    16,
+                    17
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "OliIb",
+                      "name": "EVALUATOR Metadata",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "SKkbS",
+                          "name": "EVALUATOR Number",
+                          "fill": "$ink",
+                          "content": "05",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 15,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "wcRWi",
+                          "name": "EVALUATOR Role",
+                          "fill": "$ink",
+                          "content": "EVALUATOR",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700",
+                          "letterSpacing": 0.8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "eYEBp",
+                      "name": "EVALUATOR Title",
+                      "fill": "$ink",
+                      "content": "Blind audit scored",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "mUueq",
+                      "name": "EVALUATOR Detail",
+                      "fill": "$muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "300 cases · policy v2",
+                      "fontFamily": "$font-body",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "rh82i",
+                  "name": "Stage Arrow 5",
+                  "width": 30,
+                  "height": 42,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "kW8MA",
+                      "name": "Arrow Right 5",
+                      "width": 24,
+                      "height": 24,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "weight": 1.5,
+                      "fill": "$faint"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "WzJ39",
+                  "name": "GATE Stage",
+                  "width": 253,
+                  "height": 154,
+                  "fill": "$success-soft",
+                  "stroke": "$success",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": [
+                    16,
+                    17
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "naDf0",
+                      "name": "GATE Metadata",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "GBNJw",
+                          "name": "GATE Number",
+                          "fill": "$success",
+                          "content": "06",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 15,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "K7Mnh",
+                          "name": "GATE Role",
+                          "fill": "$success",
+                          "content": "GATE",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700",
+                          "letterSpacing": 0.8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "kR1hQ",
+                      "name": "GATE Title",
+                      "fill": "$ink",
+                      "content": "Release decided",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "DiVVf",
+                      "name": "GATE Detail",
+                      "fill": "$muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "270M refused · 1B qualified",
+                      "fontFamily": "$font-body",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "YJsCy",
+          "name": "Google Cloud Trust Plane",
+          "width": "fill_container",
+          "height": 430,
+          "fill": "$surface-secondary",
+          "stroke": "$accent",
+          "strokeWidth": 2,
+          "layout": "vertical",
+          "gap": 14,
+          "padding": [
+            20,
+            22
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "s21hVp",
+              "name": "Cloud Plane Heading",
+              "width": "fill_container",
+              "height": 42,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "T3WY5h",
+                  "name": "Cloud Plane Title Group",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "za3jo",
+                      "name": "Google Cloud Mark",
+                      "width": 34,
+                      "height": 34,
+                      "fill": "$accent",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "n1T51",
+                          "name": "Cloud Icon",
+                          "width": 21,
+                          "height": 21,
+                          "icon": "cloud",
+                          "library": "lucide",
+                          "weight": 2,
+                          "fill": "$surface"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "o02ZW",
+                      "name": "Cloud Plane Label",
+                      "fill": "$ink",
+                      "content": "DEPLOYED GOOGLE CLOUD PROOF PATH",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 18,
+                      "fontWeight": "700",
+                      "letterSpacing": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "U7M6vR",
+                  "name": "Evidence Append Caption",
+                  "fill": "$accent",
+                  "content": "Every lifecycle stage appends to the Firestore chain  ↓",
+                  "fontFamily": "$font-body",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "CcWAe",
+              "name": "Public Verification Path",
+              "width": "fill_container",
+              "height": 226,
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "i4jPRr",
+                  "name": "JUDGE Node",
+                  "width": 220,
+                  "height": 184,
+                  "fill": "$surface",
+                  "stroke": "$ink",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": [
+                    15,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "OKx7D",
+                      "name": "JUDGE Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Z1QNn",
+                          "name": "JUDGE Label",
+                          "fill": "$ink",
+                          "content": "JUDGE",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700",
+                          "letterSpacing": 0.7
+                        },
+                        {
+                          "type": "icon",
+                          "id": "N0WF5t",
+                          "name": "JUDGE Icon",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "user-round",
+                          "library": "lucide",
+                          "weight": 1.8,
+                          "fill": "$ink"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "H8qpCl",
+                      "name": "JUDGE Title",
+                      "fill": "$ink",
+                      "content": "Public browser",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 21,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "OjseN",
+                      "name": "JUDGE Detail",
+                      "fill": "$muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Redacted evidence + live proof",
+                      "fontFamily": "$font-body",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "rhBaj",
+                  "name": "Proof Arrow 1",
+                  "width": 34,
+                  "height": 42,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "QPfip",
+                      "name": "Proof Arrow Icon 1",
+                      "width": 25,
+                      "height": 25,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "weight": 1.8,
+                      "fill": "$accent"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "nKEOy",
+                  "name": "PUBLIC CLOUD RUN Node",
+                  "width": 290,
+                  "height": 184,
+                  "fill": "$accent-soft",
+                  "stroke": "$accent",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": [
+                    15,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "rJhyi",
+                      "name": "PUBLIC CLOUD RUN Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "FyOLi",
+                          "name": "PUBLIC CLOUD RUN Label",
+                          "fill": "$accent",
+                          "content": "PUBLIC CLOUD RUN",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700",
+                          "letterSpacing": 0.7
+                        },
+                        {
+                          "type": "icon",
+                          "id": "f2SPM",
+                          "name": "PUBLIC CLOUD RUN Icon",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "globe",
+                          "library": "lucide",
+                          "weight": 1.8,
+                          "fill": "$accent"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "wG3sL",
+                      "name": "PUBLIC CLOUD RUN Title",
+                      "fill": "$ink",
+                      "content": "Judge UI / API",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 21,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "mL0p0",
+                      "name": "PUBLIC CLOUD RUN Detail",
+                      "fill": "$muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "GCP boundary · fixed task identity",
+                      "fontFamily": "$font-body",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "qkRem",
+                  "name": "Proof Arrow 2",
+                  "width": 34,
+                  "height": 42,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "l7MQj",
+                      "name": "Proof Arrow Icon 2",
+                      "width": 25,
+                      "height": 25,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "weight": 1.8,
+                      "fill": "$accent"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "vAdio",
+                  "name": "CLOUD TASKS Node",
+                  "width": 240,
+                  "height": 184,
+                  "fill": "$surface",
+                  "stroke": "$ink",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": [
+                    15,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "I3G6nU",
+                      "name": "CLOUD TASKS Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "PLY9v",
+                          "name": "CLOUD TASKS Label",
+                          "fill": "$ink",
+                          "content": "CLOUD TASKS",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700",
+                          "letterSpacing": 0.7
+                        },
+                        {
+                          "type": "icon",
+                          "id": "L8RzH",
+                          "name": "CLOUD TASKS Icon",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "list-checks",
+                          "library": "lucide",
+                          "weight": 1.8,
+                          "fill": "$ink"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "ZYpi0",
+                      "name": "CLOUD TASKS Title",
+                      "fill": "$ink",
+                      "content": "Isolated queue",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 21,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "BUIoH",
+                      "name": "CLOUD TASKS Detail",
+                      "fill": "$muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "1 dispatch/sec · 1 concurrent",
+                      "fontFamily": "$font-body",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "FjQIP",
+                  "name": "Proof Arrow 3",
+                  "width": 34,
+                  "height": 42,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "BeOIA",
+                      "name": "Proof Arrow Icon 3",
+                      "width": 25,
+                      "height": 25,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "weight": 1.8,
+                      "fill": "$accent"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "T9ll5X",
+                  "name": "PRIVATE VERIFIER Node",
+                  "width": 290,
+                  "height": 184,
+                  "fill": "$surface",
+                  "stroke": "$ink",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": [
+                    15,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "H1V2t9",
+                      "name": "PRIVATE VERIFIER Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "szvKt",
+                          "name": "PRIVATE VERIFIER Label",
+                          "fill": "$ink",
+                          "content": "PRIVATE VERIFIER",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700",
+                          "letterSpacing": 0.7
+                        },
+                        {
+                          "type": "icon",
+                          "id": "jrlBM",
+                          "name": "PRIVATE VERIFIER Icon",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "shield-check",
+                          "library": "lucide",
+                          "weight": 1.8,
+                          "fill": "$ink"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "XMyyD",
+                      "name": "PRIVATE VERIFIER Title",
+                      "fill": "$ink",
+                      "content": "OIDC-only Cloud Run",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 21,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "geU5Q",
+                      "name": "PRIVATE VERIFIER Detail",
+                      "fill": "$muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Exact mission + head + receipt",
+                      "fontFamily": "$font-body",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "lUPvs",
+                  "name": "Proof Arrow 4",
+                  "width": 34,
+                  "height": 42,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "mmZr3",
+                      "name": "Proof Arrow Icon 4",
+                      "width": 25,
+                      "height": 25,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "weight": 1.8,
+                      "fill": "$accent"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "WjzZm",
+                  "name": "Immutable Evidence Vault",
+                  "width": 350,
+                  "height": 216,
+                  "fill": "$surface",
+                  "stroke": "$success",
+                  "strokeWidth": 2,
+                  "layout": "vertical",
+                  "gap": 10,
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "SBwqB",
+                      "name": "Vault Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "iMQvE",
+                          "name": "Vault Label",
+                          "fill": "$success",
+                          "content": "IMMUTABLE EVIDENCE",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700",
+                          "letterSpacing": 0.7
+                        },
+                        {
+                          "type": "icon",
+                          "id": "XSitl",
+                          "name": "Vault Icon",
+                          "width": 23,
+                          "height": 23,
+                          "icon": "database-zap",
+                          "library": "lucide",
+                          "weight": 1.8,
+                          "fill": "$success"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "B99Tya",
+                      "name": "Firestore Chain",
+                      "width": "fill_container",
+                      "fill": "$surface-secondary",
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "gap": 10,
+                      "padding": [
+                        10,
+                        11
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "aas4d",
+                          "name": "Firestore Icon",
+                          "width": 21,
+                          "height": 21,
+                          "icon": "database",
+                          "library": "lucide",
+                          "weight": 1.7,
+                          "fill": "$accent"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "gWvrF",
+                          "name": "Firestore Copy",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "i8a0A",
+                              "name": "Firestore Title",
+                              "fill": "$ink",
+                              "content": "Firestore · 6-stage hash chain",
+                              "fontFamily": "$font-heading",
+                              "fontSize": 17,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "IUu8W",
+                              "name": "Firestore Detail",
+                              "fill": "$faint",
+                              "content": "transaction-safe · read-only verification",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "NwFDO",
+                      "name": "Cloud Storage Receipt",
+                      "width": "fill_container",
+                      "fill": "$success-soft",
+                      "stroke": "$success",
+                      "strokeWidth": 1,
+                      "gap": 10,
+                      "padding": [
+                        10,
+                        11
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "S3Yw7",
+                          "name": "Receipt Icon",
+                          "width": 21,
+                          "height": 21,
+                          "icon": "file-check",
+                          "library": "lucide",
+                          "weight": 1.8,
+                          "fill": "$success"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "CQFZG",
+                          "name": "Receipt Copy",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "DItcF",
+                              "name": "Receipt Title",
+                              "fill": "$ink",
+                              "content": "Cloud Storage · immutable receipt",
+                              "fontFamily": "$font-heading",
+                              "fontSize": 17,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "hII7m",
+                              "name": "Receipt Detail",
+                              "fill": "$success",
+                              "content": "create-only · 7-day lifecycle",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "F3evqa",
+              "name": "Security and Cost Guardrails",
+              "width": "fill_container",
+              "height": 76,
+              "gap": 10,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "UtLIK",
+                  "name": "PUBLIC SURFACE Guardrail",
+                  "width": "fill_container",
+                  "height": 76,
+                  "fill": "$surface",
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "gap": 11,
+                  "padding": [
+                    12,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "I9g9S",
+                      "name": "PUBLIC SURFACE Icon",
+                      "width": 22,
+                      "height": 22,
+                      "icon": "eye-off",
+                      "library": "lucide",
+                      "weight": 1.8,
+                      "fill": "$accent"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "RIIkP",
+                      "name": "PUBLIC SURFACE Copy",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "WHK0D",
+                          "name": "PUBLIC SURFACE Heading",
+                          "fill": "$accent",
+                          "content": "PUBLIC SURFACE",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "YapUL",
+                          "name": "PUBLIC SURFACE Description",
+                          "fill": "$muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Redacted snapshot · zero Firestore access",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "E3tF3",
+                  "name": "PRIVATE OPERATOR Guardrail",
+                  "width": "fill_container",
+                  "height": 76,
+                  "fill": "$surface",
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "gap": 11,
+                  "padding": [
+                    12,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "uKRb5",
+                      "name": "PRIVATE OPERATOR Icon",
+                      "width": 22,
+                      "height": 22,
+                      "icon": "lock-keyhole",
+                      "library": "lucide",
+                      "weight": 1.8,
+                      "fill": "$ink"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "JspS5",
+                      "name": "PRIVATE OPERATOR Copy",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "XPnOe",
+                          "name": "PRIVATE OPERATOR Heading",
+                          "fill": "$ink",
+                          "content": "PRIVATE OPERATOR",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "h9uu0m",
+                          "name": "PRIVATE OPERATOR Description",
+                          "fill": "$muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Full evidence · Google Cloud IAM only",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Bm3Vg",
+                  "name": "LEAST PRIVILEGE Guardrail",
+                  "width": "fill_container",
+                  "height": 76,
+                  "fill": "$surface",
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "gap": 11,
+                  "padding": [
+                    12,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "FfZ0n",
+                      "name": "LEAST PRIVILEGE Icon",
+                      "width": 22,
+                      "height": 22,
+                      "icon": "key-round",
+                      "library": "lucide",
+                      "weight": 1.8,
+                      "fill": "$success"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ay66G",
+                      "name": "LEAST PRIVILEGE Copy",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "FTDf3",
+                          "name": "LEAST PRIVILEGE Heading",
+                          "fill": "$success",
+                          "content": "LEAST PRIVILEGE",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "cR09d",
+                          "name": "LEAST PRIVILEGE Description",
+                          "fill": "$muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Viewer + queue enqueuer + create-only receipt",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "SUT9c",
+                  "name": "COST BOUNDARY Guardrail",
+                  "width": "fill_container",
+                  "height": 76,
+                  "fill": "$surface",
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "gap": 11,
+                  "padding": [
+                    12,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "EJMK9",
+                      "name": "COST BOUNDARY Icon",
+                      "width": 22,
+                      "height": 22,
+                      "icon": "gauge",
+                      "library": "lucide",
+                      "weight": 1.8,
+                      "fill": "$warning"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "AWwyp",
+                      "name": "COST BOUNDARY Copy",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "fNzmg",
+                          "name": "COST BOUNDARY Heading",
+                          "fill": "$warning",
+                          "content": "COST BOUNDARY",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "lu4JX",
+                          "name": "COST BOUNDARY Description",
+                          "fill": "$muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Scale to zero · max 1 public / max 1 worker",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "xYcoa",
+          "name": "Verified Outcome Footer",
+          "width": "fill_container",
+          "height": 134,
+          "gap": 24,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "fLvpM",
+              "name": "Verified Metrics",
+              "width": 1040,
+              "height": 108,
+              "fill": "$surface-secondary",
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ii591",
+                  "name": "HASH-LINKED ENTRIES Metric",
+                  "width": "fill_container",
+                  "height": 108,
+                  "layout": "vertical",
+                  "gap": 7,
+                  "padding": [
+                    16,
+                    18
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "y8Rwcx",
+                      "name": "HASH-LINKED ENTRIES Value",
+                      "fill": "$ink",
+                      "content": "6",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 32,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "X0Ckv0",
+                      "name": "HASH-LINKED ENTRIES Label",
+                      "fill": "$faint",
+                      "content": "HASH-LINKED ENTRIES",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "700",
+                      "letterSpacing": 0.6
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "P5SDu",
+                  "name": "Metric Divider 1",
+                  "fill": "$border",
+                  "width": 1,
+                  "height": 68
+                },
+                {
+                  "type": "frame",
+                  "id": "iOgJt",
+                  "name": "SAFETY ACCURACY Metric",
+                  "width": "fill_container",
+                  "height": 108,
+                  "layout": "vertical",
+                  "gap": 7,
+                  "padding": [
+                    16,
+                    18
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "O8Jpm9",
+                      "name": "SAFETY ACCURACY Value",
+                      "fill": "$ink",
+                      "content": "93.3%",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 32,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "J2LyNt",
+                      "name": "SAFETY ACCURACY Label",
+                      "fill": "$faint",
+                      "content": "SAFETY ACCURACY",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "700",
+                      "letterSpacing": 0.6
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "ZTnDq",
+                  "name": "Metric Divider 2",
+                  "fill": "$border",
+                  "width": 1,
+                  "height": 68
+                },
+                {
+                  "type": "frame",
+                  "id": "l3trR",
+                  "name": "CRITICAL MISSES Metric",
+                  "width": "fill_container",
+                  "height": 108,
+                  "layout": "vertical",
+                  "gap": 7,
+                  "padding": [
+                    16,
+                    18
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "bqKlU",
+                      "name": "CRITICAL MISSES Value",
+                      "fill": "$ink",
+                      "content": "0",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 32,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "LalV1",
+                      "name": "CRITICAL MISSES Label",
+                      "fill": "$faint",
+                      "content": "CRITICAL MISSES",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "700",
+                      "letterSpacing": 0.6
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "Ozzpw",
+                  "name": "Metric Divider 3",
+                  "fill": "$border",
+                  "width": 1,
+                  "height": 68
+                },
+                {
+                  "type": "frame",
+                  "id": "dRz8k",
+                  "name": "IMMUTABLE RECEIPT Metric",
+                  "width": "fill_container",
+                  "height": 108,
+                  "layout": "vertical",
+                  "gap": 7,
+                  "padding": [
+                    16,
+                    18
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "vu9TL",
+                      "name": "IMMUTABLE RECEIPT Value",
+                      "fill": "$success",
+                      "content": "VERIFIED",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 25,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "A8OPZ",
+                      "name": "IMMUTABLE RECEIPT Label",
+                      "fill": "$faint",
+                      "content": "IMMUTABLE RECEIPT",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "700",
+                      "letterSpacing": 0.6
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "lNq5R",
+              "name": "Authority Boundary",
+              "width": "fill_container",
+              "height": 108,
+              "fill": "$ink",
+              "gap": 16,
+              "padding": [
+                18,
+                22
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "TfeUR",
+                  "name": "Authority Icon Box",
+                  "width": 52,
+                  "height": 52,
+                  "fill": "$success",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "nEHzt",
+                      "name": "Authority Shield",
+                      "width": 30,
+                      "height": 30,
+                      "icon": "shield-check",
+                      "library": "lucide",
+                      "weight": 2,
+                      "fill": "$surface"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "JxiOE",
+                  "name": "Authority Copy",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 5,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "mLpLZ",
+                      "name": "Authority Title",
+                      "fill": "$surface",
+                      "content": "THE MODEL CANNOT APPROVE ITSELF.",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 24,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "olz8c",
+                      "name": "Authority Detail",
+                      "fill": "#C7CDD3",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Gemini cannot edit thresholds, labels, evidence, journal history, or the release verdict.",
+                      "fontFamily": "$font-body",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
+  "variables": {
+    "surface": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "surface-secondary": {
+      "type": "color",
+      "value": "#F7F8FA"
+    },
+    "ink": {
+      "type": "color",
+      "value": "#1A1A1A"
+    },
+    "muted": {
+      "type": "color",
+      "value": "#666666"
+    },
+    "faint": {
+      "type": "color",
+      "value": "#888888"
+    },
+    "border": {
+      "type": "color",
+      "value": "#DDE2E7"
+    },
+    "accent": {
+      "type": "color",
+      "value": "#4A9FD8"
+    },
+    "accent-soft": {
+      "type": "color",
+      "value": "#EAF5FC"
+    },
+    "success": {
+      "type": "color",
+      "value": "#267A5A"
+    },
+    "success-soft": {
+      "type": "color",
+      "value": "#EAF6F1"
+    },
+    "warning": {
+      "type": "color",
+      "value": "#B87318"
+    },
+    "warning-soft": {
+      "type": "color",
+      "value": "#FFF5E6"
+    },
+    "font-heading": {
+      "type": "string",
+      "value": "Geist"
+    },
+    "font-body": {
+      "type": "string",
+      "value": "Inter"
+    },
+    "font-mono": {
+      "type": "string",
+      "value": "IBM Plex Mono"
+    }
+  },
   "fileToken": "bd31bfce-5b47-44fe-af60-83067aae5b07"
 }

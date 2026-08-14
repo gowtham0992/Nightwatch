@@ -50,6 +50,9 @@ test('verified mission becomes the six-stage qualified view', () => {
   const view = missionResponseToView(apiMission(), 'nightwatch-v2-qualification');
   assert.equal(view.mission.last_verdict, 'QUALIFIED');
   assert.equal(view.mission.evidence_label, 'GCP · HASH VERIFIED');
+  assert.equal(view.mission.retained_evidence, true);
+  assert.equal(view.mission.replayable, false);
+  assert.match(view.mission.orientation, /sealing times/);
   assert.equal(view.entries.length, 6);
   assert.deepEqual(view.entries.at(-1).verdict.rows.map((row) => row.result), ['PASS', 'PASS', 'PASS', 'INFO', 'PASS', 'PASS']);
   assert.deepEqual(view.mission.outcome, {
@@ -109,6 +112,11 @@ test('real refusal renders as a protected release with failed invariants', () =>
   const view = missionResponseToView(mission, mission.cycle_id);
 
   assert.equal(view.mission.last_verdict, 'REFUSED');
+  assert.equal(view.mission.retained_evidence, false);
+  assert.equal(view.mission.replayable, true);
+  assert.equal(view.mission.run_seconds, 300);
+  assert.equal(view.entries[2].exhibit.sample.teacher, 'gemini-3.6-flash');
+  assert.equal(view.entries[2].exhibit.sample.label, 'page_now');
   assert.equal(view.mission.outcome.qualified_safety, '90.0%');
   assert.equal(view.mission.outcome.deployment_status, 'refused_not_deployed');
   assert.equal(view.entries.at(-1).verdict.decision, 'REFUSED');
@@ -165,7 +173,7 @@ test('receipt polling distinguishes pending from verified content', async () => 
   const receiptId = `verify-${'b'.repeat(40)}`;
   const responses = [
     { status: 'pending', cycle_id: 'nightwatch-v2-qualification', verification_id: receiptId },
-    { status: 'verified', cycle_id: 'nightwatch-v2-qualification', verification_id: receiptId, head_hash: '6'.repeat(64), entry_count: 6 },
+    { status: 'verified', cycle_id: 'nightwatch-v2-qualification', verification_id: receiptId, head_hash: '6'.repeat(64), entry_count: 6, sealed_at: '2026-08-12T20:30:03Z' },
   ];
   const fetchImpl = async () => ({ ok: true, status: 200, json: async () => responses.shift() });
 
@@ -175,6 +183,7 @@ test('receipt polling distinguishes pending from verified content', async () => 
   assert.equal(pending.status, 'pending');
   assert.equal(verified.status, 'verified');
   assert.equal(verified.entry_count, 6);
+  assert.equal(verified.sealed_at, '2026-08-12T20:30:03Z');
 });
 
 test('public projection renders redacted copy without private artifact fields', () => {
@@ -204,5 +213,6 @@ test('public projection renders redacted copy without private artifact fields', 
   assert.equal(view.mission.evidence_label, 'PUBLIC · REDACTED PROOF');
   assert.match(view.entries[2].exhibit.raw.at(-1), /redacted/);
   assert.match(view.entries.at(-1).exhibit.raw.at(-1), /redacted/);
-  assert.equal(view.mission.detail_label, 'public evidence · redacted');
+  assert.equal(view.mission.detail_label, 'retained evidence · sealing record');
+  assert.equal(view.entries[2].exhibit.sample, undefined);
 });
