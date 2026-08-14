@@ -17,6 +17,13 @@ artifacts/evidence-audit-v2/*
 !artifacts/evidence-audit-v2/manifest.json
 !artifacts/public-mission-v2.json
 !artifacts/public-mission-cloud-20260811-001.json
+!artifacts/scam-safety/
+artifacts/scam-safety/*
+!artifacts/scam-safety/repair-authoring-v5.json
+!artifacts/scam-safety/scam-v0-de1e6009-2d77e636-c0e947096d-development-predictions.jsonl
+!artifacts/scam-safety/scam-v0-de1e6009-2d77e636-c0e947096d-development-report.json
+!artifacts/scam-safety/scam-v0-de1e6009-2d77e636-c0e947096d-evidence-ffca8c22-predictions.jsonl
+!artifacts/scam-safety/scam-v0-de1e6009-2d77e636-c0e947096d-repair-plan.json
 assets
 design
 web/dist
