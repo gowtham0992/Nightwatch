@@ -37,7 +37,7 @@ function Header() {
       </nav>
       <div className="header-state">
         <span className="live-dot" />
-        Retained run
+        Verified Cloud run
       </div>
     </header>
   );
@@ -74,7 +74,7 @@ function MissionOverview({ onReplay, isPlaying }) {
           </button>
           <a className="text-link" href="#evidence">Inspect retained evidence <ArrowIcon /></a>
         </div>
-        <small className="replay-note">Recorded evidence playback. It does not retrain or deploy a model.</small>
+        <small className="replay-note">Playback of a verified 94-second Cloud mission. It does not retrain or deploy a model.</small>
       </div>
       <div className="overview-metrics" aria-label="Baseline to candidate metrics">
         <Metric label="Target accuracy" before="83.3%" after="100%" detail="30/36 → 36/36" />
@@ -180,8 +180,8 @@ function Attempts() {
   return (
     <section className="attempts-section" id="attempts">
       <div className="section-heading">
-        <div><span className="section-kicker">No victory-lap cherry picking</span><h2>Five candidates looked good. Nightwatch refused them.</h2></div>
-        <p>Every row below is an immutable gate decision from the same 92-case evidence set.</p>
+        <div><span className="section-kicker">Development history · no cherry picking</span><h2>Five candidates looked good. Nightwatch refused them.</h2></div>
+        <p>These earlier immutable decisions earned the repair recipe used by the fresh Cloud run.</p>
       </div>
       <div className="attempt-table" role="table" aria-label="Candidate release attempts">
         <div className="attempt-row attempt-head" role="row">
@@ -207,6 +207,9 @@ function Attempts() {
 
 function Evidence() {
   const rows = [
+    ['Verified Firestore head', SCAM_MISSION.cloudRun.headHash],
+    ['Training stage artifact', SCAM_MISSION.cloudRun.trainingArtifact],
+    ['Evaluation stage artifact', SCAM_MISSION.cloudRun.evaluationArtifact],
     ['Mission contract', SCAM_MISSION.hashes.mission],
     ['Frozen development set', SCAM_MISSION.hashes.development],
     ['Final curriculum', SCAM_MISSION.hashes.curriculum],
