@@ -27,6 +27,17 @@ The mission control and worker run immutable image digest `sha256:e3d09ce4d07c65
 
 The rollback drill was exercised after the mission completed: traffic returned to `nightwatch-mission-control-00001-4cj` and `nightwatch-mission-worker-00002-s58`, then restored to the new revisions with no queued work and no ERROR-level release logs.
 
+## Enable the private Mission Control launch
+
+The UI exposes `POST /api/operator/missions` only on the authenticated `nightwatch-evidence` service and only when `NIGHTWATCH_OPERATOR_MODE=1`. The route accepts an empty JSON object plus a 16–128 character `Idempotency-Key`; it derives the cycle ID server-side and always launches the fixed `scam-safety-live-1b-v1` manifest. Callers cannot select a model, dataset, hyperparameter, attempt count, or deployment action. The public service keeps `NIGHTWATCH_PUBLIC_MODE=1`, never sets operator mode, and returns 404 for the route.
+
+Before enabling the route, preserve the existing private Cloud Run IAM policy and give the `nightwatch-evidence` runtime identity only these additional capabilities:
+
+- enqueue tasks to `nightwatch-missions`;
+- act as `nightwatch-missions-invoker` when creating that task.
+
+Configure the private service with the existing mission queue location, name, canonical worker URL, and invoker service account. Do not copy these settings or permissions to `nightwatch-public`. The worker already uses Vertex AI through ADC and has `roles/aiplatform.user`; the live manifest invokes the Gemini/ADK diagnostician and parallel curriculum authors before one create-only Modal training call.
+
 ## Verify the live mission
 
 This request binds the task to the exact Firestore head. Keep the identity token in memory and change the idempotency key for a new verification intent.

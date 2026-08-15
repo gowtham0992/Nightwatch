@@ -13,6 +13,7 @@ from nightwatch.cloud_tasks import verification_id as build_verification_id
 from nightwatch.contracts import Stage
 from nightwatch.journal import GENESIS_HASH, JournalEntry, JournalError
 from nightwatch.service import create_app
+from nightwatch.mission_orchestrator import SCAM_SAFETY_LIVE_1B_V1
 from nightwatch.public_evidence import (
     LIVE_PUBLIC_MISSION_ID,
     PUBLIC_IDEMPOTENCY_KEY,
@@ -54,6 +55,20 @@ class StubQueue:
             "verify-" + "c" * 40,
             False,
         )
+
+
+class StubMissionQueue:
+    def __init__(self, *, duplicate: bool = False) -> None:
+        self.duplicate = duplicate
+        self.calls: list[tuple[str, str, Stage]] = []
+
+    def enqueue_stage(self, cycle_id: str, manifest_id: str, expected_stage: Stage):
+        self.calls.append((cycle_id, manifest_id, expected_stage))
+        return type(
+            "ScheduledMission",
+            (),
+            {"task_id": "mission-task-001", "duplicate": self.duplicate},
+        )()
 
 
 class StubVerifier:
@@ -131,6 +146,90 @@ def test_health_is_shallow_and_has_security_headers(
     assert cloud_response.headers["Cache-Control"] == "no-store"
     assert response.headers["X-Content-Type-Options"] == "nosniff"
     assert response.headers["X-Frame-Options"] == "DENY"
+
+
+def test_operator_launch_is_hidden_unless_explicitly_enabled(
+    web_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    queue = StubMissionQueue()
+    monkeypatch.delenv("NIGHTWATCH_OPERATOR_MODE", raising=False)
+    private_client = create_app(static_root=web_root, mission_queue=queue).test_client()
+
+    disabled = private_client.post(
+        "/api/operator/missions",
+        json={},
+        headers={"Idempotency-Key": "nightwatch-demo-20260814"},
+    )
+
+    monkeypatch.setenv("NIGHTWATCH_PUBLIC_MODE", "1")
+    monkeypatch.setenv("NIGHTWATCH_OPERATOR_MODE", "1")
+    public_client = create_app(static_root=web_root, mission_queue=queue).test_client()
+    public = public_client.post(
+        "/api/operator/missions",
+        json={},
+        headers={"Idempotency-Key": "nightwatch-demo-20260814"},
+    )
+
+    assert disabled.status_code == 404
+    assert public.status_code == 404
+    assert queue.calls == []
+
+
+def test_operator_launch_is_fixed_bounded_and_idempotent(
+    web_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    queue = StubMissionQueue(duplicate=True)
+    monkeypatch.delenv("NIGHTWATCH_PUBLIC_MODE", raising=False)
+    monkeypatch.setenv("NIGHTWATCH_OPERATOR_MODE", "1")
+    client = create_app(static_root=web_root, mission_queue=queue).test_client()
+    headers = {"Idempotency-Key": "nightwatch-demo-20260814"}
+
+    first = client.post("/api/operator/missions", json={}, headers=headers)
+    replay = client.post("/api/operator/missions", json={}, headers=headers)
+    injected = client.post(
+        "/api/operator/missions",
+        json={"model_id": "attacker/model"},
+        headers=headers,
+    )
+
+    assert first.status_code == 202
+    assert first.json == replay.json
+    assert first.json["manifest_id"] == SCAM_SAFETY_LIVE_1B_V1.manifest_id
+    assert first.json["cycle_id"].startswith("nightwatch-live-")
+    assert first.json["status"] == "already_accepted"
+    assert queue.calls == [queue.calls[0], queue.calls[0]]
+    assert queue.calls[0] == (
+        first.json["cycle_id"],
+        SCAM_SAFETY_LIVE_1B_V1.manifest_id,
+        Stage.CREATED,
+    )
+    assert injected.status_code == 400
+
+
+@pytest.mark.parametrize(
+    "key",
+    ["", "short", "contains spaces here", "x" * 129],
+)
+def test_operator_launch_rejects_bad_idempotency_keys(
+    web_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    key: str,
+) -> None:
+    queue = StubMissionQueue()
+    monkeypatch.delenv("NIGHTWATCH_PUBLIC_MODE", raising=False)
+    monkeypatch.setenv("NIGHTWATCH_OPERATOR_MODE", "1")
+    client = create_app(static_root=web_root, mission_queue=queue).test_client()
+
+    response = client.post(
+        "/api/operator/missions",
+        json={},
+        headers={"Idempotency-Key": key},
+    )
+
+    assert response.status_code == 400
+    assert queue.calls == []
 
 
 def test_mission_returns_bounded_verified_entries(web_root: Path) -> None:

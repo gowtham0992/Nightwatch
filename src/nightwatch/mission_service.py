@@ -160,6 +160,10 @@ def _configured_worker() -> tuple[MissionJournal, MissionStageExecutor, MissionQ
                 curriculum_architect=retained_verified_curriculum,
                 training_campaign=scam_training,
             ),
+            "scam_safety_live": ScamSafetyStageExecutor(
+                artifacts,
+                training_campaign=scam_training,
+            ),
         }
     )
     return (

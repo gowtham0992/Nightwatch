@@ -60,9 +60,27 @@ SCAM_SAFETY_1B_V1 = MissionManifest(
     workflow="scam_safety",
 )
 
+SCAM_SAFETY_LIVE_1B_V1 = MissionManifest(
+    manifest_id="scam-safety-live-1b-v1",
+    subject="scam message safety",
+    trigger_artifact_name="scam-v0-de1e6009-2d77e636-c0e947096d",
+    observed_safety_accuracy=30 / 36,
+    required_safety_accuracy=0.95,
+    model_id="google/gemma-3-1b-it",
+    model_revision="dcc83ea841ab6100d6b47a070329e1ba4cf78752",
+    seed=20260813,
+    lora_rank=8,
+    epochs=3.0,
+    learning_rate=1e-3,
+    maximum_training_attempts=1,
+    maximum_gpu_minutes=20,
+    workflow="scam_safety_live",
+)
+
 APPROVED_MANIFESTS = {
     SAFETY_270M_V1.manifest_id: SAFETY_270M_V1,
     SCAM_SAFETY_1B_V1.manifest_id: SCAM_SAFETY_1B_V1,
+    SCAM_SAFETY_LIVE_1B_V1.manifest_id: SCAM_SAFETY_LIVE_1B_V1,
 }
 
 
@@ -114,7 +132,7 @@ def resolve_manifest(manifest_id: str) -> MissionManifest:
 
 
 def _created_payload(manifest: MissionManifest) -> dict[str, Any]:
-    if manifest.workflow == "scam_safety":
+    if manifest.workflow in {"scam_safety", "scam_safety_live"}:
         return {
             "mission_kind": "bounded_scam_safety_repair",
             "manifest_id": manifest.manifest_id,

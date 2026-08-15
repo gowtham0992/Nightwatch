@@ -5,7 +5,11 @@ from pathlib import Path
 
 from nightwatch.contracts import Stage
 from nightwatch.journal import append_stage, read_journal
-from nightwatch.mission_orchestrator import SAFETY_270M_V1, SCAM_SAFETY_1B_V1
+from nightwatch.mission_orchestrator import (
+    SAFETY_270M_V1,
+    SCAM_SAFETY_1B_V1,
+    SCAM_SAFETY_LIVE_1B_V1,
+)
 from nightwatch.mission_service import create_control_app, create_worker_app
 from nightwatch.mission_tasks import mission_task_id
 
@@ -88,6 +92,28 @@ def test_control_accepts_the_fixed_scam_safety_manifest() -> None:
     assert response.status_code == 202
     assert queue.calls == [
         ("mission-scam-service-001", SCAM_SAFETY_1B_V1.manifest_id, Stage.CREATED)
+    ]
+
+
+def test_control_accepts_the_fixed_live_agent_scam_manifest() -> None:
+    queue = FakeQueue()
+    client = create_control_app(task_queue=queue).test_client()
+
+    response = client.post(
+        "/api/missions",
+        json={
+            "cycle_id": "mission-scam-live-001",
+            "manifest_id": SCAM_SAFETY_LIVE_1B_V1.manifest_id,
+        },
+    )
+
+    assert response.status_code == 202
+    assert queue.calls == [
+        (
+            "mission-scam-live-001",
+            SCAM_SAFETY_LIVE_1B_V1.manifest_id,
+            Stage.CREATED,
+        )
     ]
 
 

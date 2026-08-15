@@ -1,300 +1,127 @@
 import { useEffect, useMemo, useState } from 'react';
-import { SCAM_MISSION, formatPercent, shortHash } from './data/scamMission.js';
+import { buildAgentGraph, fetchMission, getHealth, launchMission, retainedMission } from './data/missionControl.js';
+import { shortHash } from './data/scamMission.js';
 
-const INITIAL_STAGE = (() => {
-  const requested = new URLSearchParams(globalThis.location?.search).get('stage');
-  const index = SCAM_MISSION.stages.findIndex((stage) => stage.id === requested);
-  return index < 0 ? 0 : index;
-})();
-
-function BrandMark() {
-  return (
-    <span className="brand-mark" aria-hidden="true">
-      <span /><span /><span />
-    </span>
-  );
+function Mark() { return <span className="mark" aria-hidden="true"><i /><i /><i /></span>; }
+function TinyIcon({ kind }) {
+  if (kind === 'arrow') return <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9m-3-4 4 4-4 4" /></svg>;
+  if (kind === 'check') return <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 8 3 3 7-7" /></svg>;
+  return <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5" /></svg>;
+}
+function makeIdempotencyKey() {
+  try {
+    const existing = globalThis.sessionStorage?.getItem('nightwatch-launch-key');
+    if (existing) return existing;
+    const suffix = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const key = `nightwatch-${suffix}`;
+    globalThis.sessionStorage?.setItem('nightwatch-launch-key', key);
+    return key;
+  } catch { return `nightwatch-${Date.now()}-operator`; }
 }
 
-function ArrowIcon() {
-  return <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9M9 4l4 4-4 4" /></svg>;
+function Header({ health }) {
+  return <header className="topbar">
+    <a className="wordmark" href="#top"><Mark /><strong>Nightwatch</strong></a>
+    <div className="environment"><span className={health?.status === 'ok' ? 'signal online' : 'signal'} /><span>{health?.visibility === 'private' ? 'Operator cloud' : 'Public evidence'}</span><b>GCP</b></div>
+    <nav aria-label="Mission sections"><a href="#mission">Mission</a><a href="#proof">Proof</a><a href="https://github.com/gowtham0992/Nightwatch" target="_blank" rel="noreferrer">Source ↗</a></nav>
+  </header>;
 }
 
-function CheckIcon() {
-  return <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 8 3 3 7-7" /></svg>;
-}
-
-function Header() {
-  return (
-    <header className="app-header">
-      <a className="brand" href="#top" aria-label="Nightwatch home">
-        <BrandMark />
-        <strong>Nightwatch</strong>
-      </a>
-      <nav aria-label="Product sections">
-        <a href="#mission">Mission</a>
-        <a href="#attempts">Attempts</a>
-        <a href="#evidence">Evidence</a>
-      </nav>
-      <div className="header-state">
-        <span className="live-dot" />
-        Verified Cloud run
+function MissionHeader({ mission, health, launchState, onLaunch }) {
+  const isRunning = mission.outcome === 'running' || launchState === 'launching';
+  return <section className="mission-header" id="top">
+    <div className="mission-title">
+      <div className="eyebrow"><span>MISSION / {mission.id}</span><span>{mission.mode === 'live' ? 'LIVE JOURNAL' : 'VERIFIED RUN'}</span></div>
+      <h1>Repair the model.<br /><em>Protect the boundary.</em></h1>
+      <p>Nightwatch autonomously diagnoses a failing Gemma scam detector, assembles a specialist repair fleet, trains one bounded candidate, and hands release authority to deterministic code.</p>
+      <div className="mission-actions">
+        {health?.operator_enabled ? <button className="launch-button" type="button" onClick={onLaunch} disabled={isRunning}><span>{isRunning ? '◌' : '↗'}</span>{isRunning ? 'Mission in progress' : 'Launch real repair'}</button> : <a className="launch-button" href="#mission"><span>↓</span>Inspect verified mission</a>}
+        <span className="action-note">{health?.operator_enabled ? '1 approved manifest · max 1 GPU attempt' : 'Read-only · no training spend'}</span>
       </div>
-    </header>
-  );
-}
-
-function Metric({ label, before, after, detail }) {
-  return (
-    <div className="metric">
-      <span>{label}</span>
-      <div><del>{before}</del><ArrowIcon /><strong>{after}</strong></div>
-      <small>{detail}</small>
     </div>
-  );
+    <div className={`decision-orbit ${mission.outcome}`}><div className="orbit-ring"><span /></div><div className="decision-copy"><small>Release state</small><strong>{mission.outcome === 'running' ? 'WATCHING' : mission.outcome.toUpperCase()}</strong><span>{mission.outcome === 'qualified' ? 'not deployed' : mission.outcome === 'refused' ? 'production protected' : 'agents at work'}</span></div></div>
+  </section>;
 }
 
-function MissionOverview({ onReplay, isPlaying }) {
-  return (
-    <section className="overview" id="top">
-      <div className="overview-copy">
-        <div className="context-line">
-          <span className="status-pill"><CheckIcon /> promoted by policy</span>
-          <span>{SCAM_MISSION.model}</span>
-        </div>
-        <h1>{SCAM_MISSION.title}</h1>
-        <p>
-          Nightwatch found the failure, diagnosed its boundary, designed a repair,
-          trained Gemma, and refused every candidate until one preserved the behavior
-          production still needed.
-        </p>
-        <div className="overview-actions">
-          <button type="button" className="primary-button" onClick={onReplay}>
-            <span aria-hidden="true">{isPlaying ? 'Ⅱ' : '▶'}</span>
-            {isPlaying ? 'Pause mission' : 'Replay autonomous run'}
-          </button>
-          <a className="text-link" href="#evidence">Inspect retained evidence <ArrowIcon /></a>
-        </div>
-        <small className="replay-note">Playback of a verified 94-second Cloud mission. It does not retrain or deploy a model.</small>
-      </div>
-      <div className="overview-metrics" aria-label="Baseline to candidate metrics">
-        <Metric label="Target accuracy" before="83.3%" after="100%" detail="30/36 → 36/36" />
-        <Metric label="Safety accuracy" before="95.8%" after="100%" detail="23/24 → 24/24" />
-        <Metric label="Overall accuracy" before="84.8%" after="95.7%" detail="+10.9 percentage points" />
-      </div>
-    </section>
-  );
+function RunStrip({ mission, graph }) {
+  const completed = graph.filter((node) => node.status === 'complete').length;
+  const progress = Math.round((completed / graph.length) * 100);
+  return <div className="run-strip">
+    <div><span className="strip-label">MODEL</span><strong>{mission.model}</strong></div><div><span className="strip-label">WORKFLOW</span><strong>{mission.subject}</strong></div><div><span className="strip-label">PROGRESS</span><strong>{completed}/{graph.length} agents</strong></div>
+    <div className="run-progress" aria-label={`${progress}% complete`}><span style={{ width: `${progress}%` }} /></div><div><span className="strip-label">HEAD</span><code>{shortHash(mission.headHash)}</code></div>
+  </div>;
 }
 
-function StageRail({ activeIndex, onSelect }) {
-  return (
-    <div className="stage-rail" role="tablist" aria-label="Autonomous mission stages">
-      {SCAM_MISSION.stages.map((stage, index) => (
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeIndex === index}
-          aria-controls="stage-panel"
-          className={activeIndex === index ? 'active' : index < activeIndex ? 'passed' : ''}
-          key={stage.id}
-          onClick={() => onSelect(index)}
-        >
-          <span className="stage-node">{index < activeIndex ? <CheckIcon /> : stage.number}</span>
-          <span><strong>{stage.label}</strong><small>{stage.actor}</small></span>
-        </button>
-      ))}
-    </div>
-  );
+function AgentCard({ node, selected, onSelect, compact = false }) {
+  return <button type="button" className={`agent-card ${node.status} ${selected ? 'selected' : ''} ${compact ? 'compact' : ''}`} onClick={() => onSelect(node.id)}>
+    <span className="agent-state">{node.status === 'complete' ? <TinyIcon kind="check" /> : <span />}</span><span className="agent-copy"><strong>{node.name}</strong><small>{node.role}</small></span><span className="agent-status">{node.status}</span>
+  </button>;
+}
+function Connector({ active = false }) { return <div className={`connector ${active ? 'active' : ''}`}><span /><TinyIcon kind="arrow" /></div>; }
+function AgentTopology({ graph, selectedId, onSelect }) {
+  const watcher = graph.find((node) => node.id === 'watcher');
+  const diagnostician = graph.find((node) => node.id === 'diagnostician');
+  const authors = graph.filter((node) => node.lane === 'parallel');
+  const rest = graph.filter((node) => !['watcher', 'diagnostician'].includes(node.id) && node.lane !== 'parallel');
+  return <div className="topology" aria-label="Live multi-agent mission topology">
+    <div className="topology-start"><AgentCard node={watcher} selected={selectedId === watcher.id} onSelect={onSelect} /><Connector active={watcher.status === 'complete'} /><AgentCard node={diagnostician} selected={selectedId === diagnostician.id} onSelect={onSelect} /></div>
+    <Connector active={diagnostician.status === 'complete'} />
+    <div className="fleet"><div className="fleet-head"><span>PARALLEL REPAIR FLEET</span><b>{authors.length} specialists</b></div><div className="fleet-cards">{authors.map((node) => <AgentCard key={node.id} node={node} compact selected={selectedId === node.id} onSelect={onSelect} />)}</div></div>
+    {rest.map((node, index) => <div className="topology-tail" key={node.id}><Connector active={(index === 0 ? authors : [rest[index - 1]]).every((item) => item.status === 'complete')} /><AgentCard node={node} selected={selectedId === node.id} onSelect={onSelect} /></div>)}
+  </div>;
 }
 
-function StagePanel({ stage }) {
-  return (
-    <article className="stage-panel" id="stage-panel" role="tabpanel" key={stage.id}>
-      <div className="panel-heading">
-        <div>
-          <span className="section-kicker">Stage {stage.number} · {stage.actor}</span>
-          <h2>{stage.headline}</h2>
-        </div>
-        <span className={`stage-status ${stage.status}`}><CheckIcon /> {stage.status}</span>
-      </div>
-      <p className="stage-summary">{stage.summary}</p>
-      <div className="stage-facts">
-        {stage.facts.map(([label, value]) => (
-          <div key={label}><span>{label}</span><strong>{value}</strong></div>
-        ))}
-      </div>
-      <div className="evidence-line"><span>Evidence</span><code>{stage.evidence}</code></div>
-    </article>
-  );
+function title(value) { return String(value).split('_').map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' '); }
+function renderValue(value) {
+  if (value == null) return '—';
+  if (typeof value === 'boolean') return value ? 'yes' : 'no';
+  if (typeof value === 'number') return Number.isInteger(value) ? String(value) : value.toFixed(3);
+  if (typeof value === 'string') return value.length > 96 ? `${value.slice(0, 93)}…` : value;
+  if (Array.isArray(value)) return value.map((item) => typeof item === 'string' ? title(item) : String(item)).join(' · ');
+  return JSON.stringify(value);
+}
+function EvidencePanel({ node }) {
+  const payload = node?.evidence?.payload || {};
+  const preferred = ['headline', 'summary', 'observed_error_count', 'repair_family', 'repair_families', 'curriculum_rows', 'leakage_check', 'selected_artifact', 'accepted', 'outcome', 'deployment_status'];
+  const keys = [...preferred.filter((key) => key in payload), ...Object.keys(payload).filter((key) => !preferred.includes(key) && !['manifest_id', 'artifact_uri'].includes(key))].slice(0, 7);
+  return <aside className="inspector" id="proof"><div className="inspector-head"><div><span>SELECTED HANDOFF</span><h3>{node?.name}</h3></div><b className={node?.status}>{node?.status}</b></div><p>{node?.role}</p>
+    <div className="artifact-card"><div className="artifact-top"><span>IMMUTABLE OUTPUT</span><code>{node?.evidence?.hash ? shortHash(node.evidence.hash) : 'pending'}</code></div>{keys.length ? <dl>{keys.map((key) => <div key={key}><dt>{title(key)}</dt><dd>{renderValue(payload[key])}</dd></div>)}</dl> : <div className="empty-artifact"><span /><p>This agent has not received its handoff yet.</p></div>}</div>
+    <div className="trust-note"><TinyIcon kind="check" /><p><strong>Explainable, not performative.</strong> Every completed node points to a hash-chained journal entry or retained artifact. Internal reasoning is never exposed.</p></div>
+  </aside>;
 }
 
-function ReleaseGate() {
-  const rules = [
-    ['Target gain', '+16.7 pp', '≥ 15.0 pp'],
-    ['Safety block recall', '100%', '≥ 95%'],
-    ['Routine recall', '87.5%', 'no decline'],
-    ['Critical misses', '0', 'required 0'],
-    ['Benign blocks', '0', 'required 0'],
-  ];
-  return (
-    <aside className="release-gate" aria-labelledby="gate-heading">
-      <div className="gate-topline"><span>Deterministic release gate</span><code>policy v1</code></div>
-      <div className="gate-decision">
-        <span className="decision-icon"><CheckIcon /></span>
-        <div><small>Final decision</small><h2 id="gate-heading">Promote</h2></div>
-      </div>
-      <p>Candidate-v8 satisfied every predeclared invariant. Qualification is recorded; deployment remains locked.</p>
-      <div className="gate-rules">
-        {rules.map(([label, value, threshold]) => (
-          <div key={label}>
-            <span><CheckIcon />{label}</span>
-            <strong>{value}</strong>
-            <small>{threshold}</small>
-          </div>
-        ))}
-      </div>
-      <div className="authority-note">
-        <strong>Gemini could propose the repair.</strong>
-        <span>It could not approve itself.</span>
-      </div>
-    </aside>
-  );
-}
-
-function MissionWorkspace({ activeIndex, onSelect }) {
-  return (
-    <section className="mission-section" id="mission">
-      <div className="section-heading">
-        <div><span className="section-kicker">One mission · six accountable handoffs</span><h2>What Nightwatch actually did</h2></div>
-        <p>Select a stage to inspect its retained output.</p>
-      </div>
-      <StageRail activeIndex={activeIndex} onSelect={onSelect} />
-      <div className="workspace-grid">
-        <StagePanel stage={SCAM_MISSION.stages[activeIndex]} />
-        <ReleaseGate />
-      </div>
-    </section>
-  );
-}
-
-function Attempts() {
-  return (
-    <section className="attempts-section" id="attempts">
-      <div className="section-heading">
-        <div><span className="section-kicker">Development history · no cherry picking</span><h2>Five candidates looked good. Nightwatch refused them.</h2></div>
-        <p>These earlier immutable decisions earned the repair recipe used by the fresh Cloud run.</p>
-      </div>
-      <div className="attempt-table" role="table" aria-label="Candidate release attempts">
-        <div className="attempt-row attempt-head" role="row">
-          <span>Candidate</span><span>Target</span><span>Safety</span><span>Regression</span><span>Gate</span><span>Why</span>
-        </div>
-        {SCAM_MISSION.attempts.map((attempt) => (
-          <div className={`attempt-row ${attempt.decision}`} role="row" key={attempt.id}>
-            <strong>candidate-{attempt.id}</strong>
-            <span>{attempt.target}</span><span>{attempt.safety}</span><span>{attempt.regression}</span>
-            <b><span className="decision-dot" />{attempt.decision}</b>
-            <small>{attempt.reason}</small>
-          </div>
-        ))}
-      </div>
-      <div className="science-callout">
-        <span className="callout-index">!</span>
-        <div><strong>Nightwatch caught its own training defect.</strong><p>A newly initialized Gemma score head was created before the seed took effect. Pipeline v3 seeded it first, enabled deterministic algorithms, and produced byte-identical predictions across controlled runs.</p></div>
-        <code>7a1cb511…f8651 × 2</code>
-      </div>
-    </section>
-  );
-}
-
-function Evidence() {
-  const rows = [
-    ['Verified Firestore head', SCAM_MISSION.cloudRun.headHash],
-    ['Training stage artifact', SCAM_MISSION.cloudRun.trainingArtifact],
-    ['Evaluation stage artifact', SCAM_MISSION.cloudRun.evaluationArtifact],
-    ['Mission contract', SCAM_MISSION.hashes.mission],
-    ['Frozen development set', SCAM_MISSION.hashes.development],
-    ['Final curriculum', SCAM_MISSION.hashes.curriculum],
-    ['Baseline predictions', SCAM_MISSION.hashes.baselinePredictions],
-    ['Candidate predictions', SCAM_MISSION.hashes.candidatePredictions],
-  ];
-  return (
-    <section className="evidence-section" id="evidence">
-      <div className="section-heading">
-        <div><span className="section-kicker">Content-addressed proof</span><h2>The interface is a view of retained bytes.</h2></div>
-        <p>Change one source byte and its identity changes.</p>
-      </div>
-      <div className="evidence-grid">
-        <div className="evidence-copy">
-          <p>The final adapter was loaded in a fresh Modal function and replayed against the complete frozen set. Its predictions were byte-identical to the training-run evaluation.</p>
-          <dl>
-            <div><dt>Model</dt><dd>{SCAM_MISSION.model}</dd></div>
-            <div><dt>Revision</dt><dd><code>{shortHash(SCAM_MISSION.modelRevision)}</code></dd></div>
-            <div><dt>Architect</dt><dd>{SCAM_MISSION.architect} · {SCAM_MISSION.framework}</dd></div>
-            <div><dt>Executor</dt><dd>{SCAM_MISSION.executor}</dd></div>
-          </dl>
-        </div>
-        <div className="hash-list">
-          {rows.map(([label, hash]) => <div key={label}><span>{label}</span><code>{shortHash(hash)}</code><CheckIcon /></div>)}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Footer() {
-  return <footer><span><BrandMark /><strong>Nightwatch</strong></span><p>Autonomous model repair with independent release authority.</p><a href="#top">Back to top ↑</a></footer>;
+function OutcomeBar({ mission }) {
+  return <section className={`outcome-bar ${mission.outcome}`}><div><span>DETERMINISTIC RELEASE GATE</span><strong>{mission.outcome === 'running' ? 'Decision pending' : mission.outcome === 'qualified' ? 'Candidate qualified' : 'Candidate refused'}</strong></div>
+    {mission.retained ? <div className="outcome-metrics"><span>Target <b>83.3 → 100%</b></span><span>Safety <b>95.8 → 100%</b></span><span>Critical misses <b>0</b></span></div> : <div className="outcome-metrics"><span>Authority <b>code only</b></span><span>Deployment <b>locked</b></span></div>}
+    <div className="outcome-seal"><Mark /><span>{mission.outcome === 'qualified' ? 'ALL INVARIANTS PASSED' : mission.outcome === 'refused' ? 'PRODUCTION PRESERVED' : 'AWAITING EVIDENCE'}</span></div></section>;
 }
 
 export default function App() {
-  const [activeIndex, setActiveIndex] = useState(INITIAL_STAGE);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const activeStage = SCAM_MISSION.stages[activeIndex];
-
+  const [health, setHealth] = useState(null);
+  const [mission, setMission] = useState(retainedMission);
+  const [selectedId, setSelectedId] = useState('diagnostician');
+  const [launchState, setLaunchState] = useState('idle');
+  const [notice, setNotice] = useState('');
+  const cycleId = new URLSearchParams(globalThis.location?.search || '').get('mission');
+  useEffect(() => { let ignore = false; getHealth().then((result) => { if (!ignore) setHealth(result); }).catch(() => { if (!ignore) setHealth({ status: 'offline', visibility: 'public_redacted', operator_enabled: false }); }); return () => { ignore = true; }; }, []);
   useEffect(() => {
-    if (!isPlaying) return undefined;
-    const timer = window.setTimeout(() => {
-      if (activeIndex === SCAM_MISSION.stages.length - 1) {
-        setIsPlaying(false);
-        return;
-      }
-      setActiveIndex((index) => index + 1);
-    }, 1250);
-    return () => window.clearTimeout(timer);
-  }, [activeIndex, isPlaying]);
-
-  useEffect(() => {
-    const url = new URL(globalThis.location.href);
-    url.searchParams.set('stage', activeStage.id);
-    globalThis.history.replaceState({}, '', url);
-  }, [activeStage.id]);
-
-  const progress = useMemo(() => ((activeIndex + 1) / SCAM_MISSION.stages.length) * 100, [activeIndex]);
-
-  const selectStage = (index) => {
-    setIsPlaying(false);
-    setActiveIndex(index);
+    if (!cycleId) return undefined;
+    let ignore = false; let timer; let controller;
+    const poll = async () => {
+      controller = new AbortController();
+      try { const result = await fetchMission(cycleId, { signal: controller.signal }); if (ignore) return; setMission(result); setLaunchState(result.terminal ? 'complete' : 'running'); setNotice(''); if (!result.terminal) timer = globalThis.setTimeout(poll, 2000); }
+      catch (error) { if (ignore) return; if (error.status === 404) { setNotice('Cloud Task accepted. Waiting for the first immutable journal entry…'); timer = globalThis.setTimeout(poll, 1500); } else setNotice(error.message || 'Mission evidence is temporarily unavailable.'); }
+    };
+    poll(); return () => { ignore = true; controller?.abort(); globalThis.clearTimeout(timer); };
+  }, [cycleId]);
+  const graph = useMemo(() => buildAgentGraph(mission), [mission]);
+  const selected = graph.find((node) => node.id === selectedId) || graph.find((node) => node.status === 'active') || graph[0];
+  const handleLaunch = async () => {
+    setLaunchState('launching'); setNotice('Submitting one approved repair mission…');
+    try { const result = await launchMission(makeIdempotencyKey()); const url = new URL(globalThis.location.href); url.searchParams.set('mission', result.cycle_id); globalThis.history.pushState({}, '', url); setNotice('Cloud Task accepted. Waiting for the first immutable journal entry…'); globalThis.location.reload(); }
+    catch (error) { setLaunchState('idle'); setNotice(error.message || 'The mission could not be launched.'); }
   };
-
-  const toggleReplay = () => {
-    if (isPlaying) {
-      setIsPlaying(false);
-      return;
-    }
-    if (activeIndex === SCAM_MISSION.stages.length - 1) setActiveIndex(0);
-    setIsPlaying(true);
-    document.getElementById('mission')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  return (
-    <div className="app-shell">
-      <Header />
-      <main>
-        <MissionOverview onReplay={toggleReplay} isPlaying={isPlaying} />
-        <div className="playback-progress" aria-hidden="true"><span style={{ width: `${progress}%` }} /></div>
-        <MissionWorkspace activeIndex={activeIndex} onSelect={selectStage} />
-        <Attempts />
-        <Evidence />
-      </main>
-      <Footer />
-    </div>
-  );
+  return <div className="app-shell"><Header health={health} /><main><MissionHeader mission={mission} health={health} launchState={launchState} onLaunch={handleLaunch} />{notice && <div className="notice"><span className="signal online" />{notice}</div>}<RunStrip mission={mission} graph={graph} />
+    <section className="mission-workspace" id="mission"><div className="workspace-heading"><div><span>AUTONOMOUS EXECUTION</span><h2>One mission. Accountable handoffs.</h2></div><p>Select any agent to inspect the evidence it handed downstream.</p></div><div className="workspace-body"><div className="topology-wrap"><AgentTopology graph={graph} selectedId={selected.id} onSelect={setSelectedId} /></div><EvidencePanel node={selected} /></div></section><OutcomeBar mission={mission} /></main>
+    <footer><span><Mark /><strong>Nightwatch</strong></span><p>Gemini proposes. Evidence persists. Code decides.</p><code>{shortHash(mission.headHash)}</code></footer></div>;
 }

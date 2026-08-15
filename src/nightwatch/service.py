@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import os
+import re
 import threading
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -11,6 +13,7 @@ from google.api_core.exceptions import GoogleAPICallError, RetryError
 from google.auth.exceptions import GoogleAuthError
 
 from nightwatch.firestore_journal import FirestoreJournal, validate_cycle_id
+from nightwatch.contracts import Stage
 from nightwatch.journal import ALLOWED_TRANSITIONS, JournalEntry, JournalError
 from nightwatch.public_evidence import (
     PUBLIC_MISSION_ID,
@@ -60,6 +63,25 @@ class VerificationReceiptReader(Protocol):
     ) -> VerificationReceipt | None: ...
 
 
+class MissionQueue(Protocol):
+    def enqueue_stage(
+        self,
+        cycle_id: str,
+        manifest_id: str,
+        expected_stage: Stage,
+    ) -> Any: ...
+
+
+_OPERATOR_KEY = re.compile(r"^[A-Za-z0-9_-]{16,128}$")
+
+
+def _operator_cycle_id(idempotency_key: str) -> str:
+    digest = hashlib.sha256(
+        f"nightwatch-live-scam-v1:{idempotency_key}".encode("utf-8")
+    ).hexdigest()[:24]
+    return f"nightwatch-live-{digest}"
+
+
 def _entry_json(entry: JournalEntry) -> dict[str, object]:
     return {
         "cycle_id": entry.cycle_id,
@@ -81,6 +103,7 @@ def create_app(
     task_queue: VerificationQueue | None = None,
     verification_store: VerificationStore | None = None,
     verification_reader: VerificationReceiptReader | None = None,
+    mission_queue: MissionQueue | None = None,
     public_snapshot: dict[str, Any] | None = None,
     static_root: Path | None = None,
     clock: Callable[[], datetime] | None = None,
@@ -97,6 +120,8 @@ def create_app(
     verifier_lock = threading.Lock()
     receipt_reader = verification_reader
     receipt_reader_lock = threading.Lock()
+    operator_queue = mission_queue
+    operator_queue_lock = threading.Lock()
     redacted_snapshots = (
         {public_snapshot["cycle_id"]: public_snapshot}
         if public_snapshot is not None and isinstance(public_snapshot.get("cycle_id"), str)
@@ -183,6 +208,16 @@ def create_app(
                     )
         return receipt_reader
 
+    def get_operator_queue() -> MissionQueue:
+        nonlocal operator_queue
+        if operator_queue is None:
+            with operator_queue_lock:
+                if operator_queue is None:
+                    from nightwatch.mission_service import _configured_queue
+
+                    operator_queue = _configured_queue()
+        return operator_queue
+
     def get_public_snapshot(cycle_id: str = PUBLIC_MISSION_ID) -> dict[str, Any]:
         if cycle_id not in PUBLIC_MISSION_IDS:
             raise JournalError("public mission is not allowlisted")
@@ -234,8 +269,52 @@ def create_app(
                 "service": "nightwatch-public" if public_mode else "nightwatch-evidence",
                 "release": os.environ.get("NIGHTWATCH_RELEASE", "dev"),
                 "visibility": "public_redacted" if public_mode else "private",
+                "operator_enabled": (
+                    not public_mode
+                    and os.environ.get("NIGHTWATCH_OPERATOR_MODE") == "1"
+                ),
             }
         )
+
+    @app.post("/api/operator/missions")
+    def launch_operator_mission() -> tuple[Response, int] | Response:
+        if public_mode or os.environ.get("NIGHTWATCH_OPERATOR_MODE") != "1":
+            return _error("not_found", "The API route does not exist.", 404)
+        body = request.get_json(silent=True)
+        idempotency_key = request.headers.get("Idempotency-Key", "")
+        if body != {} or _OPERATOR_KEY.fullmatch(idempotency_key) is None:
+            return _error(
+                "invalid_request",
+                "Provide an empty object and a valid Idempotency-Key.",
+                400,
+            )
+        from nightwatch.mission_orchestrator import SCAM_SAFETY_LIVE_1B_V1
+
+        cycle_id = _operator_cycle_id(idempotency_key)
+        try:
+            scheduled = get_operator_queue().enqueue_stage(
+                cycle_id,
+                SCAM_SAFETY_LIVE_1B_V1.manifest_id,
+                Stage.CREATED,
+            )
+        except (GoogleAPICallError, GoogleAuthError, RetryError, RuntimeError):
+            app.logger.exception("operator mission queue unavailable")
+            return _error(
+                "dependency_unavailable",
+                "The mission queue is temporarily unavailable.",
+                503,
+            )
+        response = jsonify(
+            {
+                "cycle_id": cycle_id,
+                "manifest_id": SCAM_SAFETY_LIVE_1B_V1.manifest_id,
+                "stage": Stage.CREATED.value,
+                "status": "already_accepted" if scheduled.duplicate else "queued",
+                "task_id": scheduled.task_id,
+            }
+        )
+        response.status_code = 202
+        return response
 
     @app.get("/api/missions/<path:cycle_id>")
     def mission(cycle_id: str) -> tuple[Response, int] | Response:

@@ -182,7 +182,7 @@ class ScamSafetyStageExecutor:
         manifest: MissionManifest,
         entries: tuple[JournalEntry, ...],
     ) -> dict[str, Any]:
-        if manifest.workflow != "scam_safety":
+        if manifest.workflow not in {"scam_safety", "scam_safety_live"}:
             raise JournalError("scam executor received a different workflow")
         existing = self._existing(cycle_id, stage, manifest)
         if existing is not None:
