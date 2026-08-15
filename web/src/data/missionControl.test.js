@@ -115,7 +115,9 @@ test('live refusal metrics explain why a perfect target and safety result stayed
     },
   );
 
-  const metrics = missionMetrics(missionFromJournal(terminal));
+  const mission = missionFromJournal(terminal);
+  const metrics = missionMetrics(mission);
+  const gate = buildAgentGraph(mission).find((node) => node.id === 'gate');
 
   assert.deepEqual(metrics, {
     target: { before: 23 / 36, after: 1 },
@@ -124,4 +126,6 @@ test('live refusal metrics explain why a perfect target and safety result stayed
     criticalMisses: 0,
     failedInvariant: 'routine_recall_regressed',
   });
+  assert.equal(gate.status, 'complete');
+  assert.equal(gate.decision, 'refused');
 });

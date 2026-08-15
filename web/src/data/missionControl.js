@@ -125,8 +125,8 @@ export function buildAgentGraph(mission) {
   if (mission.mode === 'retained') {
     const stages = mission.retained.stages;
     const find = (id) => stages.find((stage) => stage.id === id);
-    const complete = (id, name, role, stage, lane = 'main') => ({
-      id, name, role, lane, status: 'complete', evidence: {
+    const complete = (id, name, role, stage, lane = 'main', decision = null) => ({
+      id, name, role, lane, status: 'complete', decision, evidence: {
         timestamp: null, hash: mission.headHash, payload: { headline: stage.headline, summary: stage.summary, facts: stage.facts, retained_evidence: stage.evidence },
       },
     });
@@ -139,7 +139,7 @@ export function buildAgentGraph(mission) {
       complete('validator', 'Policy validator', 'Schema · overlap · leakage', find('design')),
       complete('trainer', 'Trainer', 'Modal · pinned Gemma', find('train')),
       complete('evaluator', 'Evaluator', 'Frozen 92-case suite', find('evaluate')),
-      complete('gate', 'Release gate', 'Deterministic code only', find('decide')),
+      complete('gate', 'Release gate', 'Deterministic code only', find('decide'), 'main', 'qualified'),
     ];
   }
 
@@ -172,7 +172,7 @@ export function buildAgentGraph(mission) {
     { id: 'validator', name: 'Policy validator', role: 'Schema · overlap · leakage', lane: 'main', status: stageStatus(byStage, 'curriculum_ready', 'diagnosed'), evidence: evidenceFor(curriculum, {}) },
     { id: 'trainer', name: 'Trainer', role: 'Modal · pinned Gemma', lane: 'main', status: stageStatus(byStage, 'trained', 'curriculum_ready'), evidence: evidenceFor(byStage.get('trained'), {}) },
     { id: 'evaluator', name: 'Evaluator', role: 'Frozen evidence suite', lane: 'main', status: stageStatus(byStage, 'evaluated', 'trained'), evidence: evidenceFor(byStage.get('evaluated'), {}) },
-    { id: 'gate', name: 'Release gate', role: 'Deterministic code only', lane: 'main', status: byStage.has('promoted') || byStage.has('rejected') ? 'complete' : byStage.has('evaluated') ? 'active' : 'waiting', evidence: evidenceFor(byStage.get('promoted') || byStage.get('rejected'), {}) },
+    { id: 'gate', name: 'Release gate', role: 'Deterministic code only', lane: 'main', status: byStage.has('promoted') || byStage.has('rejected') ? 'complete' : byStage.has('evaluated') ? 'active' : 'waiting', decision: byStage.has('rejected') ? 'refused' : byStage.has('promoted') ? 'qualified' : null, evidence: evidenceFor(byStage.get('promoted') || byStage.get('rejected'), {}) },
   ];
 }
 

@@ -14,6 +14,7 @@ function Mark() { return <span className="mark" aria-hidden="true"><i /><i /><i 
 function TinyIcon({ kind }) {
   if (kind === 'arrow') return <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9m-3-4 4 4-4 4" /></svg>;
   if (kind === 'check') return <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 8 3 3 7-7" /></svg>;
+  if (kind === 'blocked') return <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8m0-8-8 8" /></svg>;
   return <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5" /></svg>;
 }
 function makeIdempotencyKey() {
@@ -77,8 +78,11 @@ function RunStrip({ mission, graph }) {
 }
 
 function AgentCard({ node, selected, onSelect, compact = false }) {
-  return <button type="button" className={`agent-card ${node.status} ${selected ? 'selected' : ''} ${compact ? 'compact' : ''}`} onClick={() => onSelect(node.id)}>
-    <span className="agent-state">{node.status === 'complete' ? <TinyIcon kind="check" /> : <span />}</span><span className="agent-copy"><strong>{node.name}</strong><small>{node.role}</small></span><span className="agent-status">{node.status}</span>
+  const decisionClass = node.decision ? `decision-${node.decision}` : '';
+  const statusLabel = node.decision || node.status;
+  const icon = node.decision === 'refused' ? 'blocked' : 'check';
+  return <button type="button" className={`agent-card ${node.status} ${decisionClass} ${selected ? 'selected' : ''} ${compact ? 'compact' : ''}`} onClick={() => onSelect(node.id)} aria-label={`${node.name}: ${statusLabel}`}>
+    <span className="agent-state">{node.status === 'complete' ? <TinyIcon kind={icon} /> : <span />}</span><span className="agent-copy"><strong>{node.name}</strong><small>{node.role}</small></span><span className="agent-status">{statusLabel}</span>
   </button>;
 }
 function Connector({ active = false }) { return <div className={`connector ${active ? 'active' : ''}`}><span /><TinyIcon kind="arrow" /></div>; }
@@ -145,7 +149,8 @@ function evidenceRows(payload) {
 function EvidencePanel({ node }) {
   const payload = node?.evidence?.payload || {};
   const rows = evidenceRows(payload);
-  return <aside className="inspector" id="proof"><div className="inspector-head"><div><span>SELECTED HANDOFF</span><h3>{node?.name}</h3></div><b className={node?.status}>{node?.status}</b></div><p>{node?.role}</p>
+  const result = node?.decision || node?.status;
+  return <aside className="inspector" id="proof"><div className="inspector-head"><div><span>SELECTED HANDOFF</span><h3>{node?.name}</h3></div><b className={result}>{result}</b></div><p>{node?.role}{node?.decision ? ' · evaluation complete' : ''}</p>
     <div className="artifact-card"><div className="artifact-top"><span>IMMUTABLE OUTPUT</span><code>{node?.evidence?.hash ? shortHash(node.evidence.hash) : 'pending'}</code></div>{rows.length ? <dl>{rows.map(([label, value]) => <div key={label}><dt>{title(label)}</dt><dd>{renderValue(value)}</dd></div>)}</dl> : <div className="empty-artifact"><span /><p>This agent has not received its handoff yet.</p></div>}</div>
     <div className="trust-note"><TinyIcon kind="check" /><p><strong>Explainable, not performative.</strong> Every completed node points to a hash-chained journal entry or retained artifact. Internal reasoning is never exposed.</p></div>
   </aside>;
