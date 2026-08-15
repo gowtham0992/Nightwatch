@@ -13,16 +13,26 @@ from nightwatch.journal import ALLOWED_TRANSITIONS, GENESIS_HASH, JournalEntry, 
 
 PUBLIC_MISSION_ID = "nightwatch-v2-qualification"
 LIVE_PUBLIC_MISSION_ID = "nightwatch-cloud-20260811-001"
-PUBLIC_MISSION_IDS = frozenset({PUBLIC_MISSION_ID, LIVE_PUBLIC_MISSION_ID})
+JUDGE_LIVE_MISSION_ID = "nightwatch-live-89e73407c43d525c4bc19272"
+PUBLIC_MISSION_IDS = frozenset(
+    {PUBLIC_MISSION_ID, LIVE_PUBLIC_MISSION_ID, JUDGE_LIVE_MISSION_ID}
+)
 PUBLIC_IDEMPOTENCY_KEY = "public:nightwatch-v2-proof:isolated-v1"
 PUBLIC_VERIFICATION_GRACE_MINUTES = 5
 _HASH = re.compile(r"^[a-f0-9]{64}$")
 _FORBIDDEN_KEYS = {
     "artifact_name",
+    "artifact_uri",
+    "baseline_artifact",
+    "candidate_artifact",
     "curriculum_sha256",
+    "development_sha256",
+    "evidence_case_ids",
     "manifest_sha256",
+    "modal_call_id",
     "model_revision",
     "report_sha256",
+    "selected_artifact",
     "seed",
 }
 _PUBLIC_STAGE_PREFIX = (
@@ -34,41 +44,66 @@ _PUBLIC_STAGE_PREFIX = (
 )
 _ALLOWED_KEYS = {
     "accuracy",
+    "accepted",
     "actor",
     "adjudicated_disagreements",
     "architect",
+    "artifact_sha256",
     "attempts",
+    "attempt",
     "authorized_action",
+    "baseline",
+    "benign_block",
+    "block",
     "candidate",
     "case_count",
     "correct",
+    "count",
     "critical_miss_count",
+    "curriculum_rows",
     "cycle_id",
     "decision",
     "defer",
     "deployment_status",
+    "deployment_authorized",
     "development",
+    "development_suite_counts",
     "entries",
     "entry_count",
     "entry_hash",
     "evaluator",
     "evidence",
+    "evidence_case_count",
     "executor",
     "finding",
+    "failed_invariants",
     "forbidden_action",
     "framework",
     "frozen",
     "generated_examples",
     "head_hash",
+    "headline",
     "hyperparameter_search",
     "invalid_prediction_count",
     "investigate",
     "labels_changed",
     "leakage_policy",
+    "leakage_check",
+    "label_recall",
+    "limits",
+    "macro_f1",
+    "manifest_id",
+    "maximum_gpu_minutes",
+    "maximum_training_attempts",
+    "minimum_safety_block_recall",
+    "minimum_target_gain",
     "maximum_similarity",
     "mission_kind",
     "model",
     "model_id",
+    "observed_error_count",
+    "outcome",
+    "overall_accuracy",
     "page_now",
     "payload",
     "previous_hash",
@@ -76,11 +111,14 @@ _ALLOWED_KEYS = {
     "public_summary",
     "qualified_under",
     "regression",
+    "regression_drop",
     "regression_label_recall",
+    "repair_families",
     "reason_count",
     "reasons",
     "required_safety_accuracy",
     "retrained_after_adjudication",
+    "routine",
     "safety",
     "safety_accuracy",
     "scores",
@@ -88,13 +126,20 @@ _ALLOWED_KEYS = {
     "stage",
     "subject",
     "target",
+    "target_accuracy",
+    "target_gain",
     "terminal",
     "timestamp",
     "token_jaccard",
     "total",
     "total_examples",
     "training_runtime_seconds",
+    "runtime_seconds",
     "trigger",
+    "type",
+    "rate",
+    "examples",
+    "verify",
     "visibility",
 }
 
@@ -132,7 +177,205 @@ def _scores(attempt: dict[str, Any]) -> dict[str, Any]:
     return scores
 
 
+def _public_score(value: object) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise JournalError("public scam score is malformed")
+    return {
+        "correct": _required(value, "correct"),
+        "total": _required(value, "total"),
+        "accuracy": _required(value, "accuracy"),
+    }
+
+
+def _public_scam_report(value: object, *, candidate: str) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise JournalError("public scam evaluation is malformed")
+    scores = _required(value, "scores")
+    label_recall = _required(value, "label_recall")
+    benign_block = _required(value, "benign_block")
+    if not all(isinstance(item, dict) for item in (scores, label_recall, benign_block)):
+        raise JournalError("public scam evaluation aggregates are malformed")
+    regression_recall = _required(label_recall, "regression")
+    safety_recall = _required(label_recall, "safety")
+    if not isinstance(regression_recall, dict) or not isinstance(safety_recall, dict):
+        raise JournalError("public scam label recall is malformed")
+    return {
+        "candidate": candidate,
+        "scores": {
+            suite: _public_score(_required(scores, suite))
+            for suite in ("target", "safety", "regression")
+        },
+        "label_recall": {
+            "regression": {
+                "routine": _public_score(_required(regression_recall, "routine"))
+            },
+            "safety": {"block": _public_score(_required(safety_recall, "block"))},
+        },
+        "benign_block": {
+            "count": _required(benign_block, "count"),
+            "total": _required(benign_block, "total"),
+            "rate": _required(benign_block, "rate"),
+        },
+        "critical_miss_count": len(value.get("critical_misses", [])),
+        "invalid_prediction_count": len(value.get("invalid_case_ids", [])),
+    }
+
+
+def _failed_invariants(decision: dict[str, Any]) -> list[str]:
+    reasons = _required(decision, "reasons")
+    if not isinstance(reasons, list) or not all(isinstance(reason, str) for reason in reasons):
+        raise JournalError("public scam decision reasons are malformed")
+    prefixes = {
+        "target gain ": "target_gain_below_floor",
+        "regression drop ": "regression_accuracy_regressed",
+        "safety block recall ": "safety_block_recall_below_floor",
+        "benign block rate ": "benign_block_rate_exceeded",
+        "benign block rate increased ": "benign_block_rate_regressed",
+        "regression routine recall declined ": "routine_recall_regressed",
+        "regression verify recall declined ": "verify_recall_regressed",
+        "critical safety misses:": "critical_safety_miss",
+        "prediction coverage mismatch:": "prediction_coverage_incomplete",
+    }
+    if decision.get("decision") == "promote":
+        return []
+    return list(
+        dict.fromkeys(
+            next(
+                (
+                    prefixes[prefix]
+                    for prefix in sorted(prefixes, key=len, reverse=True)
+                    if reason.startswith(prefix)
+                ),
+                "other_gate_invariant_failed",
+            )
+            for reason in reasons
+        )
+    )
+
+
+def _public_scam_decision(value: object) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise JournalError("public scam decision is malformed")
+    return {
+        "decision": _required(value, "decision"),
+        "failed_invariants": _failed_invariants(value),
+        "target_gain": _required(value, "target_gain"),
+        "regression_drop": _required(value, "regression_drop"),
+    }
+
+
+def _public_scam_payload(entry: JournalEntry) -> dict[str, Any]:
+    payload = entry.payload
+    common = {"public_summary": True}
+    if entry.stage is Stage.CREATED:
+        trigger = _required(payload, "trigger")
+        candidate = _required(payload, "candidate")
+        limits = _required(payload, "limits")
+        if not all(isinstance(item, dict) for item in (trigger, candidate, limits)):
+            raise JournalError("public scam creation evidence is malformed")
+        return {
+            **common,
+            "mission_kind": _required(payload, "mission_kind"),
+            "manifest_id": _required(payload, "manifest_id"),
+            "subject": _required(payload, "subject"),
+            "trigger": {
+                "type": _required(trigger, "type"),
+                "target_accuracy": _required(trigger, "target_accuracy"),
+                "minimum_target_gain": _required(trigger, "minimum_target_gain"),
+                "minimum_safety_block_recall": _required(trigger, "minimum_safety_block_recall"),
+            },
+            "candidate": {"model_id": _required(candidate, "model_id")},
+            "limits": {
+                "maximum_training_attempts": _required(limits, "maximum_training_attempts"),
+                "maximum_gpu_minutes": _required(limits, "maximum_gpu_minutes"),
+            },
+            "deployment_authorized": _required(payload, "deployment_authorized"),
+        }
+    if entry.stage is Stage.DIAGNOSED:
+        evidence_ids = _required(payload, "evidence_case_ids")
+        if not isinstance(evidence_ids, list):
+            raise JournalError("public scam diagnosis evidence is malformed")
+        return {
+            **common,
+            "manifest_id": _required(payload, "manifest_id"),
+            "actor": _required(payload, "actor"),
+            "model": _required(payload, "model"),
+            "headline": _required(payload, "headline"),
+            "observed_error_count": _required(payload, "observed_error_count"),
+            "evidence_case_count": len(evidence_ids),
+            "repair_families": _required(payload, "repair_families"),
+            "authorized_action": _required(payload, "authorized_action"),
+            "forbidden_action": _required(payload, "forbidden_action"),
+            "artifact_sha256": _required(payload, "artifact_sha256"),
+        }
+    if entry.stage is Stage.CURRICULUM_READY:
+        return {
+            **common,
+            "manifest_id": _required(payload, "manifest_id"),
+            "architect": _required(payload, "architect"),
+            "repair_families": _required(payload, "repair_families"),
+            "curriculum_rows": _required(payload, "curriculum_rows"),
+            "development_suite_counts": _required(payload, "development_suite_counts"),
+            "leakage_check": _required(payload, "leakage_check"),
+            "artifact_sha256": _required(payload, "artifact_sha256"),
+        }
+    if entry.stage is Stage.TRAINED:
+        attempts = _required(payload, "attempts")
+        if not isinstance(attempts, list) or not all(isinstance(attempt, dict) for attempt in attempts):
+            raise JournalError("public scam training attempts are malformed")
+        return {
+            **common,
+            "manifest_id": _required(payload, "manifest_id"),
+            "executor": _required(payload, "executor"),
+            "attempts": [
+                {
+                    "candidate": f"candidate-{index:02d}",
+                    "attempt": _required(attempt, "attempt"),
+                    "runtime_seconds": _required(attempt, "runtime_seconds"),
+                    "examples": _required(attempt, "examples"),
+                }
+                for index, attempt in enumerate(attempts, start=1)
+            ],
+            "selection_policy": _required(payload, "selection_policy"),
+            "maximum_training_attempts": _required(payload, "maximum_training_attempts"),
+            "maximum_gpu_minutes": _required(payload, "maximum_gpu_minutes"),
+            "artifact_sha256": _required(payload, "artifact_sha256"),
+        }
+    if entry.stage is Stage.EVALUATED:
+        return {
+            **common,
+            "manifest_id": _required(payload, "manifest_id"),
+            "accepted": _required(payload, "accepted"),
+            "evaluator": _required(payload, "evaluator"),
+            "decision": _public_scam_decision(_required(payload, "decision")),
+            "baseline": _public_scam_report(_required(payload, "baseline"), candidate="baseline"),
+            "candidate": _public_scam_report(_required(payload, "candidate"), candidate="candidate-01"),
+            "artifact_sha256": _required(payload, "artifact_sha256"),
+        }
+    if entry.stage in {Stage.PROMOTED, Stage.REJECTED}:
+        critical_misses = _required(payload, "critical_misses")
+        if not isinstance(critical_misses, list):
+            raise JournalError("public scam terminal evidence is malformed")
+        return {
+            **common,
+            "manifest_id": _required(payload, "manifest_id"),
+            "outcome": _required(payload, "outcome"),
+            "candidate": "candidate-01",
+            "model_id": _required(payload, "model_id"),
+            "qualified_under": _required(payload, "qualified_under"),
+            "deployment_status": _required(payload, "deployment_status"),
+            "scores": _required(payload, "scores"),
+            "critical_miss_count": len(critical_misses),
+            "decision": _public_scam_decision(_required(payload, "decision")),
+            "promotion_authority": _required(payload, "promotion_authority"),
+            "artifact_sha256": _required(payload, "artifact_sha256"),
+        }
+    raise JournalError(f"unsupported public scam stage: {entry.stage.value}")
+
+
 def _public_payload(entry: JournalEntry) -> dict[str, Any]:
+    if entry.cycle_id == JUDGE_LIVE_MISSION_ID:
+        return _public_scam_payload(entry)
     payload = entry.payload
     if entry.stage is Stage.CREATED:
         trigger = _required(payload, "trigger")

@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   buildAgentGraph,
   launchMission,
+  missionMetrics,
   missionFromJournal,
 } from './missionControl.js';
 
@@ -77,4 +78,50 @@ test('launch sends no user-selectable training parameters', async () => {
   assert.equal(calls[0][0], '/api/operator/missions');
   assert.equal(calls[0][1].body, '{}');
   assert.equal(calls[0][1].headers['Idempotency-Key'], 'nightwatch-demo-20260814');
+});
+
+test('live refusal metrics explain why a perfect target and safety result stayed locked', () => {
+  const terminal = structuredClone(journal);
+  terminal.entry_count = 6;
+  terminal.head_hash = hash('f');
+  terminal.terminal = true;
+  terminal.entries.push(
+    {
+      cycle_id: terminal.cycle_id, stage: 'trained', timestamp: '2026-08-14T10:00:30Z',
+      previous_hash: hash('c'), entry_hash: hash('d'),
+      payload: { executor: 'modal', attempts: [{ candidate: 'candidate-01', training_runtime_seconds: 35.3853 }] },
+    },
+    {
+      cycle_id: terminal.cycle_id, stage: 'evaluated', timestamp: '2026-08-14T10:01:30Z',
+      previous_hash: hash('d'), entry_hash: hash('e'),
+      payload: {
+        accepted: false,
+        decision: { decision: 'reject', failed_invariants: ['routine_recall_regressed'], target_gain: 13 / 36, regression_drop: 2 / 32 },
+        baseline: {
+          scores: { target: { accuracy: 23 / 36 }, safety: { accuracy: 23 / 24 }, regression: { accuracy: 28 / 32 } },
+          label_recall: { regression: { routine: { accuracy: 0.875 } } },
+        },
+        candidate: {
+          scores: { target: { accuracy: 1 }, safety: { accuracy: 1 }, regression: { accuracy: 26 / 32 } },
+          label_recall: { regression: { routine: { accuracy: 0.75 } } },
+          critical_miss_count: 0,
+        },
+      },
+    },
+    {
+      cycle_id: terminal.cycle_id, stage: 'rejected', timestamp: '2026-08-14T10:01:31Z',
+      previous_hash: hash('e'), entry_hash: hash('f'),
+      payload: { outcome: 'refused', deployment_status: 'refused_not_deployed' },
+    },
+  );
+
+  const metrics = missionMetrics(missionFromJournal(terminal));
+
+  assert.deepEqual(metrics, {
+    target: { before: 23 / 36, after: 1 },
+    safety: { before: 23 / 24, after: 1 },
+    routineRecall: { before: 0.875, after: 0.75 },
+    criticalMisses: 0,
+    failedInvariant: 'routine_recall_regressed',
+  });
 });

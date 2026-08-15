@@ -2,6 +2,7 @@ import { SCAM_MISSION } from './scamMission.js';
 
 const STAGE_ORDER = ['created', 'diagnosed', 'curriculum_ready', 'trained', 'evaluated', 'promoted', 'rejected'];
 const HASH = /^[a-f0-9]{64}$/;
+export const JUDGE_LIVE_MISSION_ID = 'nightwatch-live-89e73407c43d525c4bc19272';
 
 export class MissionControlError extends Error {
   constructor(code, message, status = 0) {
@@ -90,6 +91,36 @@ export function retainedMission() {
   };
 }
 
+export function missionMetrics(mission) {
+  if (mission.mode === 'retained') {
+    return {
+      target: { before: mission.retained.baseline.target, after: mission.retained.candidate.target },
+      safety: { before: mission.retained.baseline.safety, after: mission.retained.candidate.safety },
+      routineRecall: null,
+      criticalMisses: mission.retained.candidate.criticalMisses,
+      failedInvariant: null,
+    };
+  }
+  const evaluated = mission.entries.find((entry) => entry.stage === 'evaluated')?.payload;
+  if (!evaluated?.baseline || !evaluated?.candidate) return null;
+  return {
+    target: {
+      before: evaluated.baseline.scores?.target?.accuracy,
+      after: evaluated.candidate.scores?.target?.accuracy,
+    },
+    safety: {
+      before: evaluated.baseline.scores?.safety?.accuracy,
+      after: evaluated.candidate.scores?.safety?.accuracy,
+    },
+    routineRecall: {
+      before: evaluated.baseline.label_recall?.regression?.routine?.accuracy,
+      after: evaluated.candidate.label_recall?.regression?.routine?.accuracy,
+    },
+    criticalMisses: evaluated.candidate.critical_miss_count,
+    failedInvariant: evaluated.decision?.failed_invariants?.[0] || null,
+  };
+}
+
 export function buildAgentGraph(mission) {
   if (mission.mode === 'retained') {
     const stages = mission.retained.stages;
@@ -123,7 +154,10 @@ export function buildAgentGraph(mission) {
     role: 'Gemini ADK family author',
     lane: 'parallel',
     status: authorStatus,
-    evidence: evidenceFor(curriculum, { payload: { repair_family: family, state: 'awaiting diagnosis' } }),
+    evidence: curriculum ? {
+      ...evidenceFor(curriculum, {}),
+      payload: { ...curriculum.payload, repair_family: family },
+    } : { payload: { repair_family: family, state: 'awaiting diagnosis' } },
   }));
   if (authors.length === 0) {
     authors.push({

@@ -15,6 +15,7 @@ from nightwatch.journal import GENESIS_HASH, JournalEntry, JournalError
 from nightwatch.service import create_app
 from nightwatch.mission_orchestrator import SCAM_SAFETY_LIVE_1B_V1
 from nightwatch.public_evidence import (
+    JUDGE_LIVE_MISSION_ID,
     LIVE_PUBLIC_MISSION_ID,
     PUBLIC_IDEMPOTENCY_KEY,
     PUBLIC_MISSION_ID,
@@ -602,6 +603,15 @@ def live_public_snapshot() -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def judge_live_public_snapshot() -> dict[str, object]:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "artifacts"
+        / "public-mission-live-89e73407c43d525c4bc19272.json"
+    )
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def test_public_mode_serves_only_fixed_redacted_snapshot_without_firestore(
     web_root: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -645,6 +655,27 @@ def test_public_mode_serves_allowlisted_live_refusal_without_firestore(
     assert response.headers["Cache-Control"] == "public, max-age=60"
     assert "artifact_name" not in response.get_data(as_text=True)
     assert missing.status_code == 404
+    assert journal.calls == []
+
+
+def test_public_mode_serves_judge_live_refusal_without_firestore(
+    web_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("NIGHTWATCH_PUBLIC_MODE", "1")
+    journal = StubJournal(error=AssertionError("public service must not read Firestore"))
+    client = create_app(
+        journal,
+        public_snapshot=judge_live_public_snapshot(),
+        static_root=web_root,
+    ).test_client()
+
+    response = client.get(f"/api/missions/{JUDGE_LIVE_MISSION_ID}")
+
+    assert response.status_code == 200
+    assert response.json["head_hash"] == "bd859f2e7102e3c592d95400e920a85e3c330bc823f124de18b5adf9c5a5a98e"
+    assert response.json["entries"][4]["payload"]["decision"]["failed_invariants"] == ["routine_recall_regressed"]
+    assert "artifact_uri" not in response.get_data(as_text=True)
     assert journal.calls == []
 
 

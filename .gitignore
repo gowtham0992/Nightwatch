@@ -15,6 +15,7 @@ artifacts/*
 !artifacts/retained-mission-v2.jsonl
 !artifacts/public-mission-v2.json
 !artifacts/public-mission-cloud-20260811-001.json
+!artifacts/public-mission-live-89e73407c43d525c4bc19272.json
 !artifacts/v0-curriculum.jsonl
 !artifacts/v0-18a33dfd5c54-seed-20260809-predictions.jsonl
 !artifacts/v0-18a33dfd5c54-seed-20260809-report.json
