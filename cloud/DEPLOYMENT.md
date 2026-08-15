@@ -21,7 +21,7 @@ Nightwatch separates its private operator surface, public judge surface, and pri
 
 The canonical private control URL is `https://nightwatch-evidence-w3a6oefsma-uc.a.run.app`. Use the canonical `*.a.run.app` worker URL as both the Cloud Tasks target and OIDC audience; the alternate numeric hostname is not interchangeable for this purpose.
 
-The canonical public judge URL is `https://nightwatch-public-w3a6oefsma-uc.a.run.app`. Release `a9dbac3` runs public revision `nightwatch-public-judge-a9dbac3-r2`, private revision `nightwatch-evidence-judge-a9dbac3-r2`, and verifier revision `nightwatch-public-verifier-judge-a9dbac3` from immutable image digest `sha256:81ee8ec2ea902fca583cb4d23262ebc1d8c0caf7dbc19be9d4421ec4a4bb8924`. The judge view defaults to the strongest live refusal mission and exposes only its bundled, strictly redacted evidence.
+The canonical public judge URL is `https://nightwatch-public-w3a6oefsma-uc.a.run.app`. Public release `b9ef1b9` runs revision `nightwatch-public-gate-b9ef1b9` from immutable image digest `sha256:3e91c394c575ebe4d479d8d86caacb77586303cd5ddcaf9f6920cad1507efef2`. Private revision `nightwatch-evidence-judge-a9dbac3-r2` and verifier revision `nightwatch-public-verifier-judge-a9dbac3` remain on the compatible `a9dbac3` service image. The judge view defaults to the strongest live refusal mission and exposes only its bundled, strictly redacted evidence.
 
 The mission control and worker run immutable image digest `sha256:e3d09ce4d07c652c777034ca5c1c06c217d5862f09c87edbee9cbbe235665478` in revisions `nightwatch-mission-control-scam-ff4f` and `nightwatch-mission-worker-scam-ff4f`. Fresh scam mission `nightwatch-scam-20260814-001` traversed all six stages unattended in 94 seconds and qualified a new cycle-bound adapter. Its terminal Firestore head is `3e7ff1420b51b9accfe4bd325c4faf00d89823d1db2bcbcac08eda6b0a916930`; private receipt `verify-1b69f5647d8003263b96eb03f185b9f653966d3a` independently sealed all six entries. The candidate reached 36/36 target, 24/24 safety, and 28/32 regression cases with zero critical misses and zero benign blocks. It remains qualified, not deployed.
 
@@ -42,6 +42,8 @@ Commit `a9dbac3` is deployed to the public, private, and public-proof verifier s
 The production proof path was exercised after promotion. Public verification `verify-11ad0d4091590155d014cfd346fb9c1e9338963a` was queued through Cloud Tasks, independently reread by the private verifier, and sealed all six entries at the exact terminal head. The public operator route remained 404. No training or model endpoint was invoked during this release verification.
 
 Known-good rollback targets are `nightwatch-public-ui-c5916d6`, `nightwatch-evidence-ui-c5916d6`, and `nightwatch-public-verifier-00003-mgn`. The live mission worker remains unchanged on `nightwatch-mission-worker-mc-cdcbf25`.
+
+Public UI follow-up `b9ef1b9` separates execution completion from gate outcome: completed upstream agents retain green checks, while a rejected gate renders a red blocked mark and `REFUSED`; its inspector states `evaluation complete`. The zero-traffic candidate was exercised against the real refusal snapshot at desktop and mobile widths with a clean browser console before promotion. `nightwatch-public-judge-a9dbac3-r2` is the immediate public rollback target.
 
 ## Enable the private Mission Control launch
 
