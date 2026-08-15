@@ -4,6 +4,17 @@
 .pytest_cache
 **/__pycache__
 *.pyc
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+*credentials*.json
+*service-account*.json
+application_default_credentials.json
 artifacts/*
 !artifacts/v0-curriculum.jsonl
 !artifacts/v0-dev.jsonl

@@ -3,6 +3,13 @@
 .env.*
 !.env.example
 !.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+*credentials*.json
+*service-account*.json
+application_default_credentials.json
 __pycache__/
 .pytest_cache/
 *.py[cod]

@@ -1,174 +1,234 @@
-# Nightwatch
+<p align="center">
+  <img src="assets/brand/nightwatch-snow-wall-wordmark-gemini.png" alt="Nightwatch" width="560">
+</p>
 
-**AI can propose its own upgrade. It cannot approve it.**
+<p align="center"><strong>Autonomous model repair. Deterministic release authority.</strong></p>
 
-Nightwatch repairs a failing specialized AI model, but refuses to let AI approve its own work. It detects a concrete failure, binds Gemini and Google ADK to the observed evidence, trains a pinned Gemma candidate on Modal, independently evaluates the result, and records a deterministic qualified-or-refused decision on Google Cloud.
+<p align="center">
+  <a href="https://nightwatch-public-w3a6oefsma-uc.a.run.app/">Live judge experience</a>
+  · <a href="docs/images/nightwatch-architecture.svg">Architecture</a>
+  · <a href="docs/threat-model.md">Threat model</a>
+  · <a href="cloud/DEPLOYMENT.md">Deployment evidence</a>
+</p>
 
-This project targets **The Taskmaster** track. One authenticated request starts a bounded mission; Cloud Tasks advances its six durable stages without hand-holding, Firestore stores a hash-chained journal, and create-only Cloud Storage evidence makes retries safe. Production deployment is never authorized by this workflow.
+> **It hit 100%. We still refused it.** Nightwatch autonomously diagnosed and repaired a failing Gemma scam-message classifier, then blocked its own candidate because one protected behavior regressed.
 
-![Nightwatch deployed architecture](docs/images/nightwatch-architecture.png)
+Nightwatch is an autonomous repair line for specialized AI models. One authenticated request starts a bounded mission that detects a failure, diagnoses it with Gemini, asks Google ADK specialists to design a repair, trains a pinned Gemma candidate, evaluates frozen evidence, and records a deterministic release decision. The model can propose an upgrade; it cannot approve one.
 
-## The working product repairs a real scam-message classifier
+**Hackathon:** [All Things Agentic Hackathon](https://allthingsagentichackathon.devpost.com/)<br>
+**Track:** The Taskmaster<br>
+**Core stack:** Gemini 3.6 Flash · Google ADK · Cloud Run · Cloud Tasks · Firestore · Cloud Storage · Vertex AI · Gemma 3 · Modal
 
-The product mission starts with pinned `google/gemma-3-1b-it` model evidence that mishandles scam-message boundaries. Gemini 3.6 Flash and Google ADK diagnosed the observed errors and authored bounded, leakage-checked repair curricula. Modal trained the candidates. The final persisted adapter was independently reloaded and reproduced byte-identical predictions before the gate ran.
+## The proof is a refusal, not a victory lap
 
-The earned candidate passed 36/36 target cases, 24/24 safety cases, and 28/32 regression cases. It produced zero critical misses and zero benign blocks, improving target accuracy from 83.3% to 100% while improving regression accuracy from 78.1% to 87.5%. Deterministic code therefore marked it **qualified, not deployed**.
+The default public case is a real unattended Google Cloud mission: `nightwatch-live-89e73407c43d525c4bc19272`.
 
-The new scam mission controller is implemented, covered by the full test suite, built as the exact private Cloud Run container, and smoke-tested inside that container. It has not yet been deployed or started in Google Cloud; the hosted URL below still serves the earlier real incident-triage proof until the new release is intentionally rolled out and externally verified.
+| Protected measure | Baseline | Candidate | Gate result |
+|---|---:|---:|---|
+| Target accuracy | 63.9% | **100.0%** | Passed |
+| Safety accuracy | 95.8% | **100.0%** | Passed |
+| Routine-message recall | **87.5%** | 75.0% | **Failed** |
+| Critical misses | 0 | 0 | Passed |
+| Final release state | — | — | **Refused, not deployed** |
 
-**Hosted judge experience:** [open the public redacted proof](https://nightwatch-public-w3a6oefsma-uc.a.run.app/).
+The candidate looked excellent if judged only by its headline scores. Nightwatch caught the hidden regression and kept the release boundary locked. A second real case in the UI shows the opposite branch: a candidate that passed every fixed invariant was **qualified, not deployed**. Qualification never mutates a production model pointer.
 
-The previous deployed Taskmaster mission remains useful evidence: one authenticated start advanced through all six Cloud Tasks-backed stages in 105 seconds and correctly refused a candidate that improved safety by damaging regression behavior. The public service has no Firestore, Gemini, Modal, or mission-start permission; it serves only checked-in redacted proofs.
+Open the [live judge experience](https://nightwatch-public-w3a6oefsma-uc.a.run.app/), replay the six-stage mission, inspect every handoff, and request a fresh proof. The proof request crosses an isolated Cloud Tasks queue; a private verifier re-reads the Firestore chain and seals an immutable Cloud Storage receipt.
 
-## Run the product UI
+## This is a Taskmaster, not a chatbot
 
-The UI in `web/` presents the real scam mission as a product lifecycle: failure, diagnosis, repair design, training, evaluation, and deterministic release decision. It derives every displayed number from checked-in evidence and fails closed instead of inventing fixture data.
+The friction is operational: when a specialized model fails, a team must reproduce the failure, understand it, prepare corrective data, spend compute on a candidate, protect old behavior, decide whether to release, and preserve an audit trail. Those steps are slow, easy to bias after seeing results, and dangerous to compress into one prompt.
+
+Nightwatch owns that workflow from trigger to decision:
+
+| Stage | Accountable worker | Real action | Durable evidence |
+|---|---|---|---|
+| 1. Watch | Watcher | Freezes the approved manifest, model revision, budget, and gate | Firestore `created` entry |
+| 2. Diagnose | Gemini/ADK diagnostician | Sees bounded failure evidence and isolates repair families | Create-only diagnosis artifact |
+| 3. Design | Three ADK curriculum specialists | Author parallel, targeted repair examples | Validated curriculum and leakage report |
+| 4. Train | Trainer | Launches one pinned Gemma LoRA training call on Modal | Call claim, adapter, predictions, training report |
+| 5. Evaluate | Deterministic evaluator | Scores target, safety, regression, recall, coverage, and critical misses | Immutable evaluation report |
+| 6. Decide | Release gate | Applies versioned code-only invariants | `qualified_not_deployed` or `refused_not_deployed` |
+
+Cloud Tasks advances exactly one durable stage per request. A retry resumes from immutable evidence instead of repeating completed Gemini or training work. No human selects the favorable candidate, edits a threshold, or presses “approve” midway through the run.
+
+## Architecture
+
+![Nightwatch deployed architecture](docs/images/nightwatch-architecture.svg)
+
+There are two deliberately separate paths:
+
+1. **Private autonomous execution.** An IAM-protected Cloud Run control service enqueues a fixed mission. A private, OIDC-only Cloud Run worker advances six idempotent stages through Cloud Tasks. Gemini 3.6 Flash runs through Vertex AI and Google ADK; Modal performs the bounded Gemma training step. Firestore and Cloud Storage retain the evidence.
+2. **Public, independently verifiable proof.** The judge UI runs on a different public Cloud Run identity. It serves a checked-in redacted projection and has no Firestore, Gemini, Modal, or mission-launch permission. A separate fixed-purpose verifier can re-read the exact private chain and create—but never overwrite—an isolated receipt.
+
+Every interaction has a failure policy. Stage task IDs are deterministic, Firestore appends are transactional, external effects are cycle-and-stage keyed, artifacts are create-only, queue attempts are bounded, and malformed evidence fails closed.
+
+## Hackathon requirements, explicitly covered
+
+| Requirement | Nightwatch implementation |
+|---|---|
+| **Gemini 3.5 or newer** | Gemini **3.6 Flash** diagnoses observed failures and authors bounded repair curricula through Vertex AI. Flash is used instead of Pro to keep the common path inexpensive. |
+| **Google agent framework** | **Google ADK** provides the diagnostician and parallel curriculum-authoring specialists. Their structured output is schema-validated before it can affect training. |
+| **Google Cloud service** | **Cloud Run** hosts the public, private, worker, and verifier services; **Cloud Tasks** provides durable orchestration; **Firestore** stores the journal; **Cloud Storage** stores immutable artifacts and receipts; **Vertex AI** serves Gemini. |
+| **Autonomous action beyond chat** | One request advances detection → diagnosis → repair design → training → evaluation → release decision without hand-holding. There is no chat interface. |
+| **Hosted project** | The [public Cloud Run experience](https://nightwatch-public-w3a6oefsma-uc.a.run.app/) is available without credentials and exposes no operator capability. |
+| **Additional Google AI model** | The student is the pinned `google/gemma-3-1b-it` model, trained as a LoRA candidate. This satisfies the optional Gemma integration bonus. |
+| **Reproducibility** | Local product, test, container, and Google Cloud deployment instructions are below and in the [deployment runbook](cloud/DEPLOYMENT.md). |
+| **Architecture and proof** | This repository includes the architecture diagram, immutable public evidence, exact release revisions, rollback results, and a fresh verification receipt. |
+
+The design aligns directly with the judging weights: autonomous operational utility, architecture and failure discipline, and undeniable production proof. It is entered only in **The Taskmaster** track.
+
+## The execution graph is inspectable
+
+The UI exposes nine accountable nodes without pretending every box is an LLM:
+
+- four Gemini/ADK roles: one diagnostician and three bounded curriculum specialists;
+- a watcher and policy validator that freeze scope and reject invalid evidence;
+- a trainer whose external call is idempotent and budget-capped;
+- an evaluator that cannot modify training data;
+- a deterministic release gate with no model call at all.
+
+Selecting a node shows its input, output hash, authority, and downstream handoff. Green means that worker completed its assigned job; a refused release gate is rendered as blocked, not successful.
+
+## Safety is enforced outside the model
+
+Gemini receives only the evidence required for its role. It cannot read the sealed evaluation set or modify labels, gate thresholds, mission history, budgets, or deployment state.
+
+The scam-message gate is fixed before training and requires all of the following:
+
+- at least 15 percentage points of target-suite improvement;
+- no more than two points of overall regression loss;
+- at least 95% recall on safety cases that must be blocked;
+- zero critical misses;
+- no increase in benign blocking;
+- no decline in protected regression-label recall;
+- exactly one valid prediction for every sealed case.
+
+The final verdict is produced by deterministic Python, not Gemini. A candidate can only become `qualified_not_deployed`; actual production deployment is intentionally outside Nightwatch’s authority.
+
+## Security and cost boundaries
+
+The public and private services do not share authority simply because they share code.
+
+| Boundary | Enforcement |
+|---|---|
+| Public judge surface | Separate identity; redacted bundled evidence; no Firestore, Vertex AI, Modal, or mission-start access |
+| Private operator | Google Cloud IAM authentication; fixed manifest; server-derived cycle ID; allowlisted queue only |
+| Workers | OIDC-only Cloud Run invocation; one-purpose service accounts; least-privilege IAM |
+| Evidence | SHA-256 hash chain in Firestore; create-only Cloud Storage artifacts and receipts |
+| Inputs | Strict schemas, 16 KiB request limits, safe identifiers, no user-controlled model or storage URIs |
+| Browser | CSP, frame denial, no-referrer, no-sniff, and no-store API responses |
+| Secrets | Environment or managed secret injection only; `.env*`, credentials, adapters, and generated artifacts are ignored |
+| Spend | Gemini Flash, scale-to-zero Cloud Run services, maximum instance caps, one concurrent mission stage, bounded retries, one training attempt, and a 20-GPU-minute manifest ceiling |
+
+The deployed configuration uses minimum instances of zero. The public service and workers are capped at one instance; the authenticated evidence service is capped at two. Detailed resource identities, immutable image digests, rollback targets, and queue limits are recorded in [cloud/DEPLOYMENT.md](cloud/DEPLOYMENT.md).
+
+## Run the public product locally
+
+The fastest path needs Docker and no cloud credentials:
 
 ```bash
+git clone https://github.com/gowtham0992/Nightwatch.git
+cd Nightwatch
+
+docker build --file containers/service.Dockerfile --tag nightwatch:local .
+docker run --rm \
+  --publish 127.0.0.1:8080:8080 \
+  --env NIGHTWATCH_PUBLIC_MODE=1 \
+  nightwatch:local
+```
+
+Open [http://127.0.0.1:8080](http://127.0.0.1:8080). This starts the same fail-closed public mode used for judging, backed only by checked-in, integrity-validated evidence. Fresh private verification receipts require the deployed Google Cloud verifier and are not emulated locally.
+
+## Run the tests and build from source
+
+Prerequisites: Python 3.11+, [uv](https://docs.astral.sh/uv/), Node.js 22+, and npm.
+
+```bash
+git clone https://github.com/gowtham0992/Nightwatch.git
+cd Nightwatch
+
+uv sync --extra dev
+uv run pytest
+
 cd web
-npm install
-npm run dev
+npm ci
+npm test
+npm run build
 ```
 
-Use `npm test` for the adapter contract and `npm run build` for the production bundle. Local Vite development needs an API proxy or a local service; the deployed bundle and API share one Cloud Run origin.
+The Python suite covers gates, journal integrity, task idempotency, storage preconditions, service boundaries, public redaction, verification, mission orchestration, and the real scam-safety evidence contract. The frontend suite verifies the mission adapter and fails closed when evidence is incomplete or inconsistent.
 
-## Run the evidence service
-
-The control service exposes the static UI, `GET /api/health`, `GET /api/missions/<cycle_id>`, and an authenticated verification trigger. The trigger accepts an exact observed head plus an idempotency key; it can enqueue only the throttled verification worker and cannot launch training or alter promotion policy.
+To exercise the small deterministic gate fixture without any model or cloud call:
 
 ```bash
-docker build --file containers/service.Dockerfile --tag nightwatch-service:local .
-docker run --rm --publish 127.0.0.1:8080:8080 nightwatch-service:local
-```
-
-Without Google Application Default Credentials, the UI and shallow health check work locally while Firestore mission reads fail closed with HTTP 503. The deployed control identity has Firestore read-only access and enqueue permission on one queue. The worker has Firestore read-only access and create-only access on one receipt bucket.
-
-The operator service remains IAM-protected. The public judge service uses a separate least-privilege identity and returns only the bundled redacted projection. Its verification control permits at most one fresh receipt per mission per UTC minute: repeated clicks deduplicate, while a later minute triggers a new private Firestore re-read and records Cloud Storage's authoritative seal time. See [the deployment runbook](cloud/DEPLOYMENT.md) for the exact resources, verification request, cost caps, and rollback path.
-
-## Run the deterministic proof
-
-Python 3.11+ is sufficient and the core has no runtime dependencies.
-
-```bash
-PYTHONPATH=src python -m nightwatch.cli gate-fixture \
+uv run python -m nightwatch.cli gate-fixture \
   --candidate data/predictions/good_candidate.jsonl \
   --report artifacts/good-report.json
 
-PYTHONPATH=src python -m nightwatch.cli gate-fixture \
+uv run python -m nightwatch.cli gate-fixture \
   --candidate data/predictions/bad_high_score_candidate.jsonl \
   --report artifacts/bad-report.json
-
-PYTHONPATH=src python -m pytest
 ```
 
-## Generate curriculum with Gemini and Google ADK
+The second fixture is intentionally high-scoring but unsafe; the gate must refuse it.
 
-The curriculum agent receives only an aggregate diagnosis—not hidden eval prompts. Set `GOOGLE_API_KEY` for the Gemini API or configure Vertex AI ADC, then run:
+## Run a live agent or deploy to Google Cloud
 
-```bash
-uv sync --extra agent
-uv run python -m nightwatch.curriculum_agent \
-  --diagnosis data/diagnosis/silent_failure.json \
-  --output artifacts/generated-curriculum.jsonl \
-  --examples 96
+A live mission has external effects and can spend Gemini and Modal credits. Do not place tokens in the repository.
+
+1. Accept the Gemma model terms and provide `HF_TOKEN` to the named Modal secret `nightwatch-huggingface`.
+2. Authenticate Google Cloud with Application Default Credentials and enable Vertex AI, Cloud Run, Cloud Tasks, Firestore, Cloud Storage, Artifact Registry, Cloud Build, and IAM.
+3. Install the live dependencies with `uv sync --extra agent --extra experiment --extra service --extra dev`.
+4. Create the separate runtime and OIDC invoker service accounts described in [cloud/DEPLOYMENT.md](cloud/DEPLOYMENT.md).
+5. Build with [cloud/service-build.yaml](cloud/service-build.yaml) and [cloud/mission-build.yaml](cloud/mission-build.yaml), deploy immutable image digests, then enable only the private operator route.
+6. Keep Cloud Run minimum instances at zero, preserve the documented maximum-instance and queue caps, and set a billing alert before launching a mission.
+7. Start one fixed mission from the authenticated operator UI and record the Cloud Run URL, Cloud Tasks progression, terminal Firestore head, and verification receipt.
+
+The exact deployed topology, resource names, release digests, IAM boundaries, verification request, and rollback procedure live in the [deployment runbook](cloud/DEPLOYMENT.md). The public service must never receive the private service’s environment variables or IAM roles.
+
+## Evidence and data provenance
+
+Nightwatch’s scam-message corpus is newly authored for this project and separated by purpose:
+
+- curriculum rows are available to training;
+- development rows guide bounded repair;
+- sealed evaluation rows are never shown to Gemini or used for candidate selection;
+- canonical exact overlap between curriculum and evaluation is rejected;
+- every retained artifact records its content hash.
+
+No customer messages or personal data are used. The base student is Google’s Gemma 3 1B instruction-tuned checkpoint at the immutable revision recorded in [data/scam_safety/mission.json](data/scam_safety/mission.json).
+
+## What the experiments taught us
+
+1. **A better aggregate score can still be an unsafe release.** The live candidate reached 100% on target and safety suites while losing 12.5 points of routine-message recall.
+2. **The evaluator must be organizationally and technically separate from the repair agents.** Otherwise the same system can optimize and reinterpret its own test.
+3. **Retry safety matters as much as model quality in autonomous workflows.** A duplicated task must not create a second Gemini call, training run, or receipt.
+4. **Public proof should not require public authority.** Judges can inspect and freshly verify the evidence without gaining access to Firestore or the mission launcher.
+
+## Repository map
+
+```text
+src/nightwatch/       Mission state machine, agents, gates, journals, services
+web/                  React/Vite judge and authenticated operator interface
+data/scam_safety/     Mission contract and separated scam-message evidence
+artifacts/            Retained public proofs and reproducible evaluation records
+containers/           Digest-pinned service and worker images
+cloud/                Build configs, lifecycle policies, and deployment runbook
+docs/                 Architecture, threat model, mission design, experiment audit
+tests/                Python behavior, security, persistence, and orchestration tests
 ```
 
-The pinned architect model is `gemini-3.6-flash`.
+## Deliberate limits
 
-## Run the real Gemma spike
+Nightwatch currently operates one allowlisted scam-safety manifest. It does not accept arbitrary uploads, models, datasets, hyperparameters, or deployment targets; it does not schedule open-ended self-improvement; and it never updates a production adapter pointer. Those are safety boundaries, not missing demo controls.
 
-Gemma access requires accepting its Hugging Face terms and providing `HF_TOKEN` through the environment or Secret Manager. Generate the 96-example curriculum above first; every prompt and LoRA arm below uses that same file.
+The system proves autonomous repair and qualification—not universal model safety. A future production version would add tenant isolation, an independently authorized deployment service, shadow rollout, monitored rollback, and a human-owned policy-version process.
 
-Before the targeted repair, generate and qualify the target-withheld v0 student. This prevents the experiment from describing an unsafe untuned model as deployed:
+## License
 
-```bash
-uv sync --extra agent --extra train --extra experiment --extra dev
+Nightwatch is released under the [MIT License](LICENSE).
 
-uv run python -m nightwatch.v0_curriculum_agent \
-  --examples-per-label 80 \
-  --output artifacts/v0-curriculum.jsonl
+---
 
-uv run modal run src/nightwatch/modal_v0.py \
-  --curriculum artifacts/v0-curriculum.jsonl
-
-# Development-only sequence-classifier arm; do not point this at the frozen set.
-uv run modal run src/nightwatch/modal_classifier.py \
-  --curriculum artifacts/v0-curriculum.jsonl \
-  --dev artifacts/v0-dev.jsonl \
-  --rank 8 \
-  --learning-rate 0.001
-```
-
-The Modal run requires a named secret, `nightwatch-huggingface`, containing `HF_TOKEN`. It persists the immutable adapter and report in the `nightwatch-experiment-artifacts` Modal Volume and writes predictions plus the acceptance report locally under `artifacts/`.
-
-```bash
-uv sync --extra train --extra dev
-
-uv run python -m nightwatch.predict_gemma \
-  --output artifacts/baseline-predictions.jsonl
-
-uv run python -m nightwatch.predict_gemma \
-  --few-shot artifacts/generated-curriculum.jsonl \
-  --few-shot-count 16 \
-  --output artifacts/prompt-practical-predictions.jsonl
-
-uv run python -m nightwatch.predict_gemma \
-  --few-shot artifacts/generated-curriculum.jsonl \
-  --output artifacts/prompt-matched-predictions.jsonl
-
-uv run python -m nightwatch.train_gemma \
-  --curriculum artifacts/generated-curriculum.jsonl \
-  --output-dir artifacts/adapter-seed-42 \
-  --seed 42
-
-uv run python -m nightwatch.train_gemma \
-  --curriculum artifacts/generated-curriculum.jsonl \
-  --output-dir artifacts/adapter-seed-31415 \
-  --seed 31415
-
-uv run python -m nightwatch.predict_gemma \
-  --adapter artifacts/adapter-seed-42 \
-  --output artifacts/candidate-seed-42-predictions.jsonl
-
-uv run python -m nightwatch.predict_gemma \
-  --adapter artifacts/adapter-seed-31415 \
-  --output artifacts/candidate-seed-31415-predictions.jsonl
-
-uv run nightwatch evaluate \
-  --eval data/eval/frozen.jsonl \
-  --curriculum artifacts/generated-curriculum.jsonl \
-  --baseline artifacts/baseline-predictions.jsonl \
-  --candidate artifacts/prompt-practical-predictions.jsonl \
-  --report artifacts/prompt-practical-report.json
-
-uv run nightwatch evaluate \
-  --eval data/eval/frozen.jsonl \
-  --curriculum artifacts/generated-curriculum.jsonl \
-  --baseline artifacts/baseline-predictions.jsonl \
-  --candidate artifacts/prompt-matched-predictions.jsonl \
-  --report artifacts/prompt-matched-report.json
-
-uv run nightwatch evaluate \
-  --eval data/eval/frozen.jsonl \
-  --curriculum artifacts/generated-curriculum.jsonl \
-  --baseline artifacts/baseline-predictions.jsonl \
-  --candidate artifacts/candidate-seed-42-predictions.jsonl \
-  --report artifacts/seed-42-report.json
-
-uv run nightwatch evaluate \
-  --eval data/eval/frozen.jsonl \
-  --curriculum artifacts/generated-curriculum.jsonl \
-  --baseline artifacts/baseline-predictions.jsonl \
-  --candidate artifacts/candidate-seed-31415-predictions.jsonl \
-  --report artifacts/seed-31415-report.json
-```
-
-## What is still deliberately absent
-
-Nightwatch does not yet schedule nightly repair, accept arbitrary model manifests, update a production adapter pointer, or launch training from the public service. Missions are operator-authenticated and restricted to one pinned, budget-capped manifest. A production pointer still requires a separately authorized promoter identity plus rollback tests.
-
-## Spike success and kill criteria
-
-Continue to the full product only if two independent training seeds each achieve at least +20 percentage points on the target suite, zero regression-suite decline, and zero safety-critical misses. Kill or rescope if the result depends on hidden-prompt exposure, manual candidate selection, mutable thresholds, or a one-off lucky seed.
-
-See [the architecture](docs/architecture.md), [feasibility experiment](docs/experiment-plan.md), [threat model](docs/threat-model.md), and [Cloud Run job instructions](cloud/README.md).
+Built for the [All Things Agentic Hackathon](https://allthingsagentichackathon.devpost.com/) using Gemini, Google ADK, Google Cloud, and Gemma. Official requirements and resources are available on the hackathon’s [Resources](https://allthingsagentichackathon.devpost.com/resources), [FAQ](https://allthingsagentichackathon.devpost.com/details/faqs), and [Rules](https://allthingsagentichackathon.devpost.com/rules) pages.

@@ -1,44 +1,92 @@
-# Nightwatch target architecture
+# Nightwatch deployed architecture
 
-The deployed slice proves the complete retained qualification story and a secure asynchronous verification path. Firestore holds a real six-stage mission built from Gemini/ADK curriculum evidence, Modal training reports, and deterministic policy-v2 evaluation. An IAM-protected Cloud Run control service serves the complete verified chain. A separate public Cloud Run service serves a checked-in redacted projection tied to that chain's exact head; it cannot read Firestore. Cloud Tasks invokes a private worker that re-reads the live chain and creates one immutable receipt object. Cloud-triggered training and a production pointer remain intentionally absent.
+Nightwatch separates autonomous repair, deterministic release authority, and public proof. The private mission path can call Gemini and Modal but cannot deploy a model. The public judge path can request an independent verification but cannot read Firestore, invoke a model, start a mission, or alter evidence.
 
-## Mission persistence contract
+![Nightwatch deployed architecture](images/nightwatch-architecture.svg)
 
-Firestore stores one mission head at `missions/{cycle_id}` and one immutable document per stage at `missions/{cycle_id}/entries/{stage}`. A transaction reads both documents before writing the next entry and updated head. The stage document ID makes retries naturally idempotent; the transaction rejects a replay whose payload differs, a skipped transition, a terminal-stage append, an unsafe mission ID, or a payload larger than 256 KiB. Each mission owns an independent SHA-256 chain beginning at the fixed genesis hash.
+## One request advances a complete bounded workflow
 
-The application exposes no direct Firestore writes. The private trigger binds each request to the exact observed head and a validated idempotency key. The public trigger accepts only the retained mission head and replaces caller input with one fixed public idempotency key, so arbitrary requests cannot create unbounded task identities. The public path has its own queue, OIDC invoker, private verifier service, and receipt bucket. Its worker accepts only the exact bundled mission, head, and content-derived receipt ID. Both queues use one concurrent dispatch, one dispatch per second, a 30-second retry window, and private OIDC targets. A worker re-reads the entire chain before creating a generation-zero receipt; it cannot overwrite or delete receipts.
+An authenticated operator starts the fixed `scam-safety-live-1b-v1` manifest. The server derives the cycle ID and enqueues the first Cloud Task. Each task advances exactly one lifecycle stage, persists its evidence, and schedules the next stage:
 
-The control service accepts an allowlisted mission ID, verifies at most seven lifecycle entries through the journal contract, and returns either the complete chain or a fail-closed error. It lazily creates Google Cloud clients so its shallow health endpoint does not amplify dependency failures. Both Cloud Run services scale to zero. The control service is capped at two instances; the single-concurrency worker is capped at one.
+| Stage | Authority | External effect |
+|---|---|---|
+| `created` | Deterministic controller | Freezes model revision, budget, seed, hyperparameters, and gate version |
+| `diagnosed` | Gemini 3.6 Flash through Google ADK | Produces one schema-bound repair plan from observed failures |
+| `curriculum_ready` | Parallel Gemini/ADK specialists plus deterministic validation | Creates targeted curriculum and leakage evidence |
+| `trained` | Modal training campaign | Claims one cycle-bound call and persists the Gemma LoRA candidate and predictions |
+| `evaluated` | Deterministic Python | Scores target, safety, regression, protected recall, coverage, and critical misses |
+| `promoted` or `rejected` | Deterministic Python | Records `qualified_not_deployed` or `refused_not_deployed` |
 
-![Nightwatch deployed architecture](images/nightwatch-architecture.png)
+The historical journal enum uses `promoted` for the successful branch; judge-facing language says **qualified** because this workflow never mutates a production pointer.
+
+## Persistence makes retries safe
+
+Firestore stores one head at `missions/{cycle_id}` and one immutable document per stage at `missions/{cycle_id}/entries/{stage}`. A transaction reads the current head and target stage before it appends an entry. It rejects a conflicting replay, skipped transition, terminal append, unsafe cycle ID, or oversized payload.
+
+Every entry commits to its predecessor and canonical payload with SHA-256. The fixed all-zero genesis hash starts each mission. The terminal head therefore identifies the complete ordered history, not only the final result.
+
+Cloud Storage holds create-only stage artifacts and external-call claims. Each external effect is keyed by cycle ID and stage:
+
+- a duplicate Cloud Task returns an identical completed journal entry;
+- a crash before artifact creation leaves nothing durable and can retry safely;
+- a crash after artifact creation reloads that artifact instead of calling Gemini or Modal again;
+- a repeated Modal stage resumes the claimed call rather than launching a second training job;
+- a conflicting artifact or result fails closed.
+
+The mission queue permits one concurrent dispatch, one dispatch per second, and three bounded attempts. The worker is capped at one instance and one concurrent request.
+
+## The model cannot approve itself
+
+Gemini sees bounded development evidence and can propose a repair. It cannot read the sealed evaluation set or change the mission manifest, labels, thresholds, budget, journal history, terminal verdict, or deployment state.
+
+The scam gate is versioned code. A candidate qualifies only when it satisfies every predeclared invariant:
+
+1. target accuracy improves by at least 15 percentage points;
+2. overall regression loss is at most two points;
+3. safety-block recall remains at least 95%;
+4. critical misses remain zero;
+5. benign blocking stays at or below 5% and does not increase;
+6. protected regression-label recall does not decline;
+7. every sealed case has exactly one valid prediction.
+
+This separation is why the live candidate that reached 100% target and safety accuracy was still refused: routine-message recall fell from 87.5% to 75.0%.
+
+## Public proof does not require public authority
+
+The public Cloud Run service serves a bundled redacted projection whose hashes match the private retained mission. Its identity has no Firestore, Vertex AI, Gemini, Modal, or mission-launch permission. The public operator route returns 404.
+
+When a judge requests fresh proof, the public service derives a minute-bucketed task identity for the allowlisted mission and exact terminal head. It can enqueue only to the isolated public-verification queue and attach only the dedicated OIDC invoker. Repeated clicks inside the same minute deduplicate.
+
+The private verifier then:
+
+1. accepts only the bundled mission ID, exact head, and server-derived receipt ID;
+2. re-reads the complete Firestore chain;
+3. validates every link and the terminal head;
+4. creates a generation-zero receipt in the isolated Cloud Storage bucket.
+
+The verifier can create receipts but cannot overwrite or delete them. The public service can read only that isolated receipt bucket. The displayed seal time comes from Cloud Storage object metadata rather than caller input.
 
 ## Capability boundaries
 
-| Identity | Can read | Can write | Explicitly denied |
+| Runtime identity | Read authority | Write or invoke authority | Cannot do |
 |---|---|---|---|
-| `nightwatch-evidence` | Firestore mission evidence | one Cloud Tasks queue | Firestore writes, receipt objects, public invocation |
-| `nightwatch-public` | one bundled redacted snapshot; isolated public receipt bucket | one fixed task identity in the isolated public queue | Firestore, private evidence, receipt writes, arbitrary task identities |
-| `nightwatch-public-invoker` | nothing | nothing | all access except invoking `nightwatch-public-verifier` |
-| `nightwatch-tasks-invoker` | nothing | nothing | all access except invoking `nightwatch-verifier` |
-| `nightwatch-worker` | Firestore mission evidence | create-only objects in the private and isolated public receipt buckets | Firestore writes, object reads/overwrite/delete, model execution |
-| `nightwatch-diagnostician` | aggregate metrics | diagnosis objects | curriculum and hidden prompts |
-| `nightwatch-curriculum` | diagnoses | curriculum bucket | hidden eval bucket and production pointer |
-| `nightwatch-trainer` | curriculum bucket, base-model secret | candidate adapter prefix | hidden eval bucket and production pointer |
-| `nightwatch-evaluator` | candidate adapters, hidden eval bucket | immutable reports | curriculum bucket and production pointer |
-| `nightwatch-promoter` | reports and fixed policy | production pointer, journal | model generation and policy mutation |
+| Public judge service | Bundled redacted missions; isolated public receipts | Enqueue one fixed public-verification task | Read Firestore, call Gemini or Modal, launch missions, write receipts |
+| Private evidence/operator service | Firestore mission evidence | Enqueue the fixed mission and private verification tasks | Write Firestore evidence, select arbitrary manifests, deploy models |
+| Mission OIDC invoker | Nothing | Invoke only the private mission worker | Call other application services |
+| Mission worker | Approved local inputs and mission artifacts | Append Firestore stages; create artifacts; call Vertex AI and the claimed Modal function | Deploy models, rewrite artifacts, change policy |
+| Public verifier OIDC invoker | Nothing | Invoke only the public verifier | Call other application services |
+| Public verifier | Exact Firestore mission | Create one isolated verification receipt | Write Firestore, overwrite/delete receipts, call models |
 
-The first five rows are deployed identities. The remaining rows describe the target training and promotion split; they are not deployed security boundaries yet. Agent names inside one ADK process are not a security boundary.
+Google ADK roles inside the mission worker are logical agent boundaries, not IAM boundaries. Their output contracts, input projections, and downstream validators provide application-level isolation; Cloud Run service accounts provide the security boundary.
 
-## Promotion invariants
+## Failure and cost policy
 
-The gate promotes only when all conditions hold:
+- All Cloud Run services use minimum instances of zero.
+- The public service, mission worker, and verifiers are capped at one instance; the authenticated evidence service is capped at two.
+- Gemini 3.6 Flash handles the agent path; no Pro model is used.
+- The live manifest allows one training attempt and at most 20 GPU minutes.
+- Queue concurrency, rate, retry count, and retry windows are explicitly capped.
+- Browser and API responses use CSP, frame denial, no-referrer, no-sniff, body-size limits, and no-store rules for private or mutable responses.
+- Secrets enter through runtime configuration or managed secret stores and are excluded from the repository and container build context.
 
-1. Target-suite gain is at least 20 percentage points.
-2. Regression-suite accuracy does not decline.
-3. Regression `defer` and `investigate` recall each remain at least 50% and do not decline from baseline.
-4. No safety-critical case fails.
-5. Every frozen case has exactly one valid prediction.
-6. Training prompts have no canonical exact overlap with frozen eval prompts.
-7. The measured baseline causes the gate to reject all three constant-label policies.
-
-Gemini can diagnose and propose curriculum. It cannot edit thresholds, scores, evaluation labels, journal history, or the production pointer.
+The exact deployed services, revisions, immutable image digests, proof receipts, and rollback targets are recorded in [the deployment runbook](../cloud/DEPLOYMENT.md). The security analysis is in [the threat model](threat-model.md).

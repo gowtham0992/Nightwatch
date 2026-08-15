@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1080" viewBox="0 0 1800 1080" role="img" aria-labelledby="title desc">
+  <title id="title">Nightwatch deployed architecture</title>
+  <desc id="desc">Private autonomous model repair on Google Cloud with Gemini, Google ADK, Modal, Gemma, deterministic evaluation, Firestore evidence, and an isolated public verification path.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111617"/>
+      <stop offset="1" stop-color="#1b2021"/>
+    </linearGradient>
+    <linearGradient id="worker" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1d2625"/>
+      <stop offset="1" stop-color="#182120"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#000" flood-opacity=".22"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0 0L10 5L0 10Z" fill="#8d9996"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0 0L10 5L0 10Z" fill="#b7f46a"/>
+    </marker>
+    <style>
+      .sans{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+      .mono{font-family:"IBM Plex Mono","SFMono-Regular",Consolas,monospace}
+      .eyebrow{font-size:15px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase}
+      .boxTitle{font-size:25px;font-weight:720;fill:#f4f6f2}
+      .boxCopy{font-size:17px;fill:#aeb7b4}
+      .chip{font-size:13px;font-weight:700;letter-spacing:1px}
+      .arrow{stroke:#8d9996;stroke-width:2.5;fill:none;marker-end:url(#arrow)}
+      .arrowGreen{stroke:#b7f46a;stroke-width:2.5;fill:none;marker-end:url(#arrowGreen)}
+    </style>
+  </defs>
+
+  <rect width="1800" height="1080" fill="url(#bg)"/>
+  <path d="M0 0H1800V5H0Z" fill="#b7f46a"/>
+  <circle cx="1650" cy="-40" r="310" fill="none" stroke="#ffffff" stroke-opacity=".025" stroke-width="90"/>
+  <circle cx="1650" cy="-40" r="210" fill="none" stroke="#ffffff" stroke-opacity=".03" stroke-width="2"/>
+
+  <g class="sans">
+    <text x="76" y="88" class="mono eyebrow" fill="#b7f46a">NIGHTWATCH / DEPLOYED SYSTEM</text>
+    <text x="76" y="145" font-size="46" font-weight="760" fill="#f4f6f2">Autonomous repair. Independent release authority.</text>
+    <text x="76" y="184" font-size="20" fill="#aeb7b4">One authenticated start → six durable stages → a code-only verdict → independently verifiable proof.</text>
+
+    <g transform="translate(1270 62)" filter="url(#shadow)">
+      <rect width="454" height="132" rx="4" fill="#0d1112" stroke="#47514f"/>
+      <rect width="5" height="132" fill="#ff6861"/>
+      <text x="28" y="35" class="mono eyebrow" fill="#9ca7a4">LIVE RELEASE CASE</text>
+      <text x="28" y="79" font-size="34" font-weight="780" fill="#ff6861">100% — REFUSED</text>
+      <text x="28" y="108" font-size="16" fill="#b7bfbd">Routine recall 87.5% → 75.0% · production locked</text>
+    </g>
+
+    <text x="76" y="255" class="mono eyebrow" fill="#7f8b88">PRIVATE AUTONOMOUS EXECUTION</text>
+    <rect x="55" y="275" width="1690" height="402" rx="8" fill="#151b1c" stroke="#3c4745"/>
+
+    <g transform="translate(80 322)" filter="url(#shadow)">
+      <rect width="240" height="272" rx="5" fill="#1c2223" stroke="#56615f"/>
+      <rect x="0" y="0" width="240" height="5" fill="#d8ddd8"/>
+      <text x="24" y="42" class="mono eyebrow" fill="#aeb7b4">IAM ONLY</text>
+      <text x="24" y="84" class="boxTitle">Operator</text>
+      <text x="24" y="116" class="boxCopy">Private Cloud Run</text>
+      <path d="M24 146H216" stroke="#394240"/>
+      <text x="24" y="178" class="boxCopy">Fixed manifest</text>
+      <text x="24" y="207" class="boxCopy">Server cycle ID</text>
+      <text x="24" y="236" class="boxCopy">No deploy target</text>
+    </g>
+
+    <path d="M328 458H382" class="arrow"/>
+
+    <g transform="translate(390 322)" filter="url(#shadow)">
+      <rect width="230" height="272" rx="5" fill="#1c2223" stroke="#56615f"/>
+      <rect x="0" y="0" width="230" height="5" fill="#58a6ff"/>
+      <text x="24" y="42" class="mono eyebrow" fill="#58a6ff">CLOUD TASKS</text>
+      <text x="24" y="84" class="boxTitle">Mission queue</text>
+      <text x="24" y="116" class="boxCopy">OIDC invocation</text>
+      <path d="M24 146H206" stroke="#394240"/>
+      <text x="24" y="178" class="boxCopy">1 stage / task</text>
+      <text x="24" y="207" class="boxCopy">1 concurrent</text>
+      <text x="24" y="236" class="boxCopy">3 bounded attempts</text>
+    </g>
+
+    <path d="M628 458H682" class="arrow"/>
+
+    <g transform="translate(690 302)" filter="url(#shadow)">
+      <rect width="650" height="312" rx="5" fill="url(#worker)" stroke="#b7f46a" stroke-opacity=".8"/>
+      <rect x="0" y="0" width="650" height="5" fill="#b7f46a"/>
+      <text x="26" y="43" class="mono eyebrow" fill="#b7f46a">PRIVATE CLOUD RUN WORKER</text>
+      <text x="26" y="82" class="boxTitle">Six-stage repair mission</text>
+
+      <g transform="translate(26 111)">
+        <g><circle cx="21" cy="22" r="20" fill="#242d2c" stroke="#6d7875"/><text x="21" y="28" text-anchor="middle" class="mono" font-size="15" fill="#eef2ee">1</text><text x="0" y="64" class="mono" font-size="12" fill="#aeb7b4">WATCH</text></g>
+        <path d="M48 22H78" class="arrow"/>
+        <g transform="translate(86)"><circle cx="21" cy="22" r="20" fill="#24303a" stroke="#58a6ff"/><text x="21" y="28" text-anchor="middle" class="mono" font-size="15" fill="#eef2ee">2</text><text x="-12" y="64" class="mono" font-size="12" fill="#aeb7b4">DIAGNOSE</text></g>
+        <path d="M134 22H164" class="arrow"/>
+        <g transform="translate(172)"><circle cx="21" cy="22" r="20" fill="#24303a" stroke="#58a6ff"/><text x="21" y="28" text-anchor="middle" class="mono" font-size="15" fill="#eef2ee">3</text><text x="-8" y="64" class="mono" font-size="12" fill="#aeb7b4">DESIGN</text></g>
+        <path d="M220 22H250" class="arrow"/>
+        <g transform="translate(258)"><circle cx="21" cy="22" r="20" fill="#302c22" stroke="#e8b15d"/><text x="21" y="28" text-anchor="middle" class="mono" font-size="15" fill="#eef2ee">4</text><text x="-2" y="64" class="mono" font-size="12" fill="#aeb7b4">TRAIN</text></g>
+        <path d="M306 22H336" class="arrow"/>
+        <g transform="translate(344)"><circle cx="21" cy="22" r="20" fill="#242d2c" stroke="#6d7875"/><text x="21" y="28" text-anchor="middle" class="mono" font-size="15" fill="#eef2ee">5</text><text x="-12" y="64" class="mono" font-size="12" fill="#aeb7b4">EVALUATE</text></g>
+        <path d="M392 22H422" class="arrow"/>
+        <g transform="translate(430)"><circle cx="21" cy="22" r="20" fill="#302424" stroke="#ff6861"/><text x="21" y="28" text-anchor="middle" class="mono" font-size="15" fill="#eef2ee">6</text><text x="1" y="64" class="mono" font-size="12" fill="#aeb7b4">GATE</text></g>
+      </g>
+
+      <g transform="translate(26 206)">
+        <rect width="184" height="63" rx="4" fill="#17232a" stroke="#326a91"/>
+        <text x="16" y="25" class="mono chip" fill="#58a6ff">GEMINI 3.6 FLASH</text>
+        <text x="16" y="47" font-size="14" fill="#aeb7b4">Google ADK · Vertex AI</text>
+        <rect x="196" width="166" height="63" rx="4" fill="#29251c" stroke="#8d6a35"/>
+        <text x="212" y="25" class="mono chip" fill="#e8b15d">GEMMA 3 1B</text>
+        <text x="212" y="47" font-size="14" fill="#aeb7b4">LoRA · Modal</text>
+        <rect x="374" width="242" height="63" rx="4" fill="#202625" stroke="#56615f"/>
+        <text x="390" y="25" class="mono chip" fill="#d8ddd8">DETERMINISTIC PYTHON</text>
+        <text x="390" y="47" font-size="14" fill="#aeb7b4">Evaluator + release gate</text>
+      </g>
+    </g>
+
+    <path d="M1348 458H1392" class="arrowGreen"/>
+
+    <g transform="translate(1400 322)" filter="url(#shadow)">
+      <rect width="320" height="272" rx="5" fill="#1c2223" stroke="#4b8c72"/>
+      <rect width="320" height="5" fill="#64d19b"/>
+      <text x="24" y="42" class="mono eyebrow" fill="#64d19b">IMMUTABLE EVIDENCE</text>
+      <text x="24" y="84" class="boxTitle">Firestore journal</text>
+      <text x="24" y="116" class="boxCopy">6-entry SHA-256 chain</text>
+      <path d="M24 145H296" stroke="#394240"/>
+      <text x="24" y="176" class="boxCopy">Cloud Storage artifacts</text>
+      <text x="24" y="205" class="boxCopy">Create-only call claims</text>
+      <text x="24" y="234" class="boxCopy">No mutable verdict</text>
+    </g>
+
+    <text x="76" y="728" class="mono eyebrow" fill="#7f8b88">PUBLIC PROOF — AUTHORITY REMAINS PRIVATE</text>
+    <rect x="55" y="748" width="1690" height="250" rx="8" fill="#151b1c" stroke="#3c4745"/>
+
+    <g transform="translate(80 790)"><rect width="245" height="155" rx="5" fill="#1c2223" stroke="#56615f"/><text x="22" y="36" class="mono eyebrow" fill="#d8ddd8">JUDGE</text><text x="22" y="76" class="boxTitle">Public browser</text><text x="22" y="107" class="boxCopy">Replay redacted proof</text><text x="22" y="134" class="boxCopy">Request fresh receipt</text></g>
+    <path d="M333 868H382" class="arrow"/>
+    <g transform="translate(390 790)"><rect width="260" height="155" rx="5" fill="#17232a" stroke="#58a6ff"/><text x="22" y="36" class="mono eyebrow" fill="#58a6ff">PUBLIC CLOUD RUN</text><text x="22" y="76" class="boxTitle">Judge UI / API</text><text x="22" y="107" class="boxCopy">No Firestore access</text><text x="22" y="134" class="boxCopy">No launch permission</text></g>
+    <path d="M658 868H707" class="arrow"/>
+    <g transform="translate(715 790)"><rect width="245" height="155" rx="5" fill="#1c2223" stroke="#56615f"/><text x="22" y="36" class="mono eyebrow" fill="#aeb7b4">ISOLATED QUEUE</text><text x="22" y="76" class="boxTitle">Cloud Tasks</text><text x="22" y="107" class="boxCopy">Fixed mission + head</text><text x="22" y="134" class="boxCopy">Minute-bucket dedupe</text></g>
+    <path d="M968 868H1017" class="arrow"/>
+    <g transform="translate(1025 790)"><rect width="280" height="155" rx="5" fill="#1c2223" stroke="#b7f46a"/><text x="22" y="36" class="mono eyebrow" fill="#b7f46a">OIDC ONLY</text><text x="22" y="76" class="boxTitle">Private verifier</text><text x="22" y="107" class="boxCopy">Re-reads exact chain</text><text x="22" y="134" class="boxCopy">Checks terminal head</text></g>
+    <path d="M1313 868H1362" class="arrowGreen"/>
+    <g transform="translate(1370 790)"><rect width="350" height="155" rx="5" fill="#1d2824" stroke="#64d19b"/><text x="22" y="36" class="mono eyebrow" fill="#64d19b">SEALED PROOF</text><text x="22" y="76" class="boxTitle">Cloud Storage receipt</text><text x="22" y="107" class="boxCopy">Generation-zero create</text><text x="22" y="134" class="boxCopy">Cannot overwrite or delete</text></g>
+
+    <path d="M1165 790V704H1560V603" stroke="#64d19b" stroke-width="2" fill="none" stroke-dasharray="7 7" marker-end="url(#arrowGreen)"/>
+    <text x="1190" y="692" class="mono" font-size="13" fill="#64d19b">READ-ONLY VERIFY</text>
+
+    <text x="76" y="1040" class="mono" font-size="14" fill="#7f8b88">FAILURE POLICY  /  deterministic task IDs · transactional appends · create-only artifacts · bounded retries · scale to zero</text>
+    <text x="1724" y="1040" text-anchor="end" class="mono" font-size="14" fill="#b7f46a">GEMINI PROPOSES · CODE DECIDES</text>
+  </g>
+</svg>
