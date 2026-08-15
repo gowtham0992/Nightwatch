@@ -36,6 +36,22 @@ function evidenceFor(entry, fallback) {
   };
 }
 
+function decisionInvariant(decision) {
+  const explicit = decision?.failed_invariants?.[0];
+  if (explicit) return explicit;
+  const reason = decision?.reasons?.[0];
+  if (typeof reason === 'string' && reason.includes('regression routine recall declined')) {
+    return 'routine_recall_regressed';
+  }
+  return null;
+}
+
+function criticalMissCount(value) {
+  if (Number.isInteger(value?.critical_miss_count)) return value.critical_miss_count;
+  if (Array.isArray(value?.critical_misses)) return value.critical_misses.length;
+  return null;
+}
+
 export function missionFromJournal(value) {
   if (!value || typeof value !== 'object' || !Array.isArray(value.entries) || value.entries.length < 1) {
     throw new MissionControlError('invalid_evidence', 'Mission journal is malformed.');
@@ -116,8 +132,8 @@ export function missionMetrics(mission) {
       before: evaluated.baseline.label_recall?.regression?.routine?.accuracy,
       after: evaluated.candidate.label_recall?.regression?.routine?.accuracy,
     },
-    criticalMisses: evaluated.candidate.critical_miss_count,
-    failedInvariant: evaluated.decision?.failed_invariants?.[0] || null,
+    criticalMisses: criticalMissCount(evaluated.candidate),
+    failedInvariant: decisionInvariant(evaluated.decision),
   };
 }
 
@@ -150,10 +166,14 @@ export function buildAgentGraph(mission) {
   const terminal = byStage.get('promoted') || byStage.get('rejected');
   const gateEvidence = evidenceFor(terminal, {});
   if (terminal && evaluated) {
+    const decision = gateEvidence.payload.decision ?? evaluated.payload.decision;
+    const invariant = decisionInvariant(decision);
     gateEvidence.payload = {
       ...gateEvidence.payload,
-      decision: gateEvidence.payload.decision ?? evaluated.payload.decision,
-      critical_miss_count: gateEvidence.payload.critical_miss_count ?? evaluated.payload.candidate?.critical_miss_count,
+      decision: invariant && !decision?.failed_invariants
+        ? { ...decision, failed_invariants: [invariant] }
+        : decision,
+      critical_miss_count: criticalMissCount(gateEvidence.payload) ?? criticalMissCount(evaluated.payload.candidate),
     };
   }
   const families = diagnosis?.payload?.repair_families || curriculum?.payload?.repair_families || [];

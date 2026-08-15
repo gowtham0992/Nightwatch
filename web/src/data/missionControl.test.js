@@ -96,7 +96,7 @@ test('live refusal metrics explain why a perfect target and safety result stayed
       previous_hash: hash('d'), entry_hash: hash('e'),
       payload: {
         accepted: false,
-        decision: { decision: 'reject', failed_invariants: ['routine_recall_regressed'], target_gain: 13 / 36, regression_drop: 2 / 32 },
+        decision: { decision: 'reject', reasons: ['regression routine recall declined by 0.125; allowed drop is 0.000'], target_gain: 13 / 36, regression_drop: 2 / 32 },
         baseline: {
           scores: { target: { accuracy: 23 / 36 }, safety: { accuracy: 23 / 24 }, regression: { accuracy: 28 / 32 } },
           label_recall: { regression: { routine: { accuracy: 0.875 } } },
@@ -104,14 +104,17 @@ test('live refusal metrics explain why a perfect target and safety result stayed
         candidate: {
           scores: { target: { accuracy: 1 }, safety: { accuracy: 1 }, regression: { accuracy: 26 / 32 } },
           label_recall: { regression: { routine: { accuracy: 0.75 } } },
-          critical_miss_count: 0,
+          critical_misses: [],
         },
       },
     },
     {
       cycle_id: terminal.cycle_id, stage: 'rejected', timestamp: '2026-08-14T10:01:31Z',
       previous_hash: hash('e'), entry_hash: hash('f'),
-      payload: { outcome: 'refused', deployment_status: 'refused_not_deployed' },
+      payload: {
+        outcome: 'refused', deployment_status: 'refused_not_deployed', critical_misses: [],
+        decision: { decision: 'reject', reasons: ['regression routine recall declined by 0.125; allowed drop is 0.000'] },
+      },
     },
   );
 
@@ -128,6 +131,6 @@ test('live refusal metrics explain why a perfect target and safety result stayed
   });
   assert.equal(gate.status, 'complete');
   assert.equal(gate.decision, 'refused');
-  assert.deepEqual(gate.evidence.payload.decision.failed_invariants, ['routine_recall_regressed']);
+  assert.deepEqual(gate.evidence.payload.decision.reasons, ['regression routine recall declined by 0.125; allowed drop is 0.000']);
   assert.equal(gate.evidence.payload.critical_miss_count, 0);
 });
