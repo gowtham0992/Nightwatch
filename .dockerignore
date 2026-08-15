@@ -16,6 +16,7 @@ artifacts/evidence-audit-v2/*
 !artifacts/evidence-audit-v2/manifest.json
 !artifacts/public-mission-v2.json
 !artifacts/public-mission-cloud-20260811-001.json
+!artifacts/public-mission-live-89e73407c43d525c4bc19272.json
 !artifacts/scam-safety
 artifacts/scam-safety/*
 !artifacts/scam-safety/repair-authoring-v5.json
