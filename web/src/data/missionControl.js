@@ -146,6 +146,16 @@ export function buildAgentGraph(mission) {
   const byStage = new Map(mission.entries.map((entry) => [entry.stage, entry]));
   const diagnosis = byStage.get('diagnosed');
   const curriculum = byStage.get('curriculum_ready');
+  const evaluated = byStage.get('evaluated');
+  const terminal = byStage.get('promoted') || byStage.get('rejected');
+  const gateEvidence = evidenceFor(terminal, {});
+  if (terminal && evaluated) {
+    gateEvidence.payload = {
+      ...gateEvidence.payload,
+      decision: gateEvidence.payload.decision ?? evaluated.payload.decision,
+      critical_miss_count: gateEvidence.payload.critical_miss_count ?? evaluated.payload.candidate?.critical_miss_count,
+    };
+  }
   const families = diagnosis?.payload?.repair_families || curriculum?.payload?.repair_families || [];
   const authorStatus = curriculum ? 'complete' : diagnosis ? 'active' : 'waiting';
   const authors = families.map((family) => ({
@@ -171,8 +181,8 @@ export function buildAgentGraph(mission) {
     ...authors,
     { id: 'validator', name: 'Policy validator', role: 'Schema · overlap · leakage', lane: 'main', status: stageStatus(byStage, 'curriculum_ready', 'diagnosed'), evidence: evidenceFor(curriculum, {}) },
     { id: 'trainer', name: 'Trainer', role: 'Modal · pinned Gemma', lane: 'main', status: stageStatus(byStage, 'trained', 'curriculum_ready'), evidence: evidenceFor(byStage.get('trained'), {}) },
-    { id: 'evaluator', name: 'Evaluator', role: 'Frozen evidence suite', lane: 'main', status: stageStatus(byStage, 'evaluated', 'trained'), evidence: evidenceFor(byStage.get('evaluated'), {}) },
-    { id: 'gate', name: 'Release gate', role: 'Deterministic code only', lane: 'main', status: byStage.has('promoted') || byStage.has('rejected') ? 'complete' : byStage.has('evaluated') ? 'active' : 'waiting', decision: byStage.has('rejected') ? 'refused' : byStage.has('promoted') ? 'qualified' : null, evidence: evidenceFor(byStage.get('promoted') || byStage.get('rejected'), {}) },
+    { id: 'evaluator', name: 'Evaluator', role: 'Frozen evidence suite', lane: 'main', status: stageStatus(byStage, 'evaluated', 'trained'), evidence: evidenceFor(evaluated, {}) },
+    { id: 'gate', name: 'Release gate', role: 'Deterministic code only', lane: 'main', status: terminal ? 'complete' : evaluated ? 'active' : 'waiting', decision: byStage.has('rejected') ? 'refused' : byStage.has('promoted') ? 'qualified' : null, evidence: gateEvidence },
   ];
 }
 

@@ -128,4 +128,6 @@ test('live refusal metrics explain why a perfect target and safety result stayed
   });
   assert.equal(gate.status, 'complete');
   assert.equal(gate.decision, 'refused');
+  assert.deepEqual(gate.evidence.payload.decision.failed_invariants, ['routine_recall_regressed']);
+  assert.equal(gate.evidence.payload.critical_miss_count, 0);
 });
