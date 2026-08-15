@@ -27,6 +27,14 @@ The mission control and worker run immutable image digest `sha256:e3d09ce4d07c65
 
 The rollback drill was exercised after the mission completed: traffic returned to `nightwatch-mission-control-00001-4cj` and `nightwatch-mission-worker-00002-s58`, then restored to the new revisions with no queued work and no ERROR-level release logs.
 
+## Mission Control release — August 14, 2026
+
+Commit `c5916d6` is deployed on private revision `nightwatch-evidence-ui-c5916d6` and public revision `nightwatch-public-ui-c5916d6` from service image digest `sha256:afed24b5322fe1a5ed88b8200c4338648c6819667369ea076e6247d502810a27`. The live-agent worker remains commit `cdcbf25`, revision `nightwatch-mission-worker-mc-cdcbf25`, image digest `sha256:406670e7d948f52e89a725bb6d45ec70e40bcaddba8b7d1ea1d1f8f93cddeee9`. The public health contract reports `operator_enabled: false`, and the public operator route returns 404.
+
+Two independently triggered live-agent cycles completed end to end. `nightwatch-live-5d3321c672472c5a381404c5` was refused because safety-block recall was 94.4% against the fixed 95% floor, despite improving target accuracy from 63.9% to 94.4%. `nightwatch-live-89e73407c43d525c4bc19272` reached 100% target and 100% safety but was refused because routine-message recall fell by 12.5 percentage points. Both used live Gemini 3.6 Flash diagnosis and parallel ADK curriculum authors, one create-only Modal training call, deterministic evaluation, six hash-chained Firestore entries, and `refused_not_deployed` as the terminal state. The queue was confirmed empty afterward and worker ERROR logs were empty.
+
+Rollback was exercised against the live environment before the missions: worker traffic returned to `nightwatch-mission-worker-scam-ff4f`, private traffic to `nightwatch-evidence-00005-fds`, and public traffic to `nightwatch-public-scam-e481-v2`; all three were then restored to the new revisions. The mission queue was paused briefly while an unexpected second operator cycle was audited, then resumed after both cycles were terminal and confirmed empty.
+
 ## Enable the private Mission Control launch
 
 The UI exposes `POST /api/operator/missions` only on the authenticated `nightwatch-evidence` service and only when `NIGHTWATCH_OPERATOR_MODE=1`. The route accepts an empty JSON object plus a 16–128 character `Idempotency-Key`; it derives the cycle ID server-side and always launches the fixed `scam-safety-live-1b-v1` manifest. Callers cannot select a model, dataset, hyperparameter, attempt count, or deployment action. The public service keeps `NIGHTWATCH_PUBLIC_MODE=1`, never sets operator mode, and returns 404 for the route.
