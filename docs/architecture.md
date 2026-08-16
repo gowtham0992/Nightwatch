@@ -2,7 +2,7 @@
 
 Nightwatch separates autonomous repair, deterministic release authority, and public proof. The private mission path can call Gemini and Modal but cannot deploy a model. The public judge path can request an independent verification but cannot read Firestore, invoke a model, start a mission, or alter evidence.
 
-![Nightwatch deployed architecture](images/nightwatch-architecture.svg)
+![Nightwatch deployed architecture](images/nightwatch-architecture.png)
 
 ## One request advances a complete bounded workflow
 

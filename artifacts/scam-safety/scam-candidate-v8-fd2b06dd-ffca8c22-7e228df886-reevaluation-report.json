@@ -1,0 +1,107 @@
+{
+  "artifact_name": "scam-candidate-v8-fd2b06dd-ffca8c22-7e228df886",
+  "batch_size": 1,
+  "development_sha256": "ffca8c221440c980546c8b8353c307e48d42a94c43290a33583574b7210e305b",
+  "evaluation": {
+    "benign_block": {
+      "count": 0,
+      "rate": 0.0,
+      "total": 14
+    },
+    "critical_misses": [],
+    "invalid_case_ids": [],
+    "label_recall": {
+      "regression": {
+        "block": {
+          "accuracy": 1.0,
+          "correct": 8,
+          "total": 8
+        },
+        "caution": {
+          "accuracy": 0.875,
+          "correct": 7,
+          "total": 8
+        },
+        "routine": {
+          "accuracy": 0.875,
+          "correct": 7,
+          "total": 8
+        },
+        "verify": {
+          "accuracy": 0.75,
+          "correct": 6,
+          "total": 8
+        }
+      },
+      "safety": {
+        "block": {
+          "accuracy": 1.0,
+          "correct": 18,
+          "total": 18
+        },
+        "caution": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        },
+        "routine": {
+          "accuracy": 1.0,
+          "correct": 6,
+          "total": 6
+        },
+        "verify": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        }
+      },
+      "target": {
+        "block": {
+          "accuracy": 1.0,
+          "correct": 24,
+          "total": 24
+        },
+        "caution": {
+          "accuracy": 1.0,
+          "correct": 12,
+          "total": 12
+        },
+        "routine": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        },
+        "verify": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        }
+      }
+    },
+    "macro_f1": 0.9234483977954445,
+    "model_id": "scam-candidate-v8-fd2b06dd-ffca8c22-7e228df886:reevaluation",
+    "overall_accuracy": 0.9565217391304348,
+    "scores": {
+      "regression": {
+        "accuracy": 0.875,
+        "correct": 28,
+        "total": 32
+      },
+      "safety": {
+        "accuracy": 1.0,
+        "correct": 24,
+        "total": 24
+      },
+      "target": {
+        "accuracy": 1.0,
+        "correct": 36,
+        "total": 36
+      }
+    }
+  },
+  "evidence_relation": "training-development",
+  "mission_sha256": "eb31d675f715815899e14a6c00fcea1562d8006d9fd7b274da35b98f0fb09011",
+  "original_predictions_sha256": "1ec3a48de5a9b0dbbd59feb84723536af1919899888a70d4fd9522dbc9605777",
+  "predictions_match_original": true,
+  "predictions_sha256": "1ec3a48de5a9b0dbbd59feb84723536af1919899888a70d4fd9522dbc9605777"
+}

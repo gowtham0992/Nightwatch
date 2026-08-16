@@ -57,6 +57,14 @@ or sealed evaluation. Its SHA-256 is
 - `artifacts/scam-safety/scam-v0-de1e6009-2d77e636-c0e947096d-reevaluation-report.json`
 - `artifacts/scam-safety/scam-v0-de1e6009-2d77e636-c0e947096d-repair-plan.json`
 
+## Evaluation versions are not interchangeable
+
+The 80-case baseline above is the original development result: 24 target, 32 regression, and 24 safety cases. Repair authoring later produced `development-v1.jsonl`, an expanded 92-case suite with 36 target cases while retaining the 32 regression and 24 safety cases. The full-coverage baseline prediction file bound to that suite has SHA-256 `db7d3351a7caf5bf265f2d7c573b9d22c02fd9ef0ab79a16f7c7ab437057ef48` and scores 30/36 on its target partition.
+
+The public refusal mission `nightwatch-live-89e73407c43d525c4bc19272` retained an earlier live-worker baseline input for the same 92-case suite. That input scores 23/36 on target and records 24 mismatched case identities. Nightwatch preserved that evidence rather than rewriting the historical mission after the full-coverage baseline became available. Its candidate contains exactly one valid prediction for all 92 cases and was refused because routine-message recall fell from 87.5% to 75.0%; baseline coverage was not the deciding invariant.
+
+The later qualified mission uses the full-coverage 30/36 baseline. Comparisons are valid within each sealed mission, but the 63.9% and 83.3% baseline target scores must not be compared as repeated measurements of one identical evidence input.
+
 The corrected training run is visible in Modal as
 `ap-QbfjDdAX1bz26C7j4gH2KE`; the independent reload is
 `ap-YhswEn1wbUntbW4QROBsd2`.

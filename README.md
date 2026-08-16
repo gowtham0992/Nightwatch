@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="assets/brand/nightwatch-snow-wall-wordmark-gemini.png" alt="Nightwatch" width="560">
+  <img src="assets/brand/nightwatch-wordmark-transparent.png" alt="Nightwatch" width="440">
 </p>
 
 <p align="center"><strong>Autonomous model repair. Deterministic release authority.</strong></p>
 
 <p align="center">
   <a href="https://nightwatch-public-w3a6oefsma-uc.a.run.app/">Live judge experience</a>
-  · <a href="docs/images/nightwatch-architecture.svg">Architecture</a>
+  · <a href="docs/images/nightwatch-architecture.png">Architecture</a>
   · <a href="docs/threat-model.md">Threat model</a>
   · <a href="cloud/DEPLOYMENT.md">Deployment evidence</a>
 </p>
@@ -33,6 +33,8 @@ The default public case is a real unattended Google Cloud mission: `nightwatch-l
 
 The candidate looked excellent if judged only by its headline scores. Nightwatch caught the hidden regression and kept the release boundary locked. A second real case in the UI shows the opposite branch: a candidate that passed every fixed invariant was **qualified, not deployed**. Qualification never mutates a production model pointer.
 
+The refusal baseline is historical evidence from an earlier live worker input on the expanded 92-case suite; its coverage record contains 24 mismatched case identities. The candidate has complete coverage, and the gate refused it for the independently measured routine-recall regression—not for baseline coverage. A later full-coverage reproduction scored the same retained baseline at 30/36 target cases before qualifying a separate cycle-bound candidate. These baselines are different evidence versions and are not presented as interchangeable measurements. The exact provenance is documented in [the scam-safety evidence archive](artifacts/scam-safety/README.md).
+
 Open the [live judge experience](https://nightwatch-public-w3a6oefsma-uc.a.run.app/), replay the six-stage mission, inspect every handoff, and request a fresh proof. The proof request crosses an isolated Cloud Tasks queue; a private verifier re-reads the Firestore chain and seals an immutable Cloud Storage receipt.
 
 ## This is a Taskmaster, not a chatbot
@@ -54,7 +56,7 @@ Cloud Tasks advances exactly one durable stage per request. A retry resumes from
 
 ## Architecture
 
-![Nightwatch deployed architecture](docs/images/nightwatch-architecture.svg)
+![Nightwatch deployed architecture](docs/images/nightwatch-architecture.png)
 
 There are two deliberately separate paths:
 

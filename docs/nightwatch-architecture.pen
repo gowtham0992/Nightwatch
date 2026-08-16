@@ -3,163 +3,627 @@
   "children": [
     {
       "type": "frame",
-      "id": "P1Eer",
+      "id": "wPE8w",
       "x": 0,
       "y": 0,
-      "name": "Nightwatch Architecture — Deployed System",
+      "name": "Nightwatch Architecture — Judge Readable",
       "clip": true,
-      "width": 1920,
-      "height": 1080,
-      "fill": "$surface",
+      "width": 1600,
+      "height": 1000,
+      "fill": "#0B1117",
       "layout": "vertical",
-      "gap": 24,
+      "gap": 26,
       "padding": [
-        60,
-        100,
-        48,
-        100
+        46,
+        54
       ],
       "children": [
         {
           "type": "frame",
-          "id": "HbBkr",
-          "name": "Architecture Header",
+          "id": "oSZeI",
+          "name": "Header",
           "width": "fill_container",
-          "height": 126,
           "justifyContent": "space_between",
           "alignItems": "center",
           "children": [
             {
               "type": "frame",
-              "id": "nuLji",
-              "name": "Header Copy",
-              "width": 1120,
+              "id": "FtSuZ",
+              "name": "Title Block",
+              "width": 830,
               "layout": "vertical",
               "gap": 8,
               "children": [
                 {
                   "type": "text",
-                  "id": "vL88Y",
-                  "name": "Title",
-                  "fill": "$ink",
-                  "content": "NIGHTWATCH",
-                  "fontFamily": "$font-heading",
-                  "fontSize": 58,
-                  "fontWeight": "800",
-                  "letterSpacing": -2
+                  "id": "ovA3i",
+                  "name": "Eyebrow",
+                  "fill": "#A7F36B",
+                  "content": "NIGHTWATCH / DEPLOYED ARCHITECTURE",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 13,
+                  "fontWeight": "600",
+                  "letterSpacing": 0.5
                 },
                 {
                   "type": "text",
-                  "id": "N4gTV",
-                  "name": "Subtitle",
-                  "fill": "$muted",
+                  "id": "SFwex",
+                  "name": "Title",
+                  "fill": "#F7F9FA",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
                   "content": "Autonomous model repair. Deterministic release authority.",
-                  "fontFamily": "$font-body",
-                  "fontSize": 27,
+                  "fontFamily": "Inter",
+                  "fontSize": 34,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "l4aYCA",
+                  "name": "Subtitle",
+                  "fill": "#93A5B1",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Gemini and Google ADK investigate and propose. Only policy code can change production.",
+                  "fontFamily": "Inter",
+                  "fontSize": 16
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ljBrO",
+              "name": "Technology Tags",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Lxv1y",
+                  "name": "Gemini Tag",
+                  "fill": "#111C26",
+                  "cornerRadius": 20,
+                  "stroke": "#293946",
+                  "strokeWidth": 1,
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "CbU5I",
+                      "name": "Gemini Tag Dot",
+                      "fill": "#65B8FF",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "vAYzv",
+                      "name": "Gemini Tag Label",
+                      "fill": "#D8E4EB",
+                      "content": "GEMINI 3.6 FLASH",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "OhoAp",
+                  "name": "ADK Tag",
+                  "fill": "#111C26",
+                  "cornerRadius": 20,
+                  "stroke": "#293946",
+                  "strokeWidth": 1,
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "NGsSy",
+                      "name": "ADK Tag Dot",
+                      "fill": "#65B8FF",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "NqZOe",
+                      "name": "ADK Tag Label",
+                      "fill": "#D8E4EB",
+                      "content": "GOOGLE ADK",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "meAyU",
+                  "name": "Cloud Tag",
+                  "fill": "#111C26",
+                  "cornerRadius": 20,
+                  "stroke": "#293946",
+                  "strokeWidth": 1,
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "eg3uB",
+                      "name": "Cloud Tag Dot",
+                      "fill": "#65B8FF",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "vupad",
+                      "name": "Cloud Tag Label",
+                      "fill": "#D8E4EB",
+                      "content": "GOOGLE CLOUD",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "FbtRv",
+          "name": "Autonomous Repair Section",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 14,
+          "children": [
+            {
+              "type": "frame",
+              "id": "DjRpt",
+              "name": "Repair Section Header",
+              "width": "fill_container",
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "J1P7fe",
+                  "name": "Repair Heading",
+                  "fill": "#A7F36B",
+                  "content": "AUTONOMOUS REPAIR MISSION",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 13,
+                  "fontWeight": "600",
+                  "letterSpacing": 0.5
+                },
+                {
+                  "type": "text",
+                  "id": "yS5os",
+                  "name": "Repair Rule",
+                  "fill": "#8FA2AE",
+                  "content": "Evidence moves forward; authority does not.",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
                   "fontWeight": "500"
                 }
               ]
             },
             {
               "type": "frame",
-              "id": "g1JGim",
-              "name": "Deployment Badges",
-              "layout": "vertical",
-              "gap": 10,
-              "alignItems": "end",
+              "id": "jdzzF",
+              "name": "Repair Stages",
+              "width": "fill_container",
+              "gap": 12,
               "children": [
                 {
                   "type": "frame",
-                  "id": "ttFCJ",
-                  "name": "Mandatory Stack",
-                  "gap": 8,
+                  "id": "QDmy2",
+                  "name": "01 Watch",
+                  "width": "fill_container",
+                  "height": 158,
+                  "fill": "#111A22",
+                  "cornerRadius": 10,
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 18,
                   "children": [
                     {
                       "type": "frame",
-                      "id": "xRwF4",
-                      "name": "GEMINI 3.6 FLASH Badge",
-                      "fill": "$accent-soft",
-                      "stroke": "$accent",
-                      "strokeWidth": 1,
-                      "padding": [
-                        8,
-                        12
-                      ],
+                      "id": "jjRYO",
+                      "name": "01 Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
                       "children": [
                         {
                           "type": "text",
-                          "id": "LHBSe",
-                          "name": "GEMINI 3.6 FLASH Label",
-                          "fill": "$ink",
-                          "content": "GEMINI 3.6 FLASH",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 14,
+                          "id": "VeWMk",
+                          "name": "01 Number",
+                          "fill": "#FFB454",
+                          "content": "01",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 13,
                           "fontWeight": "600",
                           "letterSpacing": 0.5
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "LdT4D",
+                          "name": "01 Status",
+                          "fill": "#FFB454",
+                          "width": 8,
+                          "height": 8
                         }
                       ]
                     },
                     {
-                      "type": "frame",
-                      "id": "L5Z1s",
-                      "name": "GOOGLE ADK Badge",
-                      "fill": "$accent-soft",
-                      "stroke": "$accent",
-                      "strokeWidth": 1,
-                      "padding": [
-                        8,
-                        12
-                      ],
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "Q34jk",
-                          "name": "GOOGLE ADK Label",
-                          "fill": "$ink",
-                          "content": "GOOGLE ADK",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 14,
-                          "fontWeight": "600",
-                          "letterSpacing": 0.5
-                        }
-                      ]
+                      "type": "text",
+                      "id": "O8BkTb",
+                      "name": "01 Title",
+                      "fill": "#F4F7F8",
+                      "content": "Watch",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "650"
                     },
                     {
-                      "type": "frame",
-                      "id": "rESNz",
-                      "name": "GOOGLE CLOUD Badge",
-                      "fill": "$accent-soft",
-                      "stroke": "$accent",
-                      "strokeWidth": 1,
-                      "padding": [
-                        8,
-                        12
-                      ],
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "rcQSl",
-                          "name": "GOOGLE CLOUD Label",
-                          "fill": "$ink",
-                          "content": "GOOGLE CLOUD",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 14,
-                          "fontWeight": "600",
-                          "letterSpacing": 0.5
-                        }
-                      ]
+                      "type": "text",
+                      "id": "L56Kju",
+                      "name": "01 Detail",
+                      "fill": "#8FA2AE",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Detect a failing production model.",
+                      "fontFamily": "Inter",
+                      "fontSize": 13
                     }
                   ]
                 },
                 {
-                  "type": "text",
-                  "id": "h81bP",
-                  "name": "Track Label",
-                  "fill": "$success",
-                  "content": "THE TASKMASTER · DEPLOYED PROOF",
-                  "fontFamily": "$font-mono",
-                  "fontSize": 15,
-                  "fontWeight": "600"
+                  "type": "frame",
+                  "id": "fd1fa",
+                  "name": "02 Diagnose",
+                  "width": "fill_container",
+                  "height": 158,
+                  "fill": "#111A22",
+                  "cornerRadius": 10,
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 18,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "QtaMl",
+                      "name": "02 Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "u5tHh",
+                          "name": "02 Number",
+                          "fill": "#65B8FF",
+                          "content": "02",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 13,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "IHZbT",
+                          "name": "02 Status",
+                          "fill": "#65B8FF",
+                          "width": 8,
+                          "height": 8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "HUYwO",
+                      "name": "02 Title",
+                      "fill": "#F4F7F8",
+                      "content": "Diagnose",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "650"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Aiuhj",
+                      "name": "02 Detail",
+                      "fill": "#8FA2AE",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Gemini isolates the failing behavior.",
+                      "fontFamily": "Inter",
+                      "fontSize": 13
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "txwGn",
+                  "name": "03 Design",
+                  "width": "fill_container",
+                  "height": 158,
+                  "fill": "#111A22",
+                  "cornerRadius": 10,
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 18,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "XwIlF",
+                      "name": "03 Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "o29XC0",
+                          "name": "03 Number",
+                          "fill": "#65B8FF",
+                          "content": "03",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 13,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "AdZA0",
+                          "name": "03 Status",
+                          "fill": "#65B8FF",
+                          "width": 8,
+                          "height": 8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "vsT9u",
+                      "name": "03 Title",
+                      "fill": "#F4F7F8",
+                      "content": "Design",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "650"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Fg6uq",
+                      "name": "03 Detail",
+                      "fill": "#8FA2AE",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Three ADK specialists propose bounded repairs.",
+                      "fontFamily": "Inter",
+                      "fontSize": 13
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "SpzWI",
+                  "name": "04 Train",
+                  "width": "fill_container",
+                  "height": 158,
+                  "fill": "#111A22",
+                  "cornerRadius": 10,
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 18,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "lVhMf",
+                      "name": "04 Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "dOSEg",
+                          "name": "04 Number",
+                          "fill": "#C9A6FF",
+                          "content": "04",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 13,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "B9Ven",
+                          "name": "04 Status",
+                          "fill": "#C9A6FF",
+                          "width": 8,
+                          "height": 8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "w1rdtn",
+                      "name": "04 Title",
+                      "fill": "#F4F7F8",
+                      "content": "Train",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "650"
+                    },
+                    {
+                      "type": "text",
+                      "id": "w8UEab",
+                      "name": "04 Detail",
+                      "fill": "#8FA2AE",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Modal fine-tunes a Gemma candidate.",
+                      "fontFamily": "Inter",
+                      "fontSize": 13
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "wKqaA",
+                  "name": "05 Evaluate",
+                  "width": "fill_container",
+                  "height": 158,
+                  "fill": "#111A22",
+                  "cornerRadius": 10,
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 18,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "v3hFq",
+                      "name": "05 Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "D8eQbA",
+                          "name": "05 Number",
+                          "fill": "#65B8FF",
+                          "content": "05",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 13,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "ErSyx",
+                          "name": "05 Status",
+                          "fill": "#65B8FF",
+                          "width": 8,
+                          "height": 8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "KWinJ",
+                      "name": "05 Title",
+                      "fill": "#F4F7F8",
+                      "content": "Evaluate",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "650"
+                    },
+                    {
+                      "type": "text",
+                      "id": "YiGIa",
+                      "name": "05 Detail",
+                      "fill": "#8FA2AE",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Frozen suites score gains and regressions.",
+                      "fontFamily": "Inter",
+                      "fontSize": 13
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "jC5Kc",
+                  "name": "06 Gate",
+                  "width": "fill_container",
+                  "height": 158,
+                  "fill": "#111A22",
+                  "cornerRadius": 10,
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 18,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "BX0IV",
+                      "name": "06 Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "vz6KB",
+                          "name": "06 Number",
+                          "fill": "#A7F36B",
+                          "content": "06",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 13,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.5
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "QpXTU",
+                          "name": "06 Status",
+                          "fill": "#A7F36B",
+                          "width": 8,
+                          "height": 8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "HMgHE",
+                      "name": "06 Title",
+                      "fill": "#F4F7F8",
+                      "content": "Gate",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "650"
+                    },
+                    {
+                      "type": "text",
+                      "id": "WPu31",
+                      "name": "06 Detail",
+                      "fill": "#8FA2AE",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Deterministic policy qualifies or refuses.",
+                      "fontFamily": "Inter",
+                      "fontSize": 13
+                    }
+                  ]
                 }
               ]
             }
@@ -167,1475 +631,939 @@
         },
         {
           "type": "frame",
-          "id": "cVo0H",
-          "name": "Autonomous Repair Workflow",
+          "id": "lTvUc",
+          "name": "Cloud Boundary",
           "width": "fill_container",
-          "height": 210,
+          "fill": "#0E171F",
+          "cornerRadius": 12,
+          "stroke": "#263945",
+          "strokeWidth": 1,
           "layout": "vertical",
-          "gap": 12,
+          "gap": 14,
+          "padding": 20,
           "children": [
             {
               "type": "frame",
-              "id": "o8PLy",
-              "name": "Workflow Heading",
+              "id": "nanaZ",
+              "name": "Cloud Boundary Header",
               "width": "fill_container",
               "justifyContent": "space_between",
               "alignItems": "center",
               "children": [
                 {
-                  "type": "text",
-                  "id": "GC4Vf",
-                  "name": "Workflow Label",
-                  "fill": "$ink",
-                  "content": "AUTONOMOUS REPAIR WORKFLOW",
-                  "fontFamily": "$font-mono",
-                  "fontSize": 17,
-                  "fontWeight": "700",
-                  "letterSpacing": 1
+                  "type": "frame",
+                  "id": "z07itr",
+                  "name": "Cloud Heading Group",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "YpTX7",
+                      "name": "Cloud Icon",
+                      "width": 21,
+                      "height": 21,
+                      "icon": "cloud",
+                      "library": "lucide",
+                      "fill": "#65B8FF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "CDyKk",
+                      "name": "Cloud Heading",
+                      "fill": "#DCE8EE",
+                      "content": "DEPLOYED GOOGLE CLOUD TRUST BOUNDARY",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 13,
+                      "fontWeight": "600",
+                      "letterSpacing": 0.5
+                    }
+                  ]
                 },
                 {
                   "type": "text",
-                  "id": "MRPsc",
-                  "name": "Authority Principle",
-                  "fill": "$success",
-                  "content": "Gemini proposes  ·  deterministic code approves",
-                  "fontFamily": "$font-body",
-                  "fontSize": 19,
-                  "fontWeight": "600"
+                  "id": "L8Zcd6",
+                  "name": "Cloud Hint",
+                  "fill": "#65B8FF",
+                  "content": "Two paths. Separate identities. Least privilege.",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "550"
                 }
               ]
             },
             {
               "type": "frame",
-              "id": "b3ZrB",
-              "name": "Workflow Stages",
+              "id": "Y8woI",
+              "name": "Private Lane",
               "width": "fill_container",
-              "height": 164,
               "gap": 12,
               "alignItems": "center",
               "children": [
                 {
                   "type": "frame",
-                  "id": "zjS4L",
-                  "name": "WATCHER Stage",
-                  "width": 253,
-                  "height": 154,
-                  "fill": "$warning-soft",
-                  "stroke": "$warning",
-                  "strokeWidth": 1,
+                  "id": "eXACQ",
+                  "name": "Private Lane Label",
+                  "width": 166,
                   "layout": "vertical",
-                  "gap": 8,
+                  "gap": 5,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ji3Fi",
+                      "name": "Private Label",
+                      "fill": "#A7F36B",
+                      "content": "PRIVATE",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600",
+                      "letterSpacing": 0.5
+                    },
+                    {
+                      "type": "text",
+                      "id": "hfEd7",
+                      "name": "Private Lane Title",
+                      "fill": "#F4F7F8",
+                      "content": "Operator mission",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "650"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Y1WuAv",
+                      "name": "Private Lane Detail",
+                      "fill": "#8FA2AE",
+                      "content": "Full evidence",
+                      "fontFamily": "Inter",
+                      "fontSize": 12
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "z3Rl2",
+                  "name": "Operator UI",
+                  "width": "fill_container",
+                  "height": 82,
+                  "fill": "#101A22",
+                  "cornerRadius": 8,
+                  "stroke": "#273844",
+                  "strokeWidth": 1,
+                  "gap": 13,
                   "padding": [
                     16,
-                    17
+                    18
                   ],
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "jUVJ5",
-                      "name": "WATCHER Metadata",
-                      "width": "fill_container",
-                      "justifyContent": "space_between",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "xe3ty",
-                          "name": "WATCHER Number",
-                          "fill": "$warning",
-                          "content": "01",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 15,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "lzQIE",
-                          "name": "WATCHER Role",
-                          "fill": "$warning",
-                          "content": "WATCHER",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 13,
-                          "fontWeight": "700",
-                          "letterSpacing": 0.8
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "E8vdW",
-                      "name": "WATCHER Title",
-                      "fill": "$ink",
-                      "content": "Failure detected",
-                      "fontFamily": "$font-heading",
-                      "fontSize": 22,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "xujhZ",
-                      "name": "WATCHER Detail",
-                      "fill": "$muted",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "83.3% safety · floor 90%",
-                      "fontFamily": "$font-body",
-                      "fontSize": 16,
-                      "fontWeight": "500"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "fTnAU",
-                  "name": "Stage Arrow 1",
-                  "width": 30,
-                  "height": 42,
-                  "justifyContent": "center",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "GJ19m",
-                      "name": "Arrow Right 1",
-                      "width": 24,
-                      "height": 24,
-                      "icon": "arrow-right",
-                      "library": "lucide",
-                      "weight": 1.5,
-                      "fill": "$faint"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "oD52q",
-                  "name": "DIAGNOSTICIAN Stage",
-                  "width": 253,
-                  "height": 154,
-                  "fill": "$surface-secondary",
-                  "stroke": "$ink",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "gap": 8,
-                  "padding": [
-                    16,
-                    17
-                  ],
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "zHykn",
-                      "name": "DIAGNOSTICIAN Metadata",
-                      "width": "fill_container",
-                      "justifyContent": "space_between",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "akSKG",
-                          "name": "DIAGNOSTICIAN Number",
-                          "fill": "$ink",
-                          "content": "02",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 15,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "bBcXd",
-                          "name": "DIAGNOSTICIAN Role",
-                          "fill": "$ink",
-                          "content": "DIAGNOSTICIAN",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 13,
-                          "fontWeight": "700",
-                          "letterSpacing": 0.8
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "LKctE",
-                      "name": "DIAGNOSTICIAN Title",
-                      "fill": "$ink",
-                      "content": "Gap isolated",
-                      "fontFamily": "$font-heading",
-                      "fontSize": 22,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "JHGuQ",
-                      "name": "DIAGNOSTICIAN Detail",
-                      "fill": "$muted",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "Threshold weakening forbidden",
-                      "fontFamily": "$font-body",
-                      "fontSize": 16,
-                      "fontWeight": "500"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "dksNx",
-                  "name": "Stage Arrow 2",
-                  "width": 30,
-                  "height": 42,
-                  "justifyContent": "center",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "XDYoJ",
-                      "name": "Arrow Right 2",
-                      "width": 24,
-                      "height": 24,
-                      "icon": "arrow-right",
-                      "library": "lucide",
-                      "weight": 1.5,
-                      "fill": "$faint"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "I0p9V6",
-                  "name": "CURRICULUM Stage",
-                  "width": 253,
-                  "height": 154,
-                  "fill": "$accent-soft",
-                  "stroke": "$accent",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "gap": 8,
-                  "padding": [
-                    16,
-                    17
-                  ],
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "B1L4C",
-                      "name": "CURRICULUM Metadata",
-                      "width": "fill_container",
-                      "justifyContent": "space_between",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "l8qwe",
-                          "name": "CURRICULUM Number",
-                          "fill": "$accent",
-                          "content": "03",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 15,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "vv6wK",
-                          "name": "CURRICULUM Role",
-                          "fill": "$accent",
-                          "content": "CURRICULUM",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 13,
-                          "fontWeight": "700",
-                          "letterSpacing": 0.8
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "aq5Kg",
-                      "name": "CURRICULUM Title",
-                      "fill": "$ink",
-                      "content": "Intervention designed",
-                      "fontFamily": "$font-heading",
-                      "fontSize": 22,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "Pbqc1",
-                      "name": "CURRICULUM Detail",
-                      "fill": "$muted",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "Gemini 3.6 + ADK · 32 rows",
-                      "fontFamily": "$font-body",
-                      "fontSize": 16,
-                      "fontWeight": "500"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "BvgKz",
-                  "name": "Stage Arrow 3",
-                  "width": 30,
-                  "height": 42,
-                  "justifyContent": "center",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "fNonn",
-                      "name": "Arrow Right 3",
-                      "width": 24,
-                      "height": 24,
-                      "icon": "arrow-right",
-                      "library": "lucide",
-                      "weight": 1.5,
-                      "fill": "$faint"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "OppVb",
-                  "name": "TRAINER Stage",
-                  "width": 253,
-                  "height": 154,
-                  "fill": "$surface-secondary",
-                  "stroke": "$ink",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "gap": 8,
-                  "padding": [
-                    16,
-                    17
-                  ],
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "Jhjwb",
-                      "name": "TRAINER Metadata",
-                      "width": "fill_container",
-                      "justifyContent": "space_between",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "BXt9i",
-                          "name": "TRAINER Number",
-                          "fill": "$ink",
-                          "content": "04",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 15,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "eFKj5",
-                          "name": "TRAINER Role",
-                          "fill": "$ink",
-                          "content": "TRAINER",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 13,
-                          "fontWeight": "700",
-                          "letterSpacing": 0.8
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "onzrp",
-                      "name": "TRAINER Title",
-                      "fill": "$ink",
-                      "content": "Candidates trained",
-                      "fontFamily": "$font-heading",
-                      "fontSize": 22,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "Pg7Of",
-                      "name": "TRAINER Detail",
-                      "fill": "$muted",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "Modal · Gemma 270M → 1B",
-                      "fontFamily": "$font-body",
-                      "fontSize": 16,
-                      "fontWeight": "500"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "u89qoz",
-                  "name": "Stage Arrow 4",
-                  "width": 30,
-                  "height": 42,
-                  "justifyContent": "center",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "q6Aj9I",
-                      "name": "Arrow Right 4",
-                      "width": 24,
-                      "height": 24,
-                      "icon": "arrow-right",
-                      "library": "lucide",
-                      "weight": 1.5,
-                      "fill": "$faint"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "a7oOb",
-                  "name": "EVALUATOR Stage",
-                  "width": 253,
-                  "height": 154,
-                  "fill": "$surface-secondary",
-                  "stroke": "$ink",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "gap": 8,
-                  "padding": [
-                    16,
-                    17
-                  ],
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "OliIb",
-                      "name": "EVALUATOR Metadata",
-                      "width": "fill_container",
-                      "justifyContent": "space_between",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "SKkbS",
-                          "name": "EVALUATOR Number",
-                          "fill": "$ink",
-                          "content": "05",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 15,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "wcRWi",
-                          "name": "EVALUATOR Role",
-                          "fill": "$ink",
-                          "content": "EVALUATOR",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 13,
-                          "fontWeight": "700",
-                          "letterSpacing": 0.8
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "eYEBp",
-                      "name": "EVALUATOR Title",
-                      "fill": "$ink",
-                      "content": "Blind audit scored",
-                      "fontFamily": "$font-heading",
-                      "fontSize": 22,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "mUueq",
-                      "name": "EVALUATOR Detail",
-                      "fill": "$muted",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "300 cases · policy v2",
-                      "fontFamily": "$font-body",
-                      "fontSize": 16,
-                      "fontWeight": "500"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "rh82i",
-                  "name": "Stage Arrow 5",
-                  "width": 30,
-                  "height": 42,
-                  "justifyContent": "center",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "kW8MA",
-                      "name": "Arrow Right 5",
-                      "width": 24,
-                      "height": 24,
-                      "icon": "arrow-right",
-                      "library": "lucide",
-                      "weight": 1.5,
-                      "fill": "$faint"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "WzJ39",
-                  "name": "GATE Stage",
-                  "width": 253,
-                  "height": 154,
-                  "fill": "$success-soft",
-                  "stroke": "$success",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "gap": 8,
-                  "padding": [
-                    16,
-                    17
-                  ],
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "naDf0",
-                      "name": "GATE Metadata",
-                      "width": "fill_container",
-                      "justifyContent": "space_between",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "GBNJw",
-                          "name": "GATE Number",
-                          "fill": "$success",
-                          "content": "06",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 15,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "K7Mnh",
-                          "name": "GATE Role",
-                          "fill": "$success",
-                          "content": "GATE",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 13,
-                          "fontWeight": "700",
-                          "letterSpacing": 0.8
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "kR1hQ",
-                      "name": "GATE Title",
-                      "fill": "$ink",
-                      "content": "Release decided",
-                      "fontFamily": "$font-heading",
-                      "fontSize": 22,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "DiVVf",
-                      "name": "GATE Detail",
-                      "fill": "$muted",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "270M refused · 1B qualified",
-                      "fontFamily": "$font-body",
-                      "fontSize": 16,
-                      "fontWeight": "500"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "frame",
-          "id": "YJsCy",
-          "name": "Google Cloud Trust Plane",
-          "width": "fill_container",
-          "height": 430,
-          "fill": "$surface-secondary",
-          "stroke": "$accent",
-          "strokeWidth": 2,
-          "layout": "vertical",
-          "gap": 14,
-          "padding": [
-            20,
-            22
-          ],
-          "children": [
-            {
-              "type": "frame",
-              "id": "s21hVp",
-              "name": "Cloud Plane Heading",
-              "width": "fill_container",
-              "height": 42,
-              "justifyContent": "space_between",
-              "alignItems": "center",
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "T3WY5h",
-                  "name": "Cloud Plane Title Group",
-                  "gap": 12,
                   "alignItems": "center",
                   "children": [
                     {
                       "type": "frame",
-                      "id": "za3jo",
-                      "name": "Google Cloud Mark",
-                      "width": 34,
-                      "height": 34,
-                      "fill": "$accent",
+                      "id": "JoqHF",
+                      "name": "Operator UI Icon Well",
+                      "width": 38,
+                      "height": 38,
+                      "fill": "#A7F36B1F",
+                      "cornerRadius": 8,
                       "justifyContent": "center",
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "icon",
-                          "id": "n1T51",
-                          "name": "Cloud Icon",
-                          "width": 21,
-                          "height": 21,
-                          "icon": "cloud",
+                          "id": "Jo7BB",
+                          "name": "Operator UI Icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "monitor",
                           "library": "lucide",
-                          "weight": 2,
-                          "fill": "$surface"
+                          "fill": "#A7F36B"
                         }
                       ]
                     },
                     {
-                      "type": "text",
-                      "id": "o02ZW",
-                      "name": "Cloud Plane Label",
-                      "fill": "$ink",
-                      "content": "DEPLOYED GOOGLE CLOUD PROOF PATH",
-                      "fontFamily": "$font-mono",
-                      "fontSize": 18,
-                      "fontWeight": "700",
-                      "letterSpacing": 1
+                      "type": "frame",
+                      "id": "y31o6",
+                      "name": "Operator UI Copy",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "VILFf",
+                          "name": "Operator UI Title",
+                          "fill": "#F4F7F8",
+                          "content": "Authenticated operator",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "650"
+                        },
+                        {
+                          "type": "text",
+                          "id": "nmMwc",
+                          "name": "Operator UI Detail",
+                          "fill": "#8FA2AE",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Starts a bounded repair mission.",
+                          "fontFamily": "Inter",
+                          "fontSize": 12
+                        }
+                      ]
                     }
                   ]
                 },
                 {
-                  "type": "text",
-                  "id": "U7M6vR",
-                  "name": "Evidence Append Caption",
-                  "fill": "$accent",
-                  "content": "Every lifecycle stage appends to the Firestore chain  ↓",
-                  "fontFamily": "$font-body",
-                  "fontSize": 18,
-                  "fontWeight": "600"
+                  "type": "icon",
+                  "id": "cz00F",
+                  "name": "Private Arrow 1",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "arrow-right",
+                  "library": "lucide",
+                  "fill": "#496170"
+                },
+                {
+                  "type": "frame",
+                  "id": "i85ik7",
+                  "name": "Control Plane",
+                  "width": "fill_container",
+                  "height": 82,
+                  "fill": "#101A22",
+                  "cornerRadius": 8,
+                  "stroke": "#273844",
+                  "strokeWidth": 1,
+                  "gap": 13,
+                  "padding": [
+                    16,
+                    18
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "TscCF",
+                      "name": "Control Plane Icon Well",
+                      "width": 38,
+                      "height": 38,
+                      "fill": "#65B8FF1F",
+                      "cornerRadius": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "B6mN2",
+                          "name": "Control Plane Icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "shield-check",
+                          "library": "lucide",
+                          "fill": "#65B8FF"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "VSgwB",
+                      "name": "Control Plane Copy",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "QE12g",
+                          "name": "Control Plane Title",
+                          "fill": "#F4F7F8",
+                          "content": "Cloud Run control",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "650"
+                        },
+                        {
+                          "type": "text",
+                          "id": "H4uKen",
+                          "name": "Control Plane Detail",
+                          "fill": "#8FA2AE",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Validates input and queues work.",
+                          "fontFamily": "Inter",
+                          "fontSize": 12
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "E7K7Vc",
+                  "name": "Private Arrow 2",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "arrow-right",
+                  "library": "lucide",
+                  "fill": "#496170"
+                },
+                {
+                  "type": "frame",
+                  "id": "Qykp9",
+                  "name": "Mission Queue",
+                  "width": "fill_container",
+                  "height": 82,
+                  "fill": "#101A22",
+                  "cornerRadius": 8,
+                  "stroke": "#273844",
+                  "strokeWidth": 1,
+                  "gap": 13,
+                  "padding": [
+                    16,
+                    18
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Xv90L",
+                      "name": "Mission Queue Icon Well",
+                      "width": 38,
+                      "height": 38,
+                      "fill": "#65B8FF1F",
+                      "cornerRadius": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "Skkm5",
+                          "name": "Mission Queue Icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "list-checks",
+                          "library": "lucide",
+                          "fill": "#65B8FF"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "BhmhK",
+                      "name": "Mission Queue Copy",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "p4fCMB",
+                          "name": "Mission Queue Title",
+                          "fill": "#F4F7F8",
+                          "content": "Cloud Tasks",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "650"
+                        },
+                        {
+                          "type": "text",
+                          "id": "QgPK3",
+                          "name": "Mission Queue Detail",
+                          "fill": "#8FA2AE",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "OIDC dispatch; one worker.",
+                          "fontFamily": "Inter",
+                          "fontSize": 12
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "LB9yn",
+                  "name": "Private Arrow 3",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "arrow-right",
+                  "library": "lucide",
+                  "fill": "#496170"
+                },
+                {
+                  "type": "frame",
+                  "id": "eLulx",
+                  "name": "Mission Worker",
+                  "width": "fill_container",
+                  "height": 82,
+                  "fill": "#101A22",
+                  "cornerRadius": 8,
+                  "stroke": "#273844",
+                  "strokeWidth": 1,
+                  "gap": 13,
+                  "padding": [
+                    16,
+                    18
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "u0xOo",
+                      "name": "Mission Worker Icon Well",
+                      "width": 38,
+                      "height": 38,
+                      "fill": "#C9A6FF1F",
+                      "cornerRadius": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "bx0Zl",
+                          "name": "Mission Worker Icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "cpu",
+                          "library": "lucide",
+                          "fill": "#C9A6FF"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "l8pMF",
+                      "name": "Mission Worker Copy",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "jYS3r",
+                          "name": "Mission Worker Title",
+                          "fill": "#F4F7F8",
+                          "content": "Private Cloud Run",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "650"
+                        },
+                        {
+                          "type": "text",
+                          "id": "swDZy",
+                          "name": "Mission Worker Detail",
+                          "fill": "#8FA2AE",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Gemini + ADK orchestration.",
+                          "fontFamily": "Inter",
+                          "fontSize": 12
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "jK2zy",
+                  "name": "Private Arrow 4",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "arrow-right",
+                  "library": "lucide",
+                  "fill": "#496170"
+                },
+                {
+                  "type": "frame",
+                  "id": "FBIuG",
+                  "name": "Training and Record",
+                  "width": "fill_container",
+                  "height": 82,
+                  "fill": "#101A22",
+                  "cornerRadius": 8,
+                  "stroke": "#273844",
+                  "strokeWidth": 1,
+                  "gap": 13,
+                  "padding": [
+                    16,
+                    18
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "PhSiw",
+                      "name": "Training and Record Icon Well",
+                      "width": 38,
+                      "height": 38,
+                      "fill": "#A7F36B1F",
+                      "cornerRadius": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "jKJfm",
+                          "name": "Training and Record Icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "database",
+                          "library": "lucide",
+                          "fill": "#A7F36B"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "PJY8w",
+                      "name": "Training and Record Copy",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Supmt",
+                          "name": "Training and Record Title",
+                          "fill": "#F4F7F8",
+                          "content": "Modal + Gemma / Firestore",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "650"
+                        },
+                        {
+                          "type": "text",
+                          "id": "bEPEj",
+                          "name": "Training and Record Detail",
+                          "fill": "#8FA2AE",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Candidate artifacts and hash chain.",
+                          "fontFamily": "Inter",
+                          "fontSize": 12
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             },
             {
-              "type": "frame",
-              "id": "CcWAe",
-              "name": "Public Verification Path",
+              "type": "rectangle",
+              "id": "Ka5gW",
+              "name": "Lane Divider",
+              "fill": "#263945",
               "width": "fill_container",
-              "height": 226,
-              "gap": 10,
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "G327ut",
+              "name": "Public Lane",
+              "width": "fill_container",
+              "gap": 12,
               "alignItems": "center",
               "children": [
                 {
                   "type": "frame",
-                  "id": "i4jPRr",
-                  "name": "JUDGE Node",
-                  "width": 220,
-                  "height": 184,
-                  "fill": "$surface",
-                  "stroke": "$ink",
-                  "strokeWidth": 1,
+                  "id": "xEVyd",
+                  "name": "Public Lane Label",
+                  "width": 166,
                   "layout": "vertical",
-                  "gap": 8,
-                  "padding": [
-                    15,
-                    16
-                  ],
+                  "gap": 5,
                   "children": [
                     {
-                      "type": "frame",
-                      "id": "OKx7D",
-                      "name": "JUDGE Header",
-                      "width": "fill_container",
-                      "justifyContent": "space_between",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "Z1QNn",
-                          "name": "JUDGE Label",
-                          "fill": "$ink",
-                          "content": "JUDGE",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 13,
-                          "fontWeight": "700",
-                          "letterSpacing": 0.7
-                        },
-                        {
-                          "type": "icon",
-                          "id": "N0WF5t",
-                          "name": "JUDGE Icon",
-                          "width": 22,
-                          "height": 22,
-                          "icon": "user-round",
-                          "library": "lucide",
-                          "weight": 1.8,
-                          "fill": "$ink"
-                        }
-                      ]
+                      "type": "text",
+                      "id": "JSxsK",
+                      "name": "Public Label",
+                      "fill": "#65B8FF",
+                      "content": "PUBLIC",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600",
+                      "letterSpacing": 0.5
                     },
                     {
                       "type": "text",
-                      "id": "H8qpCl",
-                      "name": "JUDGE Title",
-                      "fill": "$ink",
-                      "content": "Public browser",
-                      "fontFamily": "$font-heading",
-                      "fontSize": 21,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "OjseN",
-                      "name": "JUDGE Detail",
-                      "fill": "$muted",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "Redacted evidence + live proof",
-                      "fontFamily": "$font-body",
+                      "id": "iJUs6",
+                      "name": "Public Lane Title",
+                      "fill": "#F4F7F8",
+                      "content": "Judge verification",
+                      "fontFamily": "Inter",
                       "fontSize": 16,
-                      "fontWeight": "500"
+                      "fontWeight": "650"
+                    },
+                    {
+                      "type": "text",
+                      "id": "cd7lN",
+                      "name": "Public Lane Detail",
+                      "fill": "#8FA2AE",
+                      "content": "Redacted + read-only",
+                      "fontFamily": "Inter",
+                      "fontSize": 12
                     }
                   ]
                 },
                 {
                   "type": "frame",
-                  "id": "rhBaj",
-                  "name": "Proof Arrow 1",
-                  "width": 34,
-                  "height": 42,
-                  "justifyContent": "center",
+                  "id": "znIOl",
+                  "name": "Judge UI",
+                  "width": "fill_container",
+                  "height": 82,
+                  "fill": "#101A22",
+                  "cornerRadius": 8,
+                  "stroke": "#273844",
+                  "strokeWidth": 1,
+                  "gap": 13,
+                  "padding": [
+                    16,
+                    18
+                  ],
                   "alignItems": "center",
                   "children": [
                     {
-                      "type": "icon",
-                      "id": "QPfip",
-                      "name": "Proof Arrow Icon 1",
-                      "width": 25,
-                      "height": 25,
-                      "icon": "arrow-right",
-                      "library": "lucide",
-                      "weight": 1.8,
-                      "fill": "$accent"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "nKEOy",
-                  "name": "PUBLIC CLOUD RUN Node",
-                  "width": 290,
-                  "height": 184,
-                  "fill": "$accent-soft",
-                  "stroke": "$accent",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "gap": 8,
-                  "padding": [
-                    15,
-                    16
-                  ],
-                  "children": [
-                    {
                       "type": "frame",
-                      "id": "rJhyi",
-                      "name": "PUBLIC CLOUD RUN Header",
-                      "width": "fill_container",
-                      "justifyContent": "space_between",
+                      "id": "ZTMHQ",
+                      "name": "Judge UI Icon Well",
+                      "width": 38,
+                      "height": 38,
+                      "fill": "#65B8FF1F",
+                      "cornerRadius": 8,
+                      "justifyContent": "center",
                       "alignItems": "center",
                       "children": [
                         {
-                          "type": "text",
-                          "id": "FyOLi",
-                          "name": "PUBLIC CLOUD RUN Label",
-                          "fill": "$accent",
-                          "content": "PUBLIC CLOUD RUN",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 13,
-                          "fontWeight": "700",
-                          "letterSpacing": 0.7
-                        },
-                        {
                           "type": "icon",
-                          "id": "f2SPM",
-                          "name": "PUBLIC CLOUD RUN Icon",
-                          "width": 22,
-                          "height": 22,
+                          "id": "WOmXm",
+                          "name": "Judge UI Icon",
+                          "width": 20,
+                          "height": 20,
                           "icon": "globe",
                           "library": "lucide",
-                          "weight": 1.8,
-                          "fill": "$accent"
+                          "fill": "#65B8FF"
                         }
                       ]
                     },
                     {
-                      "type": "text",
-                      "id": "wG3sL",
-                      "name": "PUBLIC CLOUD RUN Title",
-                      "fill": "$ink",
-                      "content": "Judge UI / API",
-                      "fontFamily": "$font-heading",
-                      "fontSize": 21,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "mL0p0",
-                      "name": "PUBLIC CLOUD RUN Detail",
-                      "fill": "$muted",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "GCP boundary · fixed task identity",
-                      "fontFamily": "$font-body",
-                      "fontSize": 16,
-                      "fontWeight": "500"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "qkRem",
-                  "name": "Proof Arrow 2",
-                  "width": 34,
-                  "height": 42,
-                  "justifyContent": "center",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "l7MQj",
-                      "name": "Proof Arrow Icon 2",
-                      "width": 25,
-                      "height": 25,
-                      "icon": "arrow-right",
-                      "library": "lucide",
-                      "weight": 1.8,
-                      "fill": "$accent"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "vAdio",
-                  "name": "CLOUD TASKS Node",
-                  "width": 240,
-                  "height": 184,
-                  "fill": "$surface",
-                  "stroke": "$ink",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "gap": 8,
-                  "padding": [
-                    15,
-                    16
-                  ],
-                  "children": [
-                    {
                       "type": "frame",
-                      "id": "I3G6nU",
-                      "name": "CLOUD TASKS Header",
+                      "id": "D9GMJ1",
+                      "name": "Judge UI Copy",
                       "width": "fill_container",
-                      "justifyContent": "space_between",
-                      "alignItems": "center",
+                      "layout": "vertical",
+                      "gap": 4,
                       "children": [
                         {
                           "type": "text",
-                          "id": "PLY9v",
-                          "name": "CLOUD TASKS Label",
-                          "fill": "$ink",
-                          "content": "CLOUD TASKS",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 13,
-                          "fontWeight": "700",
-                          "letterSpacing": 0.7
+                          "id": "AOvmc",
+                          "name": "Judge UI Title",
+                          "fill": "#F4F7F8",
+                          "content": "Public Cloud Run",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "650"
                         },
                         {
+                          "type": "text",
+                          "id": "MCJF5",
+                          "name": "Judge UI Detail",
+                          "fill": "#8FA2AE",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Fixed mission; redacted evidence only.",
+                          "fontFamily": "Inter",
+                          "fontSize": 12
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "Rq5Uc",
+                  "name": "Public Arrow 1",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "arrow-right",
+                  "library": "lucide",
+                  "fill": "#496170"
+                },
+                {
+                  "type": "frame",
+                  "id": "BsXzt",
+                  "name": "Verify Request",
+                  "width": "fill_container",
+                  "height": 82,
+                  "fill": "#101A22",
+                  "cornerRadius": 8,
+                  "stroke": "#273844",
+                  "strokeWidth": 1,
+                  "gap": 13,
+                  "padding": [
+                    16,
+                    18
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "iHYp4",
+                      "name": "Verify Request Icon Well",
+                      "width": 38,
+                      "height": 38,
+                      "fill": "#65B8FF1F",
+                      "cornerRadius": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
                           "type": "icon",
-                          "id": "L8RzH",
-                          "name": "CLOUD TASKS Icon",
-                          "width": 22,
-                          "height": 22,
+                          "id": "KPxaJ",
+                          "name": "Verify Request Icon",
+                          "width": 20,
+                          "height": 20,
                           "icon": "list-checks",
                           "library": "lucide",
-                          "weight": 1.8,
-                          "fill": "$ink"
+                          "fill": "#65B8FF"
                         }
                       ]
                     },
                     {
-                      "type": "text",
-                      "id": "ZYpi0",
-                      "name": "CLOUD TASKS Title",
-                      "fill": "$ink",
-                      "content": "Isolated queue",
-                      "fontFamily": "$font-heading",
-                      "fontSize": 21,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "BUIoH",
-                      "name": "CLOUD TASKS Detail",
-                      "fill": "$muted",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "1 dispatch/sec · 1 concurrent",
-                      "fontFamily": "$font-body",
-                      "fontSize": 16,
-                      "fontWeight": "500"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "FjQIP",
-                  "name": "Proof Arrow 3",
-                  "width": 34,
-                  "height": 42,
-                  "justifyContent": "center",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "BeOIA",
-                      "name": "Proof Arrow Icon 3",
-                      "width": 25,
-                      "height": 25,
-                      "icon": "arrow-right",
-                      "library": "lucide",
-                      "weight": 1.8,
-                      "fill": "$accent"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "T9ll5X",
-                  "name": "PRIVATE VERIFIER Node",
-                  "width": 290,
-                  "height": 184,
-                  "fill": "$surface",
-                  "stroke": "$ink",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "gap": 8,
-                  "padding": [
-                    15,
-                    16
-                  ],
-                  "children": [
-                    {
                       "type": "frame",
-                      "id": "H1V2t9",
-                      "name": "PRIVATE VERIFIER Header",
+                      "id": "M3BgR",
+                      "name": "Verify Request Copy",
                       "width": "fill_container",
-                      "justifyContent": "space_between",
-                      "alignItems": "center",
+                      "layout": "vertical",
+                      "gap": 4,
                       "children": [
                         {
                           "type": "text",
-                          "id": "szvKt",
-                          "name": "PRIVATE VERIFIER Label",
-                          "fill": "$ink",
-                          "content": "PRIVATE VERIFIER",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 13,
-                          "fontWeight": "700",
-                          "letterSpacing": 0.7
+                          "id": "o5nSN4",
+                          "name": "Verify Request Title",
+                          "fill": "#F4F7F8",
+                          "content": "Isolated queue",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "650"
                         },
                         {
+                          "type": "text",
+                          "id": "e4qHN",
+                          "name": "Verify Request Detail",
+                          "fill": "#8FA2AE",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Rate-limited verification job.",
+                          "fontFamily": "Inter",
+                          "fontSize": 12
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "sFkpH",
+                  "name": "Public Arrow 2",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "arrow-right",
+                  "library": "lucide",
+                  "fill": "#496170"
+                },
+                {
+                  "type": "frame",
+                  "id": "ghIlP",
+                  "name": "OIDC Verifier",
+                  "width": "fill_container",
+                  "height": 82,
+                  "fill": "#101A22",
+                  "cornerRadius": 8,
+                  "stroke": "#273844",
+                  "strokeWidth": 1,
+                  "gap": 13,
+                  "padding": [
+                    16,
+                    18
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "gzUXZ",
+                      "name": "OIDC Verifier Icon Well",
+                      "width": 38,
+                      "height": 38,
+                      "fill": "#A7F36B1F",
+                      "cornerRadius": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
                           "type": "icon",
-                          "id": "jrlBM",
-                          "name": "PRIVATE VERIFIER Icon",
-                          "width": 22,
-                          "height": 22,
-                          "icon": "shield-check",
+                          "id": "w7aCSt",
+                          "name": "OIDC Verifier Icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "badge-check",
                           "library": "lucide",
-                          "weight": 1.8,
-                          "fill": "$ink"
+                          "fill": "#A7F36B"
                         }
                       ]
                     },
                     {
-                      "type": "text",
-                      "id": "XMyyD",
-                      "name": "PRIVATE VERIFIER Title",
-                      "fill": "$ink",
-                      "content": "OIDC-only Cloud Run",
-                      "fontFamily": "$font-heading",
-                      "fontSize": 21,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "geU5Q",
-                      "name": "PRIVATE VERIFIER Detail",
-                      "fill": "$muted",
-                      "textGrowth": "fixed-width",
+                      "type": "frame",
+                      "id": "uyjK0",
+                      "name": "OIDC Verifier Copy",
                       "width": "fill_container",
-                      "content": "Exact mission + head + receipt",
-                      "fontFamily": "$font-body",
-                      "fontSize": 16,
-                      "fontWeight": "500"
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "klyqt",
+                          "name": "OIDC Verifier Title",
+                          "fill": "#F4F7F8",
+                          "content": "Private Cloud Run",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "650"
+                        },
+                        {
+                          "type": "text",
+                          "id": "RNXll",
+                          "name": "OIDC Verifier Detail",
+                          "fill": "#8FA2AE",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Recomputes head and receipt.",
+                          "fontFamily": "Inter",
+                          "fontSize": 12
+                        }
+                      ]
                     }
                   ]
                 },
                 {
+                  "type": "icon",
+                  "id": "IJhYA",
+                  "name": "Public Arrow 3",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "arrow-right",
+                  "library": "lucide",
+                  "fill": "#496170"
+                },
+                {
                   "type": "frame",
-                  "id": "lUPvs",
-                  "name": "Proof Arrow 4",
-                  "width": 34,
-                  "height": 42,
-                  "justifyContent": "center",
+                  "id": "k9ELpF",
+                  "name": "Evidence Stores",
+                  "width": "fill_container",
+                  "height": 82,
+                  "fill": "#101A22",
+                  "cornerRadius": 8,
+                  "stroke": "#273844",
+                  "strokeWidth": 1,
+                  "gap": 13,
+                  "padding": [
+                    16,
+                    18
+                  ],
                   "alignItems": "center",
                   "children": [
                     {
-                      "type": "icon",
-                      "id": "mmZr3",
-                      "name": "Proof Arrow Icon 4",
-                      "width": 25,
-                      "height": 25,
-                      "icon": "arrow-right",
-                      "library": "lucide",
-                      "weight": 1.8,
-                      "fill": "$accent"
+                      "type": "frame",
+                      "id": "jDcpp",
+                      "name": "Evidence Stores Icon Well",
+                      "width": 38,
+                      "height": 38,
+                      "fill": "#A7F36B1F",
+                      "cornerRadius": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "p5VFY",
+                          "name": "Evidence Stores Icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "database",
+                          "library": "lucide",
+                          "fill": "#A7F36B"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Ub9Mx",
+                      "name": "Evidence Stores Copy",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "dMdFS",
+                          "name": "Evidence Stores Title",
+                          "fill": "#F4F7F8",
+                          "content": "Firestore + Cloud Storage",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "650"
+                        },
+                        {
+                          "type": "text",
+                          "id": "bEWj3",
+                          "name": "Evidence Stores Detail",
+                          "fill": "#8FA2AE",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Hash chain and immutable receipt.",
+                          "fontFamily": "Inter",
+                          "fontSize": 12
+                        }
+                      ]
                     }
                   ]
                 },
                 {
                   "type": "frame",
-                  "id": "WjzZm",
-                  "name": "Immutable Evidence Vault",
-                  "width": 350,
-                  "height": 216,
-                  "fill": "$surface",
-                  "stroke": "$success",
-                  "strokeWidth": 2,
+                  "id": "p19ahw",
+                  "name": "Public Hard Boundary",
+                  "width": "fill_container",
+                  "height": 82,
+                  "fill": "#211719",
+                  "cornerRadius": 8,
+                  "stroke": "#6E3438",
+                  "strokeWidth": 1,
                   "layout": "vertical",
-                  "gap": 10,
+                  "gap": 5,
                   "padding": [
                     14,
                     16
                   ],
                   "children": [
                     {
-                      "type": "frame",
-                      "id": "SBwqB",
-                      "name": "Vault Header",
-                      "width": "fill_container",
-                      "justifyContent": "space_between",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "iMQvE",
-                          "name": "Vault Label",
-                          "fill": "$success",
-                          "content": "IMMUTABLE EVIDENCE",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 13,
-                          "fontWeight": "700",
-                          "letterSpacing": 0.7
-                        },
-                        {
-                          "type": "icon",
-                          "id": "XSitl",
-                          "name": "Vault Icon",
-                          "width": 23,
-                          "height": 23,
-                          "icon": "database-zap",
-                          "library": "lucide",
-                          "weight": 1.8,
-                          "fill": "$success"
-                        }
-                      ]
+                      "type": "text",
+                      "id": "Xvp97",
+                      "name": "Boundary Label",
+                      "fill": "#FF7278",
+                      "content": "HARD BOUNDARY",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 11,
+                      "fontWeight": "600",
+                      "letterSpacing": 0.5
                     },
                     {
-                      "type": "frame",
-                      "id": "B99Tya",
-                      "name": "Firestore Chain",
+                      "type": "text",
+                      "id": "GYuRG",
+                      "name": "Boundary Copy",
+                      "fill": "#F1C8CB",
+                      "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "fill": "$surface-secondary",
-                      "stroke": "$border",
-                      "strokeWidth": 1,
-                      "gap": 10,
-                      "padding": [
-                        10,
-                        11
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "aas4d",
-                          "name": "Firestore Icon",
-                          "width": 21,
-                          "height": 21,
-                          "icon": "database",
-                          "library": "lucide",
-                          "weight": 1.7,
-                          "fill": "$accent"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "gWvrF",
-                          "name": "Firestore Copy",
-                          "width": "fill_container",
-                          "layout": "vertical",
-                          "gap": 2,
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "i8a0A",
-                              "name": "Firestore Title",
-                              "fill": "$ink",
-                              "content": "Firestore · 6-stage hash chain",
-                              "fontFamily": "$font-heading",
-                              "fontSize": 17,
-                              "fontWeight": "700"
-                            },
-                            {
-                              "type": "text",
-                              "id": "IUu8W",
-                              "name": "Firestore Detail",
-                              "fill": "$faint",
-                              "content": "transaction-safe · read-only verification",
-                              "fontFamily": "$font-mono",
-                              "fontSize": 12,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "NwFDO",
-                      "name": "Cloud Storage Receipt",
-                      "width": "fill_container",
-                      "fill": "$success-soft",
-                      "stroke": "$success",
-                      "strokeWidth": 1,
-                      "gap": 10,
-                      "padding": [
-                        10,
-                        11
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "S3Yw7",
-                          "name": "Receipt Icon",
-                          "width": 21,
-                          "height": 21,
-                          "icon": "file-check",
-                          "library": "lucide",
-                          "weight": 1.8,
-                          "fill": "$success"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "CQFZG",
-                          "name": "Receipt Copy",
-                          "width": "fill_container",
-                          "layout": "vertical",
-                          "gap": 2,
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "DItcF",
-                              "name": "Receipt Title",
-                              "fill": "$ink",
-                              "content": "Cloud Storage · immutable receipt",
-                              "fontFamily": "$font-heading",
-                              "fontSize": 17,
-                              "fontWeight": "700"
-                            },
-                            {
-                              "type": "text",
-                              "id": "hII7m",
-                              "name": "Receipt Detail",
-                              "fill": "$success",
-                              "content": "create-only · 7-day lifecycle",
-                              "fontFamily": "$font-mono",
-                              "fontSize": 12,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "F3evqa",
-              "name": "Security and Cost Guardrails",
-              "width": "fill_container",
-              "height": 76,
-              "gap": 10,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "UtLIK",
-                  "name": "PUBLIC SURFACE Guardrail",
-                  "width": "fill_container",
-                  "height": 76,
-                  "fill": "$surface",
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "gap": 11,
-                  "padding": [
-                    12,
-                    14
-                  ],
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "I9g9S",
-                      "name": "PUBLIC SURFACE Icon",
-                      "width": 22,
-                      "height": 22,
-                      "icon": "eye-off",
-                      "library": "lucide",
-                      "weight": 1.8,
-                      "fill": "$accent"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "RIIkP",
-                      "name": "PUBLIC SURFACE Copy",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 3,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "WHK0D",
-                          "name": "PUBLIC SURFACE Heading",
-                          "fill": "$accent",
-                          "content": "PUBLIC SURFACE",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 13,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "YapUL",
-                          "name": "PUBLIC SURFACE Description",
-                          "fill": "$muted",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Redacted snapshot · zero Firestore access",
-                          "fontFamily": "$font-body",
-                          "fontSize": 14,
-                          "fontWeight": "500"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "E3tF3",
-                  "name": "PRIVATE OPERATOR Guardrail",
-                  "width": "fill_container",
-                  "height": 76,
-                  "fill": "$surface",
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "gap": 11,
-                  "padding": [
-                    12,
-                    14
-                  ],
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "uKRb5",
-                      "name": "PRIVATE OPERATOR Icon",
-                      "width": 22,
-                      "height": 22,
-                      "icon": "lock-keyhole",
-                      "library": "lucide",
-                      "weight": 1.8,
-                      "fill": "$ink"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "JspS5",
-                      "name": "PRIVATE OPERATOR Copy",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 3,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "XPnOe",
-                          "name": "PRIVATE OPERATOR Heading",
-                          "fill": "$ink",
-                          "content": "PRIVATE OPERATOR",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 13,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "h9uu0m",
-                          "name": "PRIVATE OPERATOR Description",
-                          "fill": "$muted",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Full evidence · Google Cloud IAM only",
-                          "fontFamily": "$font-body",
-                          "fontSize": 14,
-                          "fontWeight": "500"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "Bm3Vg",
-                  "name": "LEAST PRIVILEGE Guardrail",
-                  "width": "fill_container",
-                  "height": 76,
-                  "fill": "$surface",
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "gap": 11,
-                  "padding": [
-                    12,
-                    14
-                  ],
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "FfZ0n",
-                      "name": "LEAST PRIVILEGE Icon",
-                      "width": 22,
-                      "height": 22,
-                      "icon": "key-round",
-                      "library": "lucide",
-                      "weight": 1.8,
-                      "fill": "$success"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "ay66G",
-                      "name": "LEAST PRIVILEGE Copy",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 3,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "FTDf3",
-                          "name": "LEAST PRIVILEGE Heading",
-                          "fill": "$success",
-                          "content": "LEAST PRIVILEGE",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 13,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "cR09d",
-                          "name": "LEAST PRIVILEGE Description",
-                          "fill": "$muted",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Viewer + queue enqueuer + create-only receipt",
-                          "fontFamily": "$font-body",
-                          "fontSize": 14,
-                          "fontWeight": "500"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "SUT9c",
-                  "name": "COST BOUNDARY Guardrail",
-                  "width": "fill_container",
-                  "height": 76,
-                  "fill": "$surface",
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "gap": 11,
-                  "padding": [
-                    12,
-                    14
-                  ],
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "EJMK9",
-                      "name": "COST BOUNDARY Icon",
-                      "width": 22,
-                      "height": 22,
-                      "icon": "gauge",
-                      "library": "lucide",
-                      "weight": 1.8,
-                      "fill": "$warning"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "AWwyp",
-                      "name": "COST BOUNDARY Copy",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 3,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "fNzmg",
-                          "name": "COST BOUNDARY Heading",
-                          "fill": "$warning",
-                          "content": "COST BOUNDARY",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 13,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "lu4JX",
-                          "name": "COST BOUNDARY Description",
-                          "fill": "$muted",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Scale to zero · max 1 public / max 1 worker",
-                          "fontFamily": "$font-body",
-                          "fontSize": 14,
-                          "fontWeight": "500"
-                        }
-                      ]
+                      "content": "No Gemini · no Modal · no mission start",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "600"
                     }
                   ]
                 }
@@ -1645,192 +1573,86 @@
         },
         {
           "type": "frame",
-          "id": "xYcoa",
-          "name": "Verified Outcome Footer",
+          "id": "u2z0Vh",
+          "name": "Release Authority",
           "width": "fill_container",
-          "height": 134,
-          "gap": 24,
+          "fill": "#101B18",
+          "cornerRadius": 10,
+          "stroke": "#3C654E",
+          "strokeWidth": 1,
+          "padding": [
+            19,
+            22
+          ],
+          "justifyContent": "space_between",
           "alignItems": "center",
           "children": [
             {
               "type": "frame",
-              "id": "fLvpM",
-              "name": "Verified Metrics",
-              "width": 1040,
-              "height": 108,
-              "fill": "$surface-secondary",
-              "stroke": "$border",
-              "strokeWidth": 1,
+              "id": "bQfhY",
+              "name": "Authority Copy",
+              "gap": 14,
+              "alignItems": "center",
               "children": [
                 {
                   "type": "frame",
-                  "id": "ii591",
-                  "name": "HASH-LINKED ENTRIES Metric",
-                  "width": "fill_container",
-                  "height": 108,
-                  "layout": "vertical",
-                  "gap": 7,
-                  "padding": [
-                    16,
-                    18
-                  ],
+                  "id": "HFXF8",
+                  "name": "Authority Icon Well",
+                  "width": 44,
+                  "height": 44,
+                  "fill": "#A7F36B",
+                  "cornerRadius": 9,
                   "justifyContent": "center",
+                  "alignItems": "center",
                   "children": [
                     {
-                      "type": "text",
-                      "id": "y8Rwcx",
-                      "name": "HASH-LINKED ENTRIES Value",
-                      "fill": "$ink",
-                      "content": "6",
-                      "fontFamily": "$font-mono",
-                      "fontSize": 32,
-                      "fontWeight": "800"
-                    },
-                    {
-                      "type": "text",
-                      "id": "X0Ckv0",
-                      "name": "HASH-LINKED ENTRIES Label",
-                      "fill": "$faint",
-                      "content": "HASH-LINKED ENTRIES",
-                      "fontFamily": "$font-mono",
-                      "fontSize": 12,
-                      "fontWeight": "700",
-                      "letterSpacing": 0.6
+                      "type": "icon",
+                      "id": "TsmKC",
+                      "name": "Authority Icon",
+                      "width": 23,
+                      "height": 23,
+                      "icon": "lock-keyhole",
+                      "library": "lucide",
+                      "fill": "#0B1117"
                     }
                   ]
                 },
                 {
-                  "type": "rectangle",
-                  "id": "P5SDu",
-                  "name": "Metric Divider 1",
-                  "fill": "$border",
-                  "width": 1,
-                  "height": 68
-                },
-                {
                   "type": "frame",
-                  "id": "iOgJt",
-                  "name": "SAFETY ACCURACY Metric",
-                  "width": "fill_container",
-                  "height": 108,
+                  "id": "rCaKq",
+                  "name": "Authority Text",
                   "layout": "vertical",
-                  "gap": 7,
-                  "padding": [
-                    16,
-                    18
-                  ],
-                  "justifyContent": "center",
+                  "gap": 3,
                   "children": [
                     {
                       "type": "text",
-                      "id": "O8Jpm9",
-                      "name": "SAFETY ACCURACY Value",
-                      "fill": "$ink",
-                      "content": "93.3%",
-                      "fontFamily": "$font-mono",
-                      "fontSize": 32,
-                      "fontWeight": "800"
+                      "id": "qa80P",
+                      "name": "Authority Eyebrow",
+                      "fill": "#A7F36B",
+                      "content": "RELEASE AUTHORITY",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 11,
+                      "fontWeight": "600",
+                      "letterSpacing": 0.5
                     },
                     {
                       "type": "text",
-                      "id": "J2LyNt",
-                      "name": "SAFETY ACCURACY Label",
-                      "fill": "$faint",
-                      "content": "SAFETY ACCURACY",
-                      "fontFamily": "$font-mono",
-                      "fontSize": 12,
-                      "fontWeight": "700",
-                      "letterSpacing": 0.6
-                    }
-                  ]
-                },
-                {
-                  "type": "rectangle",
-                  "id": "ZTnDq",
-                  "name": "Metric Divider 2",
-                  "fill": "$border",
-                  "width": 1,
-                  "height": 68
-                },
-                {
-                  "type": "frame",
-                  "id": "l3trR",
-                  "name": "CRITICAL MISSES Metric",
-                  "width": "fill_container",
-                  "height": 108,
-                  "layout": "vertical",
-                  "gap": 7,
-                  "padding": [
-                    16,
-                    18
-                  ],
-                  "justifyContent": "center",
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "bqKlU",
-                      "name": "CRITICAL MISSES Value",
-                      "fill": "$ink",
-                      "content": "0",
-                      "fontFamily": "$font-mono",
-                      "fontSize": 32,
-                      "fontWeight": "800"
+                      "id": "tmgab",
+                      "name": "Authority Title",
+                      "fill": "#F7F9FA",
+                      "content": "The model cannot approve itself.",
+                      "fontFamily": "Inter",
+                      "fontSize": 24,
+                      "fontWeight": "700"
                     },
                     {
                       "type": "text",
-                      "id": "LalV1",
-                      "name": "CRITICAL MISSES Label",
-                      "fill": "$faint",
-                      "content": "CRITICAL MISSES",
-                      "fontFamily": "$font-mono",
-                      "fontSize": 12,
-                      "fontWeight": "700",
-                      "letterSpacing": 0.6
-                    }
-                  ]
-                },
-                {
-                  "type": "rectangle",
-                  "id": "Ozzpw",
-                  "name": "Metric Divider 3",
-                  "fill": "$border",
-                  "width": 1,
-                  "height": 68
-                },
-                {
-                  "type": "frame",
-                  "id": "dRz8k",
-                  "name": "IMMUTABLE RECEIPT Metric",
-                  "width": "fill_container",
-                  "height": 108,
-                  "layout": "vertical",
-                  "gap": 7,
-                  "padding": [
-                    16,
-                    18
-                  ],
-                  "justifyContent": "center",
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "vu9TL",
-                      "name": "IMMUTABLE RECEIPT Value",
-                      "fill": "$success",
-                      "content": "VERIFIED",
-                      "fontFamily": "$font-mono",
-                      "fontSize": 25,
-                      "fontWeight": "800"
-                    },
-                    {
-                      "type": "text",
-                      "id": "A8OPZ",
-                      "name": "IMMUTABLE RECEIPT Label",
-                      "fill": "$faint",
-                      "content": "IMMUTABLE RECEIPT",
-                      "fontFamily": "$font-mono",
-                      "fontSize": 12,
-                      "fontWeight": "700",
-                      "letterSpacing": 0.6
+                      "id": "BQABX",
+                      "name": "Authority Detail",
+                      "fill": "#9FB1AA",
+                      "content": "Gemini proposes · deterministic code decides · every stage appends evidence",
+                      "fontFamily": "Inter",
+                      "fontSize": 13
                     }
                   ]
                 }
@@ -1838,74 +1660,210 @@
             },
             {
               "type": "frame",
-              "id": "lNq5R",
-              "name": "Authority Boundary",
-              "width": "fill_container",
-              "height": 108,
-              "fill": "$ink",
-              "gap": 16,
-              "padding": [
-                18,
-                22
-              ],
-              "alignItems": "center",
+              "id": "fPovv",
+              "name": "Verdict",
+              "layout": "vertical",
+              "gap": 3,
+              "alignItems": "end",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "m82Pj",
+                  "name": "Verdict Label",
+                  "fill": "#8FA2AE",
+                  "content": "EXAMPLE OUTCOME",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 10,
+                  "fontWeight": "600",
+                  "letterSpacing": 0.5
+                },
+                {
+                  "type": "text",
+                  "id": "G1D9r",
+                  "name": "Verdict Value",
+                  "fill": "#FF7278",
+                  "content": "REFUSED",
+                  "fontFamily": "Inter",
+                  "fontSize": 27,
+                  "fontWeight": "750"
+                },
+                {
+                  "type": "text",
+                  "id": "p1jq4M",
+                  "name": "Verdict Detail",
+                  "fill": "#A7F36B",
+                  "content": "PRODUCTION UNCHANGED",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 11,
+                  "fontWeight": "600",
+                  "letterSpacing": 0.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "sy08E",
+          "name": "Operational Guarantees",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "tk33N",
+              "name": "Guarantee Items",
+              "gap": 24,
               "children": [
                 {
                   "type": "frame",
-                  "id": "TfeUR",
-                  "name": "Authority Icon Box",
-                  "width": 52,
-                  "height": 52,
-                  "fill": "$success",
-                  "justifyContent": "center",
+                  "id": "x4xrT",
+                  "name": "Scale Tag",
+                  "fill": "#111C26",
+                  "cornerRadius": 20,
+                  "stroke": "#293946",
+                  "strokeWidth": 1,
+                  "padding": [
+                    8,
+                    12
+                  ],
                   "alignItems": "center",
                   "children": [
                     {
-                      "type": "icon",
-                      "id": "nEHzt",
-                      "name": "Authority Shield",
-                      "width": 30,
-                      "height": 30,
-                      "icon": "shield-check",
-                      "library": "lucide",
-                      "weight": 2,
-                      "fill": "$surface"
+                      "type": "ellipse",
+                      "id": "tgDcg",
+                      "name": "Scale Tag Dot",
+                      "fill": "#FFB454",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "w43aax",
+                      "name": "Scale Tag Label",
+                      "fill": "#D8E4EB",
+                      "content": "SCALE TO ZERO",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
                     }
                   ]
                 },
                 {
                   "type": "frame",
-                  "id": "JxiOE",
-                  "name": "Authority Copy",
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 5,
+                  "id": "cw65x",
+                  "name": "Limit Tag",
+                  "fill": "#111C26",
+                  "cornerRadius": 20,
+                  "stroke": "#293946",
+                  "strokeWidth": 1,
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "alignItems": "center",
                   "children": [
                     {
-                      "type": "text",
-                      "id": "mLpLZ",
-                      "name": "Authority Title",
-                      "fill": "$surface",
-                      "content": "THE MODEL CANNOT APPROVE ITSELF.",
-                      "fontFamily": "$font-heading",
-                      "fontSize": 24,
-                      "fontWeight": "800"
+                      "type": "ellipse",
+                      "id": "Dxs3g",
+                      "name": "Limit Tag Dot",
+                      "fill": "#FFB454",
+                      "width": 7,
+                      "height": 7
                     },
                     {
                       "type": "text",
-                      "id": "olz8c",
-                      "name": "Authority Detail",
-                      "fill": "#C7CDD3",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "Gemini cannot edit thresholds, labels, evidence, journal history, or the release verdict.",
-                      "fontFamily": "$font-body",
-                      "fontSize": 15,
-                      "fontWeight": "500"
+                      "id": "uCHK0",
+                      "name": "Limit Tag Label",
+                      "fill": "#D8E4EB",
+                      "content": "MAX 1 INSTANCE",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "mnQZA",
+                  "name": "Receipt Tag",
+                  "fill": "#111C26",
+                  "cornerRadius": 20,
+                  "stroke": "#293946",
+                  "strokeWidth": 1,
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "LbeHM",
+                      "name": "Receipt Tag Dot",
+                      "fill": "#A7F36B",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "cYM62",
+                      "name": "Receipt Tag Label",
+                      "fill": "#D8E4EB",
+                      "content": "IMMUTABLE RECEIPT",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "FUoPt",
+                  "name": "IAM Tag",
+                  "fill": "#111C26",
+                  "cornerRadius": 20,
+                  "stroke": "#293946",
+                  "strokeWidth": 1,
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "Utag9",
+                      "name": "IAM Tag Dot",
+                      "fill": "#A7F36B",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "YXTGa",
+                      "name": "IAM Tag Label",
+                      "fill": "#D8E4EB",
+                      "content": "OIDC + LEAST PRIVILEGE",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
                     }
                   ]
                 }
               ]
+            },
+            {
+              "type": "text",
+              "id": "pbN2i",
+              "name": "Track Label",
+              "fill": "#93A5B1",
+              "content": "THE TASKMASTER · LIVE CLOUD PROOF",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 12,
+              "fontWeight": "600",
+              "letterSpacing": 0.5
             }
           ]
         }

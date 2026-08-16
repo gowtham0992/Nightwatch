@@ -1,0 +1,214 @@
+{
+  "baseline": {
+    "benign_block": {
+      "count": 0,
+      "rate": 0.0,
+      "total": 14
+    },
+    "critical_misses": [],
+    "invalid_case_ids": [],
+    "label_recall": {
+      "regression": {
+        "block": {
+          "accuracy": 1.0,
+          "correct": 8,
+          "total": 8
+        },
+        "caution": {
+          "accuracy": 0.625,
+          "correct": 5,
+          "total": 8
+        },
+        "routine": {
+          "accuracy": 0.875,
+          "correct": 7,
+          "total": 8
+        },
+        "verify": {
+          "accuracy": 0.625,
+          "correct": 5,
+          "total": 8
+        }
+      },
+      "safety": {
+        "block": {
+          "accuracy": 0.9444444444444444,
+          "correct": 17,
+          "total": 18
+        },
+        "caution": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        },
+        "routine": {
+          "accuracy": 1.0,
+          "correct": 6,
+          "total": 6
+        },
+        "verify": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        }
+      },
+      "target": {
+        "block": {
+          "accuracy": 0.9583333333333334,
+          "correct": 23,
+          "total": 24
+        },
+        "caution": {
+          "accuracy": 0.5833333333333334,
+          "correct": 7,
+          "total": 12
+        },
+        "routine": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        },
+        "verify": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        }
+      }
+    },
+    "macro_f1": 0.7592747326203209,
+    "model_id": "scam-v0-de1e6009-2d77e636-c0e947096d",
+    "overall_accuracy": 0.8478260869565217,
+    "scores": {
+      "regression": {
+        "accuracy": 0.78125,
+        "correct": 25,
+        "total": 32
+      },
+      "safety": {
+        "accuracy": 0.9583333333333334,
+        "correct": 23,
+        "total": 24
+      },
+      "target": {
+        "accuracy": 0.8333333333333334,
+        "correct": 30,
+        "total": 36
+      }
+    }
+  },
+  "baseline_id": "scam-v0-de1e6009-2d77e636-c0e947096d",
+  "candidate": {
+    "benign_block": {
+      "count": 0,
+      "rate": 0.0,
+      "total": 14
+    },
+    "critical_misses": [],
+    "invalid_case_ids": [],
+    "label_recall": {
+      "regression": {
+        "block": {
+          "accuracy": 1.0,
+          "correct": 8,
+          "total": 8
+        },
+        "caution": {
+          "accuracy": 0.875,
+          "correct": 7,
+          "total": 8
+        },
+        "routine": {
+          "accuracy": 0.75,
+          "correct": 6,
+          "total": 8
+        },
+        "verify": {
+          "accuracy": 0.875,
+          "correct": 7,
+          "total": 8
+        }
+      },
+      "safety": {
+        "block": {
+          "accuracy": 1.0,
+          "correct": 18,
+          "total": 18
+        },
+        "caution": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        },
+        "routine": {
+          "accuracy": 1.0,
+          "correct": 6,
+          "total": 6
+        },
+        "verify": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        }
+      },
+      "target": {
+        "block": {
+          "accuracy": 1.0,
+          "correct": 24,
+          "total": 24
+        },
+        "caution": {
+          "accuracy": 1.0,
+          "correct": 12,
+          "total": 12
+        },
+        "routine": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        },
+        "verify": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 0
+        }
+      }
+    },
+    "macro_f1": 0.9347876251039738,
+    "model_id": "scam-candidate-v5-ebd8e944-ffca8c22-2f98bfc17f",
+    "overall_accuracy": 0.9565217391304348,
+    "scores": {
+      "regression": {
+        "accuracy": 0.875,
+        "correct": 28,
+        "total": 32
+      },
+      "safety": {
+        "accuracy": 1.0,
+        "correct": 24,
+        "total": 24
+      },
+      "target": {
+        "accuracy": 1.0,
+        "correct": 36,
+        "total": 36
+      }
+    }
+  },
+  "candidate_id": "scam-candidate-v5-ebd8e944-ffca8c22-2f98bfc17f",
+  "decision": {
+    "decision": "reject",
+    "reasons": [
+      "regression routine recall declined by 0.125; allowed drop is 0.000"
+    ],
+    "regression_drop": -0.09375,
+    "target_gain": 0.16666666666666663
+  },
+  "mission_id": "scam-safety-v1",
+  "schema_version": 1,
+  "source_hashes": {
+    "baseline_predictions_sha256": "db7d3351a7caf5bf265f2d7c573b9d22c02fd9ef0ab79a16f7c7ab437057ef48",
+    "candidate_predictions_sha256": "7a1cb511c3d7b5011c757f2a139afa491b7f2eadf78083b2d1badfdf189f8651",
+    "development_sha256": "ffca8c221440c980546c8b8353c307e48d42a94c43290a33583574b7210e305b",
+    "mission_sha256": "eb31d675f715815899e14a6c00fcea1562d8006d9fd7b274da35b98f0fb09011"
+  }
+}
