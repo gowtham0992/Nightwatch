@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://nightwatch-public-w3a6oefsma-uc.a.run.app/">Live judge experience</a>
-  · <a href="docs/images/nightwatch-architecture.png">Architecture</a>
+  · <a href="docs/architecture.md">Architecture</a>
   · <a href="docs/threat-model.md">Threat model</a>
   · <a href="cloud/DEPLOYMENT.md">Deployment evidence</a>
 </p>
@@ -56,7 +56,13 @@ Cloud Tasks advances exactly one durable stage per request. A retry resumes from
 
 ## Architecture
 
-![Nightwatch deployed architecture](docs/images/nightwatch-architecture.png)
+Nightwatch is easiest to understand in two layers. The product view shows the autonomous repair mission and the hard boundary between AI-authored proposals and code-owned release authority.
+
+![Nightwatch product architecture](docs/images/nightwatch-product-architecture.png)
+
+The Google Cloud view shows how separate services, queues, identities, and evidence stores enforce that boundary in the deployed system.
+
+![Nightwatch Google Cloud internals](docs/images/nightwatch-gcp-internals.png)
 
 There are two deliberately separate paths:
 

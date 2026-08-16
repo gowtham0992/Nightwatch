@@ -1,8 +1,16 @@
-# Nightwatch deployed architecture
+# Nightwatch architecture
 
-Nightwatch separates autonomous repair, deterministic release authority, and public proof. The private mission path can call Gemini and Modal but cannot deploy a model. The public judge path can request an independent verification but cannot read Firestore, invoke a model, start a mission, or alter evidence.
+Nightwatch separates autonomous repair from release authority. AI agents can diagnose a failure, design a repair, and produce a candidate; only deterministic policy code can qualify or refuse that candidate, and neither outcome deploys it.
 
-![Nightwatch deployed architecture](images/nightwatch-architecture.png)
+![Nightwatch product architecture](images/nightwatch-product-architecture.png)
+
+The product flow above is the judge-readable view: one authenticated request advances six bounded stages, records immutable evidence, and ends in one of two explicit non-deployment states.
+
+## Google Cloud enforces the boundary
+
+The deployed topology uses separate identities for private autonomous execution and public verification. The public service cannot read Firestore, invoke Gemini or Modal, or start a mission; it can only show validated redacted evidence and request a fixed proof.
+
+![Nightwatch Google Cloud internals](images/nightwatch-gcp-internals.png)
 
 ## One request advances a complete bounded workflow
 

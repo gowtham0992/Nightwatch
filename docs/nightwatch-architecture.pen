@@ -66,7 +66,8 @@
                   "width": "fill_container",
                   "content": "Gemini and Google ADK investigate and propose. Only policy code can change production.",
                   "fontFamily": "Inter",
-                  "fontSize": 16
+                  "fontSize": 16,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -291,7 +292,8 @@
                       "width": "fill_container",
                       "content": "Detect a failing production model.",
                       "fontFamily": "Inter",
-                      "fontSize": 13
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -357,7 +359,8 @@
                       "width": "fill_container",
                       "content": "Gemini isolates the failing behavior.",
                       "fontFamily": "Inter",
-                      "fontSize": 13
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -423,7 +426,8 @@
                       "width": "fill_container",
                       "content": "Three ADK specialists propose bounded repairs.",
                       "fontFamily": "Inter",
-                      "fontSize": 13
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -489,7 +493,8 @@
                       "width": "fill_container",
                       "content": "Modal fine-tunes a Gemma candidate.",
                       "fontFamily": "Inter",
-                      "fontSize": 13
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -555,7 +560,8 @@
                       "width": "fill_container",
                       "content": "Frozen suites score gains and regressions.",
                       "fontFamily": "Inter",
-                      "fontSize": 13
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -621,7 +627,8 @@
                       "width": "fill_container",
                       "content": "Deterministic policy qualifies or refuses.",
                       "fontFamily": "Inter",
-                      "fontSize": 13
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -736,7 +743,8 @@
                       "fill": "#8FA2AE",
                       "content": "Full evidence",
                       "fontFamily": "Inter",
-                      "fontSize": 12
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -807,7 +815,8 @@
                           "width": "fill_container",
                           "content": "Starts a bounded repair mission.",
                           "fontFamily": "Inter",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -890,7 +899,8 @@
                           "width": "fill_container",
                           "content": "Validates input and queues work.",
                           "fontFamily": "Inter",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -973,7 +983,8 @@
                           "width": "fill_container",
                           "content": "OIDC dispatch; one worker.",
                           "fontFamily": "Inter",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -1056,7 +1067,8 @@
                           "width": "fill_container",
                           "content": "Gemini + ADK orchestration.",
                           "fontFamily": "Inter",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -1139,7 +1151,8 @@
                           "width": "fill_container",
                           "content": "Candidate artifacts and hash chain.",
                           "fontFamily": "Inter",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -1199,7 +1212,8 @@
                       "fill": "#8FA2AE",
                       "content": "Redacted + read-only",
                       "fontFamily": "Inter",
-                      "fontSize": 12
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1270,7 +1284,8 @@
                           "width": "fill_container",
                           "content": "Fixed mission; redacted evidence only.",
                           "fontFamily": "Inter",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -1353,7 +1368,8 @@
                           "width": "fill_container",
                           "content": "Rate-limited verification job.",
                           "fontFamily": "Inter",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -1436,7 +1452,8 @@
                           "width": "fill_container",
                           "content": "Recomputes head and receipt.",
                           "fontFamily": "Inter",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -1519,7 +1536,8 @@
                           "width": "fill_container",
                           "content": "Hash chain and immutable receipt.",
                           "fontFamily": "Inter",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -1652,7 +1670,8 @@
                       "fill": "#9FB1AA",
                       "content": "Gemini proposes · deterministic code decides · every stage appends evidence",
                       "fontFamily": "Inter",
-                      "fontSize": 13
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -1864,6 +1883,2655 @@
               "fontSize": 12,
               "fontWeight": "600",
               "letterSpacing": 0.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Gaums",
+      "x": 1760,
+      "y": 0,
+      "name": "Nightwatch Product Architecture",
+      "clip": true,
+      "width": 1920,
+      "height": 1080,
+      "fill": "#0B1117",
+      "layout": "vertical",
+      "gap": 28,
+      "padding": [
+        58,
+        72
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "Waj8E",
+          "name": "Product Header",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "L5APU",
+              "name": "Product Title Group",
+              "width": 1320,
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "lUoKz",
+                  "name": "Product Eyebrow",
+                  "fill": "#A7F36B",
+                  "content": "NIGHTWATCH / PRODUCT ARCHITECTURE",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 18,
+                  "fontWeight": "600",
+                  "letterSpacing": 1
+                },
+                {
+                  "type": "text",
+                  "id": "oslv9",
+                  "name": "Product Title",
+                  "fill": "#F7F9FA",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "The model proposes an upgrade. It cannot approve one.",
+                  "fontFamily": "Geist",
+                  "fontSize": 44,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "YeSfW",
+                  "name": "Product Subtitle",
+                  "fill": "#93A5B1",
+                  "content": "One unattended mission turns a detected failure into a sealed, deterministic release decision.",
+                  "fontFamily": "Geist",
+                  "fontSize": 24
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "eEgDD",
+              "name": "Taskmaster Badge",
+              "fill": "#111C26",
+              "stroke": "#355063",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 4,
+              "padding": [
+                14,
+                18
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "PF1lA",
+                  "name": "Taskmaster Label",
+                  "fill": "#65B8FF",
+                  "content": "THE TASKMASTER",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 14,
+                  "fontWeight": "700",
+                  "letterSpacing": 0.8
+                },
+                {
+                  "type": "text",
+                  "id": "cHP9q",
+                  "name": "Taskmaster Detail",
+                  "fill": "#8FA2AE",
+                  "content": "AUTONOMOUS · BOUNDED · AUDITABLE",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "cakQi",
+          "name": "Mission Label Row",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "UkwAw",
+              "name": "Mission Label",
+              "fill": "#A7F36B",
+              "content": "ONE AUTONOMOUS REPAIR MISSION",
+              "fontFamily": "Geist Mono",
+              "fontSize": 15,
+              "fontWeight": "700",
+              "letterSpacing": 0.8
+            },
+            {
+              "type": "text",
+              "id": "O49rG",
+              "name": "Mission Trigger",
+              "fill": "#8FA2AE",
+              "content": "TRIGGER  →  ONE AUTHENTICATED REQUEST",
+              "fontFamily": "Geist Mono",
+              "fontSize": 14,
+              "fontWeight": "500"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "nOEic",
+          "name": "Autonomous Mission Pipeline",
+          "width": "fill_container",
+          "height": 300,
+          "gap": 12,
+          "padding": [
+            0,
+            2
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "MSxI3",
+              "name": "01 WATCH",
+              "width": "fill_container",
+              "height": 280,
+              "fill": "#101922",
+              "stroke": "#2A3944",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 18,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Y5AZJ",
+                  "name": "WATCH Header",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "QbeMJ",
+                      "name": "WATCH Number",
+                      "fill": "#A7F36B",
+                      "content": "01",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "b1wOT",
+                      "name": "WATCH Icon Well",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "#16232D",
+                      "stroke": "#A7F36B",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "DkyGy",
+                          "name": "WATCH Icon",
+                          "width": 21,
+                          "height": 21,
+                          "icon": "eye",
+                          "library": "lucide",
+                          "fill": "#A7F36B"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "KK9DD",
+                  "name": "WATCH Title",
+                  "fill": "#F7F9FA",
+                  "content": "WATCH",
+                  "fontFamily": "Geist",
+                  "fontSize": 25,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "A5mbmJ",
+                  "name": "WATCH Agent",
+                  "fill": "#A7F36B",
+                  "content": "Watcher",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "plz3T",
+                  "name": "WATCH Description",
+                  "fill": "#AEBBC4",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Freeze failure + policy",
+                  "lineHeight": 1.25,
+                  "fontFamily": "Geist",
+                  "fontSize": 18
+                }
+              ]
+            },
+            {
+              "type": "icon",
+              "id": "EcWdl",
+              "name": "Mission Flow Arrow 1",
+              "width": 22,
+              "height": 22,
+              "icon": "arrow-right",
+              "library": "lucide",
+              "fill": "#506674"
+            },
+            {
+              "type": "frame",
+              "id": "j4Rsc7",
+              "name": "02 DIAGNOSE",
+              "width": "fill_container",
+              "height": 280,
+              "fill": "#101922",
+              "stroke": "#2A3944",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 18,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "f4JSN3",
+                  "name": "DIAGNOSE Header",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "L3M8Bk",
+                      "name": "DIAGNOSE Number",
+                      "fill": "#65B8FF",
+                      "content": "02",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "JjEDJ",
+                      "name": "DIAGNOSE Icon Well",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "#16232D",
+                      "stroke": "#65B8FF",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "sqDmE",
+                          "name": "DIAGNOSE Icon",
+                          "width": 21,
+                          "height": 21,
+                          "icon": "scan-search",
+                          "library": "lucide",
+                          "fill": "#65B8FF"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "T3gDsv",
+                  "name": "DIAGNOSE Title",
+                  "fill": "#F7F9FA",
+                  "content": "DIAGNOSE",
+                  "fontFamily": "Geist",
+                  "fontSize": 25,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "lVaU4",
+                  "name": "DIAGNOSE Agent",
+                  "fill": "#65B8FF",
+                  "content": "Gemini · ADK",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "EJJtl",
+                  "name": "DIAGNOSE Description",
+                  "fill": "#AEBBC4",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Find repair families",
+                  "lineHeight": 1.25,
+                  "fontFamily": "Geist",
+                  "fontSize": 18
+                }
+              ]
+            },
+            {
+              "type": "icon",
+              "id": "qpqpK",
+              "name": "Mission Flow Arrow 2",
+              "width": 22,
+              "height": 22,
+              "icon": "arrow-right",
+              "library": "lucide",
+              "fill": "#506674"
+            },
+            {
+              "type": "frame",
+              "id": "ODZPQ",
+              "name": "03 DESIGN",
+              "width": "fill_container",
+              "height": 280,
+              "fill": "#101922",
+              "stroke": "#2A3944",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 18,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "WAUQH",
+                  "name": "DESIGN Header",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "j0rHZ",
+                      "name": "DESIGN Number",
+                      "fill": "#65B8FF",
+                      "content": "03",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "zYmkw",
+                      "name": "DESIGN Icon Well",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "#16232D",
+                      "stroke": "#65B8FF",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "ZRmlW",
+                          "name": "DESIGN Icon",
+                          "width": 21,
+                          "height": 21,
+                          "icon": "git-branch",
+                          "library": "lucide",
+                          "fill": "#65B8FF"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "M7XlCG",
+                  "name": "DESIGN Title",
+                  "fill": "#F7F9FA",
+                  "content": "DESIGN",
+                  "fontFamily": "Geist",
+                  "fontSize": 25,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "NrTrI",
+                  "name": "DESIGN Agent",
+                  "fill": "#65B8FF",
+                  "content": "3 ADK specialists",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "h9ugi",
+                  "name": "DESIGN Description",
+                  "fill": "#AEBBC4",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Author bounded curriculum",
+                  "lineHeight": 1.25,
+                  "fontFamily": "Geist",
+                  "fontSize": 18
+                }
+              ]
+            },
+            {
+              "type": "icon",
+              "id": "kn6Is",
+              "name": "Mission Flow Arrow 3",
+              "width": 22,
+              "height": 22,
+              "icon": "arrow-right",
+              "library": "lucide",
+              "fill": "#506674"
+            },
+            {
+              "type": "frame",
+              "id": "GNw2L",
+              "name": "04 TRAIN",
+              "width": "fill_container",
+              "height": 280,
+              "fill": "#101922",
+              "stroke": "#2A3944",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 18,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "KgmKs",
+                  "name": "TRAIN Header",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Agbuf",
+                      "name": "TRAIN Number",
+                      "fill": "#D3A7FF",
+                      "content": "04",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "nY4XL",
+                      "name": "TRAIN Icon Well",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "#16232D",
+                      "stroke": "#D3A7FF",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "k1rTXu",
+                          "name": "TRAIN Icon",
+                          "width": 21,
+                          "height": 21,
+                          "icon": "cpu",
+                          "library": "lucide",
+                          "fill": "#D3A7FF"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "nugep",
+                  "name": "TRAIN Title",
+                  "fill": "#F7F9FA",
+                  "content": "TRAIN",
+                  "fontFamily": "Geist",
+                  "fontSize": 25,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "G1ChZ",
+                  "name": "TRAIN Agent",
+                  "fill": "#D3A7FF",
+                  "content": "Gemma · Modal",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "g9Q1mK",
+                  "name": "TRAIN Description",
+                  "fill": "#AEBBC4",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Create one candidate",
+                  "lineHeight": 1.25,
+                  "fontFamily": "Geist",
+                  "fontSize": 18
+                }
+              ]
+            },
+            {
+              "type": "icon",
+              "id": "C7GSLT",
+              "name": "Mission Flow Arrow 4",
+              "width": 22,
+              "height": 22,
+              "icon": "arrow-right",
+              "library": "lucide",
+              "fill": "#506674"
+            },
+            {
+              "type": "frame",
+              "id": "elkIr",
+              "name": "05 EVALUATE",
+              "width": "fill_container",
+              "height": 280,
+              "fill": "#101922",
+              "stroke": "#2A3944",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 18,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "zpSLV",
+                  "name": "EVALUATE Header",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "P6p9G",
+                      "name": "EVALUATE Number",
+                      "fill": "#F0C66B",
+                      "content": "05",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WGZ7J",
+                      "name": "EVALUATE Icon Well",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "#16232D",
+                      "stroke": "#F0C66B",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "p0HfdP",
+                          "name": "EVALUATE Icon",
+                          "width": 21,
+                          "height": 21,
+                          "icon": "flask-conical",
+                          "library": "lucide",
+                          "fill": "#F0C66B"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "h13Uz",
+                  "name": "EVALUATE Title",
+                  "fill": "#F7F9FA",
+                  "content": "EVALUATE",
+                  "fontFamily": "Geist",
+                  "fontSize": 25,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "Xn60I",
+                  "name": "EVALUATE Agent",
+                  "fill": "#F0C66B",
+                  "content": "Frozen evidence",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "RMW9w",
+                  "name": "EVALUATE Description",
+                  "fill": "#AEBBC4",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Score every invariant",
+                  "lineHeight": 1.25,
+                  "fontFamily": "Geist",
+                  "fontSize": 18
+                }
+              ]
+            },
+            {
+              "type": "icon",
+              "id": "wCoK1",
+              "name": "Mission Flow Arrow 5",
+              "width": 22,
+              "height": 22,
+              "icon": "arrow-right",
+              "library": "lucide",
+              "fill": "#506674"
+            },
+            {
+              "type": "frame",
+              "id": "sGDj8",
+              "name": "06 DECIDE",
+              "width": "fill_container",
+              "height": 280,
+              "fill": "#101922",
+              "stroke": "#2A3944",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 18,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "dQmNy",
+                  "name": "DECIDE Header",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "yAfS2",
+                      "name": "DECIDE Number",
+                      "fill": "#A7F36B",
+                      "content": "06",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "fj3mg",
+                      "name": "DECIDE Icon Well",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "#16232D",
+                      "stroke": "#A7F36B",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "EWmyk",
+                          "name": "DECIDE Icon",
+                          "width": 21,
+                          "height": 21,
+                          "icon": "shield-check",
+                          "library": "lucide",
+                          "fill": "#A7F36B"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "M6Whp",
+                  "name": "DECIDE Title",
+                  "fill": "#F7F9FA",
+                  "content": "DECIDE",
+                  "fontFamily": "Geist",
+                  "fontSize": 25,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "Pfl9w",
+                  "name": "DECIDE Agent",
+                  "fill": "#A7F36B",
+                  "content": "Code-only gate",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "gz9Gh",
+                  "name": "DECIDE Description",
+                  "fill": "#AEBBC4",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Qualify or refuse",
+                  "lineHeight": 1.25,
+                  "fontFamily": "Geist",
+                  "fontSize": 18
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ixoyc",
+          "name": "Authority Boundary",
+          "width": "fill_container",
+          "height": 156,
+          "fill": "#0E171F",
+          "stroke": "#355063",
+          "strokeWidth": 1,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "I5WMJ",
+              "name": "AI Proposal Side",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "padding": [
+                25,
+                28
+              ],
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "K3oMu",
+                  "name": "AI Proposal Label",
+                  "fill": "#65B8FF",
+                  "content": "AI AGENTS",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 14,
+                  "fontWeight": "700",
+                  "letterSpacing": 0.8
+                },
+                {
+                  "type": "text",
+                  "id": "c4xB9",
+                  "name": "AI Proposal Title",
+                  "fill": "#F7F9FA",
+                  "content": "Diagnose + propose",
+                  "fontFamily": "Geist",
+                  "fontSize": 30,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "KMia5",
+                  "name": "AI Proposal Detail",
+                  "fill": "#93A5B1",
+                  "content": "Can create evidence. Cannot change policy.",
+                  "fontFamily": "Geist",
+                  "fontSize": 18
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "cIofG",
+              "name": "Hard Authority Boundary",
+              "width": 300,
+              "height": "fill_container",
+              "fill": "#16232D",
+              "stroke": "#456072",
+              "strokeWidth": {
+                "right": 1,
+                "left": 1
+              },
+              "layout": "vertical",
+              "gap": 8,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "Fajgx",
+                  "name": "Boundary Lock Icon",
+                  "width": 30,
+                  "height": 30,
+                  "icon": "lock-keyhole",
+                  "library": "lucide",
+                  "fill": "#A7F36B"
+                },
+                {
+                  "type": "text",
+                  "id": "aWrKU",
+                  "name": "Boundary Label",
+                  "fill": "#A7F36B",
+                  "content": "IMMUTABLE EVIDENCE",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "xjj0E",
+                  "name": "Boundary Detail",
+                  "fill": "#8FA2AE",
+                  "content": "hashes · metrics · policy",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "o3Su2E",
+              "name": "Code Decision Side",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "padding": [
+                25,
+                28
+              ],
+              "justifyContent": "center",
+              "alignItems": "end",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "gNjFj",
+                  "name": "Code Decision Label",
+                  "fill": "#A7F36B",
+                  "content": "DETERMINISTIC CODE",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 14,
+                  "fontWeight": "700",
+                  "letterSpacing": 0.8
+                },
+                {
+                  "type": "text",
+                  "id": "v5CMqO",
+                  "name": "Code Decision Title",
+                  "fill": "#F7F9FA",
+                  "content": "Decide + seal",
+                  "fontFamily": "Geist",
+                  "fontSize": 30,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "O5exN",
+                  "name": "Code Decision Detail",
+                  "fill": "#93A5B1",
+                  "content": "Can qualify. Never deploys.",
+                  "fontFamily": "Geist",
+                  "fontSize": 18
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "iACw2",
+          "name": "Release Outcomes",
+          "width": "fill_container",
+          "height": 170,
+          "gap": 18,
+          "children": [
+            {
+              "type": "frame",
+              "id": "cskUK",
+              "name": "Refused Outcome",
+              "width": "fill_container",
+              "height": "fill_container",
+              "fill": "#211719",
+              "stroke": "#824249",
+              "strokeWidth": 1,
+              "padding": [
+                22,
+                26
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "VBRY1",
+                  "name": "Refused Text",
+                  "layout": "vertical",
+                  "gap": 5,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "c0h5sH",
+                      "name": "Refused Label",
+                      "fill": "#D98A90",
+                      "content": "FAILED ANY INVARIANT",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "K0fDpG",
+                      "name": "Refused Title",
+                      "fill": "#FF7278",
+                      "content": "REFUSED",
+                      "fontFamily": "Geist",
+                      "fontSize": 38,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "t2vAM5",
+                      "name": "Refused State",
+                      "fill": "#B9A0A3",
+                      "content": "refused_not_deployed",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "WmNJP",
+                  "name": "Refused Icon",
+                  "width": 56,
+                  "height": 56,
+                  "icon": "shield-x",
+                  "library": "lucide",
+                  "fill": "#FF7278"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "vsHL3",
+              "name": "Qualified Outcome",
+              "width": "fill_container",
+              "height": "fill_container",
+              "fill": "#101B18",
+              "stroke": "#3C654E",
+              "strokeWidth": 1,
+              "padding": [
+                22,
+                26
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "YJqCm",
+                  "name": "Qualified Text",
+                  "layout": "vertical",
+                  "gap": 5,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "TMcHv",
+                      "name": "Qualified Label",
+                      "fill": "#8FD7A9",
+                      "content": "PASSED EVERY INVARIANT",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "a8Mhn",
+                      "name": "Qualified Title",
+                      "fill": "#A7F36B",
+                      "content": "QUALIFIED",
+                      "fontFamily": "Geist",
+                      "fontSize": 38,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "q73Yp",
+                      "name": "Qualified State",
+                      "fill": "#A1BBAA",
+                      "content": "qualified_not_deployed",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "c78wwA",
+                  "name": "Qualified Icon",
+                  "width": 56,
+                  "height": 56,
+                  "icon": "badge-check",
+                  "library": "lucide",
+                  "fill": "#A7F36B"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "g60F3o",
+          "name": "Product Footer",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "EDWBm",
+              "name": "Product Principle",
+              "fill": "#F0C66B",
+              "content": "THE SAFETY PROPERTY IS THE PRODUCT",
+              "fontFamily": "Geist Mono",
+              "fontSize": 14,
+              "fontWeight": "700",
+              "letterSpacing": 0.8
+            },
+            {
+              "type": "text",
+              "id": "UZsTD",
+              "name": "Production Result",
+              "fill": "#A7F36B",
+              "content": "PRODUCTION POINTER  →  UNCHANGED",
+              "fontFamily": "Geist Mono",
+              "fontSize": 14,
+              "fontWeight": "700"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "oLz0f",
+      "x": 3840,
+      "y": 0,
+      "name": "Nightwatch Google Cloud Internals",
+      "clip": true,
+      "width": 1920,
+      "height": 1080,
+      "fill": "#0B1117",
+      "layout": "vertical",
+      "gap": 24,
+      "padding": [
+        52,
+        64
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "x8KPjz",
+          "name": "Cloud Diagram Header",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Lwu3L",
+              "name": "Cloud Title Group",
+              "width": 1250,
+              "layout": "vertical",
+              "gap": 7,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "qQact",
+                  "name": "Cloud Eyebrow",
+                  "fill": "#65B8FF",
+                  "content": "NIGHTWATCH / GOOGLE CLOUD INTERNALS",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 18,
+                  "fontWeight": "600",
+                  "letterSpacing": 1
+                },
+                {
+                  "type": "text",
+                  "id": "WE9GC",
+                  "name": "Cloud Title",
+                  "fill": "#F7F9FA",
+                  "content": "Two paths. Separate identities. No public authority.",
+                  "fontFamily": "Geist",
+                  "fontSize": 46,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "egRKA",
+                  "name": "Cloud Subtitle",
+                  "fill": "#93A5B1",
+                  "content": "Private autonomous execution and public verification meet only at immutable evidence.",
+                  "fontFamily": "Geist",
+                  "fontSize": 24
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "jMQBN",
+              "name": "Live Cloud Badge",
+              "fill": "#111C26",
+              "stroke": "#355063",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 4,
+              "padding": [
+                14,
+                18
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "L0ti5w",
+                  "name": "Live Cloud Label",
+                  "fill": "#A7F36B",
+                  "content": "LIVE ON GOOGLE CLOUD",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "Qruel",
+                  "name": "Live Cloud Detail",
+                  "fill": "#8FA2AE",
+                  "content": "SCALE TO ZERO · CAPPED",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Ba1DG",
+          "name": "Google Cloud Project Boundary",
+          "width": "fill_container",
+          "height": 730,
+          "fill": "#0E171F",
+          "stroke": "#355063",
+          "strokeWidth": 1,
+          "layout": "vertical",
+          "gap": 14,
+          "padding": [
+            18,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "bxk2V",
+              "name": "Google Cloud Boundary Header",
+              "width": "fill_container",
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "H9j8i",
+                  "name": "Google Cloud Boundary Title",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "RCHJB",
+                      "name": "Google Cloud Icon",
+                      "width": 24,
+                      "height": 24,
+                      "icon": "cloud",
+                      "library": "lucide",
+                      "fill": "#65B8FF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "UDiLg",
+                      "name": "Google Cloud Boundary Label",
+                      "fill": "#65B8FF",
+                      "content": "GOOGLE CLOUD PROJECT",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 15,
+                      "fontWeight": "700",
+                      "letterSpacing": 0.8
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "GIgG4",
+                  "name": "Google Cloud Boundary Rule",
+                  "fill": "#8FA2AE",
+                  "content": "IAM + OIDC ARE THE SECURITY BOUNDARIES",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "W8vXAU",
+              "name": "Private Autonomous Execution Lane",
+              "width": "fill_container",
+              "height": 190,
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "XQFTP",
+                  "name": "Private Lane Label",
+                  "width": 178,
+                  "height": "fill_container",
+                  "fill": "#101B18",
+                  "stroke": "#3C654E",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 7,
+                  "padding": [
+                    18,
+                    16
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "l3Zpit",
+                      "name": "Private Label",
+                      "fill": "#A7F36B",
+                      "content": "PRIVATE",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "mxjIZ",
+                      "name": "Private Title",
+                      "fill": "#F7F9FA",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Autonomous execution",
+                      "fontFamily": "Geist",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "rM18w",
+                      "name": "Private Access",
+                      "fill": "#8FD7A9",
+                      "content": "AUTHENTICATED",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 11,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "hEhYY",
+                  "name": "Private Operator",
+                  "width": 190,
+                  "height": 150,
+                  "fill": "#111A22",
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 7,
+                  "padding": [
+                    15,
+                    16
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "WzKbk",
+                      "name": "Private Operator Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "qSmyH",
+                          "name": "Private Operator Icon",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "monitor-cog",
+                          "library": "lucide",
+                          "fill": "#A7F36B"
+                        },
+                        {
+                          "type": "text",
+                          "id": "kLUAm",
+                          "name": "Private Operator Number",
+                          "fill": "#607481",
+                          "content": "01",
+                          "fontFamily": "Geist Mono",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "yEiqt",
+                      "name": "Private Operator Title",
+                      "fill": "#F7F9FA",
+                      "content": "Operator",
+                      "fontFamily": "Geist",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "cG3zN",
+                      "name": "Private Operator Service",
+                      "fill": "#A7F36B",
+                      "content": "Private UI",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "UpI7q",
+                      "name": "Private Operator Detail",
+                      "fill": "#93A5B1",
+                      "content": "Empty request only",
+                      "fontFamily": "Geist",
+                      "fontSize": 15
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "C7W9WC",
+                  "name": "Private Flow Arrow 1",
+                  "width": 22,
+                  "height": 22,
+                  "icon": "arrow-right",
+                  "library": "lucide",
+                  "fill": "#506674"
+                },
+                {
+                  "type": "frame",
+                  "id": "HMBku",
+                  "name": "Private Control",
+                  "width": 230,
+                  "height": 150,
+                  "fill": "#111A22",
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 7,
+                  "padding": [
+                    15,
+                    16
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "qbvVl",
+                      "name": "Private Control Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "lWe5i",
+                          "name": "Private Control Icon",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "sliders-horizontal",
+                          "library": "lucide",
+                          "fill": "#65B8FF"
+                        },
+                        {
+                          "type": "text",
+                          "id": "dq750",
+                          "name": "Private Control Number",
+                          "fill": "#607481",
+                          "content": "02",
+                          "fontFamily": "Geist Mono",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "BOHJ0",
+                      "name": "Private Control Title",
+                      "fill": "#F7F9FA",
+                      "content": "Control",
+                      "fontFamily": "Geist",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "SnX75",
+                      "name": "Private Control Service",
+                      "fill": "#65B8FF",
+                      "content": "Cloud Run",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "FFgL5",
+                      "name": "Private Control Detail",
+                      "fill": "#93A5B1",
+                      "content": "Derives fixed cycle",
+                      "fontFamily": "Geist",
+                      "fontSize": 15
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "htS2l",
+                  "name": "Private Flow Arrow 2",
+                  "width": 22,
+                  "height": 22,
+                  "icon": "arrow-right",
+                  "library": "lucide",
+                  "fill": "#506674"
+                },
+                {
+                  "type": "frame",
+                  "id": "eqxxv",
+                  "name": "Private Mission queue",
+                  "width": 230,
+                  "height": 150,
+                  "fill": "#111A22",
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 7,
+                  "padding": [
+                    15,
+                    16
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "e5RIM7",
+                      "name": "Private Mission queue Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "XGv4H",
+                          "name": "Private Mission queue Icon",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "list-checks",
+                          "library": "lucide",
+                          "fill": "#F0C66B"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Hnol2",
+                          "name": "Private Mission queue Number",
+                          "fill": "#607481",
+                          "content": "03",
+                          "fontFamily": "Geist Mono",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "w0a7WU",
+                      "name": "Private Mission queue Title",
+                      "fill": "#F7F9FA",
+                      "content": "Mission queue",
+                      "fontFamily": "Geist",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "V0op1E",
+                      "name": "Private Mission queue Service",
+                      "fill": "#F0C66B",
+                      "content": "Cloud Tasks",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "k1fF8N",
+                      "name": "Private Mission queue Detail",
+                      "fill": "#93A5B1",
+                      "content": "One durable stage",
+                      "fontFamily": "Geist",
+                      "fontSize": 15
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "N1pXr",
+                  "name": "Private Flow Arrow 3",
+                  "width": 22,
+                  "height": 22,
+                  "icon": "arrow-right",
+                  "library": "lucide",
+                  "fill": "#506674"
+                },
+                {
+                  "type": "frame",
+                  "id": "q4yc3",
+                  "name": "Private Mission worker",
+                  "width": 270,
+                  "height": 150,
+                  "fill": "#111A22",
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 7,
+                  "padding": [
+                    15,
+                    16
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "NalT4",
+                      "name": "Private Mission worker Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "D8IWw",
+                          "name": "Private Mission worker Icon",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "workflow",
+                          "library": "lucide",
+                          "fill": "#65B8FF"
+                        },
+                        {
+                          "type": "text",
+                          "id": "v7qpO",
+                          "name": "Private Mission worker Number",
+                          "fill": "#607481",
+                          "content": "04",
+                          "fontFamily": "Geist Mono",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "Hq64Q",
+                      "name": "Private Mission worker Title",
+                      "fill": "#F7F9FA",
+                      "content": "Mission worker",
+                      "fontFamily": "Geist",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ERGLd",
+                      "name": "Private Mission worker Service",
+                      "fill": "#65B8FF",
+                      "content": "Cloud Run · OIDC",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "NUnwK",
+                      "name": "Private Mission worker Detail",
+                      "fill": "#93A5B1",
+                      "content": "6 idempotent stages",
+                      "fontFamily": "Geist",
+                      "fontSize": 15
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "oSjsu",
+                  "name": "Private Flow Arrow 4",
+                  "width": 22,
+                  "height": 22,
+                  "icon": "arrow-right",
+                  "library": "lucide",
+                  "fill": "#506674"
+                },
+                {
+                  "type": "frame",
+                  "id": "hIj1s",
+                  "name": "Model Services",
+                  "width": "fill_container",
+                  "height": 170,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "v3vso",
+                      "name": "Vertex AI and ADK",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "#10202B",
+                      "stroke": "#376787",
+                      "strokeWidth": 1,
+                      "gap": 12,
+                      "padding": [
+                        12,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "z8tmhg",
+                          "name": "Vertex AI Icon",
+                          "width": 25,
+                          "height": 25,
+                          "icon": "brain-circuit",
+                          "library": "lucide",
+                          "fill": "#65B8FF"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "evsv1",
+                          "name": "Vertex AI Text",
+                          "layout": "vertical",
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "vzwur",
+                              "name": "Vertex AI Title",
+                              "fill": "#F7F9FA",
+                              "content": "Vertex AI",
+                              "fontFamily": "Geist",
+                              "fontSize": 18,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "kqxOa",
+                              "name": "Vertex AI Detail",
+                              "fill": "#65B8FF",
+                              "content": "Gemini 3.6 Flash · Google ADK",
+                              "fontFamily": "Geist Mono",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "pVSNL",
+                      "name": "Modal Training External",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "#191625",
+                      "stroke": "#69518B",
+                      "strokeWidth": 1,
+                      "gap": 12,
+                      "padding": [
+                        12,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "RIB1Z",
+                          "name": "Modal Training Icon",
+                          "width": 25,
+                          "height": 25,
+                          "icon": "cpu",
+                          "library": "lucide",
+                          "fill": "#D3A7FF"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "G18ZI",
+                          "name": "Modal Training Text",
+                          "layout": "vertical",
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "LIffe",
+                              "name": "Modal Training Title",
+                              "fill": "#F7F9FA",
+                              "content": "Modal",
+                              "fontFamily": "Geist",
+                              "fontSize": 18,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "S89FoY",
+                              "name": "Modal Training Detail",
+                              "fill": "#D3A7FF",
+                              "content": "External · Gemma LoRA · one claim",
+                              "fontFamily": "Geist Mono",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "L6jJR7",
+              "name": "Execution Verification Divider",
+              "fill": "#2A414F",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "thvDl",
+              "name": "Public Verification Lane",
+              "width": "fill_container",
+              "height": 190,
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "tOuIf",
+                  "name": "Public Lane Label",
+                  "width": 178,
+                  "height": "fill_container",
+                  "fill": "#171C22",
+                  "stroke": "#3B4B57",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 7,
+                  "padding": [
+                    18,
+                    16
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "fwBaU",
+                      "name": "Public Label",
+                      "fill": "#F0C66B",
+                      "content": "PUBLIC",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "vKlyD",
+                      "name": "Public Title",
+                      "fill": "#F7F9FA",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Independent proof",
+                      "fontFamily": "Geist",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "gTt20",
+                      "name": "Public Access",
+                      "fill": "#D9B770",
+                      "content": "NO OPERATOR API",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 11,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "lPYhI",
+                  "name": "Public Judge",
+                  "width": 190,
+                  "height": 150,
+                  "fill": "#111A22",
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 7,
+                  "padding": [
+                    15,
+                    16
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "yvOar",
+                      "name": "Public Judge Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "hwtja",
+                          "name": "Public Judge Icon",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "user-check",
+                          "library": "lucide",
+                          "fill": "#F0C66B"
+                        },
+                        {
+                          "type": "text",
+                          "id": "A6q90B",
+                          "name": "Public Judge Number",
+                          "fill": "#607481",
+                          "content": "01",
+                          "fontFamily": "Geist Mono",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "jdFCm",
+                      "name": "Public Judge Title",
+                      "fill": "#F7F9FA",
+                      "content": "Judge",
+                      "fontFamily": "Geist",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "f1MQ0f",
+                      "name": "Public Judge Service",
+                      "fill": "#F0C66B",
+                      "content": "Browser",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "LyVj5",
+                      "name": "Public Judge Detail",
+                      "fill": "#93A5B1",
+                      "content": "Inspect redacted chain",
+                      "fontFamily": "Geist",
+                      "fontSize": 15
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "r7AJF",
+                  "name": "Public Flow Arrow 1",
+                  "width": 22,
+                  "height": 22,
+                  "icon": "arrow-right",
+                  "library": "lucide",
+                  "fill": "#506674"
+                },
+                {
+                  "type": "frame",
+                  "id": "lO8JE",
+                  "name": "Public Judge UI",
+                  "width": 230,
+                  "height": 150,
+                  "fill": "#111A22",
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 7,
+                  "padding": [
+                    15,
+                    16
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "rxirC",
+                      "name": "Public Judge UI Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "h0QpVh",
+                          "name": "Public Judge UI Icon",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "layout-dashboard",
+                          "library": "lucide",
+                          "fill": "#65B8FF"
+                        },
+                        {
+                          "type": "text",
+                          "id": "l5LDiw",
+                          "name": "Public Judge UI Number",
+                          "fill": "#607481",
+                          "content": "02",
+                          "fontFamily": "Geist Mono",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "i6ITxb",
+                      "name": "Public Judge UI Title",
+                      "fill": "#F7F9FA",
+                      "content": "Judge UI",
+                      "fontFamily": "Geist",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "M3415M",
+                      "name": "Public Judge UI Service",
+                      "fill": "#65B8FF",
+                      "content": "Public Cloud Run",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "udiVO",
+                      "name": "Public Judge UI Detail",
+                      "fill": "#93A5B1",
+                      "content": "Bundled evidence only",
+                      "fontFamily": "Geist",
+                      "fontSize": 15
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "z4zwG",
+                  "name": "Public Flow Arrow 2",
+                  "width": 22,
+                  "height": 22,
+                  "icon": "arrow-right",
+                  "library": "lucide",
+                  "fill": "#506674"
+                },
+                {
+                  "type": "frame",
+                  "id": "cUj6t",
+                  "name": "Public Proof queue",
+                  "width": 230,
+                  "height": 150,
+                  "fill": "#111A22",
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 7,
+                  "padding": [
+                    15,
+                    16
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "dyL5D",
+                      "name": "Public Proof queue Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "q7p848",
+                          "name": "Public Proof queue Icon",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "list-restart",
+                          "library": "lucide",
+                          "fill": "#F0C66B"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Okf1J",
+                          "name": "Public Proof queue Number",
+                          "fill": "#607481",
+                          "content": "03",
+                          "fontFamily": "Geist Mono",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "lZXCI",
+                      "name": "Public Proof queue Title",
+                      "fill": "#F7F9FA",
+                      "content": "Proof queue",
+                      "fontFamily": "Geist",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "sXrQ9",
+                      "name": "Public Proof queue Service",
+                      "fill": "#F0C66B",
+                      "content": "Cloud Tasks",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "CLCWM",
+                      "name": "Public Proof queue Detail",
+                      "fill": "#93A5B1",
+                      "content": "Fixed mission + head",
+                      "fontFamily": "Geist",
+                      "fontSize": 15
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "MEqnb",
+                  "name": "Public Flow Arrow 3",
+                  "width": 22,
+                  "height": 22,
+                  "icon": "arrow-right",
+                  "library": "lucide",
+                  "fill": "#506674"
+                },
+                {
+                  "type": "frame",
+                  "id": "b4cwD",
+                  "name": "Public Verifier",
+                  "width": 270,
+                  "height": 150,
+                  "fill": "#111A22",
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 7,
+                  "padding": [
+                    15,
+                    16
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "S6493O",
+                      "name": "Public Verifier Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "mbqeE",
+                          "name": "Public Verifier Icon",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "shield-check",
+                          "library": "lucide",
+                          "fill": "#65B8FF"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Djeh5",
+                          "name": "Public Verifier Number",
+                          "fill": "#607481",
+                          "content": "04",
+                          "fontFamily": "Geist Mono",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "Do4LF",
+                      "name": "Public Verifier Title",
+                      "fill": "#F7F9FA",
+                      "content": "Verifier",
+                      "fontFamily": "Geist",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "mZhxW",
+                      "name": "Public Verifier Service",
+                      "fill": "#65B8FF",
+                      "content": "Cloud Run · OIDC",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "jkp9G",
+                      "name": "Public Verifier Detail",
+                      "fill": "#93A5B1",
+                      "content": "Re-read exact chain",
+                      "fontFamily": "Geist",
+                      "fontSize": 15
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "VozKY",
+                  "name": "Public Flow Arrow 4",
+                  "width": 22,
+                  "height": 22,
+                  "icon": "arrow-right",
+                  "library": "lucide",
+                  "fill": "#506674"
+                },
+                {
+                  "type": "frame",
+                  "id": "TRAGc",
+                  "name": "Isolated Receipt",
+                  "width": "fill_container",
+                  "height": 150,
+                  "fill": "#101B18",
+                  "stroke": "#3C654E",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 7,
+                  "padding": [
+                    15,
+                    16
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "WiHUG",
+                      "name": "Isolated Receipt Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "EnsZK",
+                          "name": "Receipt Icon",
+                          "width": 23,
+                          "height": 23,
+                          "icon": "stamp",
+                          "library": "lucide",
+                          "fill": "#A7F36B"
+                        },
+                        {
+                          "type": "text",
+                          "id": "CqmG2",
+                          "name": "Receipt Seal",
+                          "fill": "#A7F36B",
+                          "content": "CREATE-ONLY",
+                          "fontFamily": "Geist Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "HVvZS",
+                      "name": "Receipt Title",
+                      "fill": "#F7F9FA",
+                      "content": "Proof receipt",
+                      "fontFamily": "Geist",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Jt75J",
+                      "name": "Receipt Service",
+                      "fill": "#A7F36B",
+                      "content": "Cloud Storage",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "tF3ms",
+                      "name": "Receipt Detail",
+                      "fill": "#93A5B1",
+                      "content": "Public reads isolated bucket",
+                      "fontFamily": "Geist",
+                      "fontSize": 15
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "M9Jqgq",
+              "name": "Immutable Evidence Rail",
+              "width": "fill_container",
+              "height": 112,
+              "fill": "#0B141B",
+              "stroke": "#2A414F",
+              "strokeWidth": 1,
+              "gap": 12,
+              "padding": [
+                14,
+                18
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "SpIgu",
+                  "name": "Evidence Rail Label",
+                  "width": 250,
+                  "layout": "vertical",
+                  "gap": 5,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "I27Lh",
+                      "name": "Evidence Rail Eyebrow",
+                      "fill": "#A7F36B",
+                      "content": "SHARED TRUTH",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 12,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Vjxs2",
+                      "name": "Evidence Rail Title",
+                      "fill": "#F7F9FA",
+                      "content": "Immutable evidence",
+                      "fontFamily": "Geist",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "AlbWf",
+                  "name": "Firestore",
+                  "width": "fill_container",
+                  "height": 82,
+                  "fill": "#111A22",
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "Ablax",
+                      "name": "Firestore Icon",
+                      "width": 24,
+                      "height": 24,
+                      "icon": "database",
+                      "library": "lucide",
+                      "fill": "#65B8FF"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "eWkRh",
+                      "name": "Firestore Text",
+                      "layout": "vertical",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "FmKQi",
+                          "name": "Firestore Title",
+                          "fill": "#F7F9FA",
+                          "content": "Firestore",
+                          "fontFamily": "Geist",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "hPJ24",
+                          "name": "Firestore Detail",
+                          "fill": "#93A5B1",
+                          "content": "Transactional hash chain",
+                          "fontFamily": "Geist Mono",
+                          "fontSize": 11,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "JGSxq",
+                  "name": "Artifact bucket",
+                  "width": "fill_container",
+                  "height": 82,
+                  "fill": "#111A22",
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "ZIs8W",
+                      "name": "Artifact bucket Icon",
+                      "width": 24,
+                      "height": 24,
+                      "icon": "archive",
+                      "library": "lucide",
+                      "fill": "#A7F36B"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "cQ7vn",
+                      "name": "Artifact bucket Text",
+                      "layout": "vertical",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "twuV7",
+                          "name": "Artifact bucket Title",
+                          "fill": "#F7F9FA",
+                          "content": "Artifact bucket",
+                          "fontFamily": "Geist",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "fcGTB",
+                          "name": "Artifact bucket Detail",
+                          "fill": "#93A5B1",
+                          "content": "Create-only stage outputs",
+                          "fontFamily": "Geist Mono",
+                          "fontSize": 11,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "y8qJi",
+                  "name": "Policy + manifests",
+                  "width": "fill_container",
+                  "height": 82,
+                  "fill": "#111A22",
+                  "stroke": "#2A3944",
+                  "strokeWidth": 1,
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "Qf1G3",
+                      "name": "Policy + manifests Icon",
+                      "width": 24,
+                      "height": 24,
+                      "icon": "file-lock",
+                      "library": "lucide",
+                      "fill": "#F0C66B"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "gpRyT",
+                      "name": "Policy + manifests Text",
+                      "layout": "vertical",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "GjdSz",
+                          "name": "Policy + manifests Title",
+                          "fill": "#F7F9FA",
+                          "content": "Policy + manifests",
+                          "fontFamily": "Geist",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "e3bUSs",
+                          "name": "Policy + manifests Detail",
+                          "fill": "#93A5B1",
+                          "content": "Pinned inputs and limits",
+                          "fontFamily": "Geist Mono",
+                          "fontSize": 11,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "yXSNd",
+          "name": "Cloud Security Guarantees",
+          "width": "fill_container",
+          "height": 74,
+          "fill": "#111A22",
+          "stroke": "#2A3944",
+          "strokeWidth": 1,
+          "gap": 18,
+          "padding": [
+            16,
+            20
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "x0US4",
+              "name": "Separate service accounts",
+              "width": "fill_container",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "o2iB6x",
+                  "name": "Separate service accounts Icon",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "key-round",
+                  "library": "lucide",
+                  "fill": "#A7F36B"
+                },
+                {
+                  "type": "text",
+                  "id": "bQmwa",
+                  "name": "Separate service accounts Text",
+                  "fill": "#B6C2C9",
+                  "content": "Separate service accounts",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "pwIuf",
+              "name": "Public has no Firestore / Vertex / Modal",
+              "width": "fill_container",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "V5mYAo",
+                  "name": "Public has no Firestore / Vertex / Modal Icon",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "shield-off",
+                  "library": "lucide",
+                  "fill": "#A7F36B"
+                },
+                {
+                  "type": "text",
+                  "id": "h9ZyOh",
+                  "name": "Public has no Firestore / Vertex / Modal Text",
+                  "fill": "#B6C2C9",
+                  "content": "Public has no Firestore / Vertex / Modal",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "LJhfp",
+              "name": "Deterministic retries",
+              "width": "fill_container",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "f71Cgg",
+                  "name": "Deterministic retries Icon",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "rotate-ccw",
+                  "library": "lucide",
+                  "fill": "#A7F36B"
+                },
+                {
+                  "type": "text",
+                  "id": "REljZ",
+                  "name": "Deterministic retries Text",
+                  "fill": "#B6C2C9",
+                  "content": "Deterministic retries",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n1TamN",
+              "name": "Min 0 · max 1 workers",
+              "width": "fill_container",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "x3fWGu",
+                  "name": "Min 0 · max 1 workers Icon",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "gauge",
+                  "library": "lucide",
+                  "fill": "#A7F36B"
+                },
+                {
+                  "type": "text",
+                  "id": "TZTVr",
+                  "name": "Min 0 · max 1 workers Text",
+                  "fill": "#B6C2C9",
+                  "content": "Min 0 · max 1 workers",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
             }
           ]
         }
