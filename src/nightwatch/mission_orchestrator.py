@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 from typing import Any, Protocol
 
 from nightwatch.contracts import Stage
@@ -25,6 +26,8 @@ class MissionManifest:
     maximum_training_attempts: int
     maximum_gpu_minutes: int
     workflow: str = "incident_triage"
+    dataset_id: str | None = None
+    dataset_sha256: str | None = None
 
 
 SAFETY_270M_V1 = MissionManifest(
@@ -83,6 +86,8 @@ APPROVED_MANIFESTS = {
     SCAM_SAFETY_LIVE_1B_V1.manifest_id: SCAM_SAFETY_LIVE_1B_V1,
 }
 
+_DYNAMIC_MANIFEST = re.compile(r"^contract-[a-f0-9]{24}$")
+
 
 class MissionJournal(Protocol):
     def read_cycle(self, cycle_id: str) -> list[JournalEntry]: ...
@@ -129,6 +134,14 @@ def resolve_manifest(manifest_id: str) -> MissionManifest:
         return APPROVED_MANIFESTS[manifest_id]
     except (KeyError, TypeError) as exc:
         raise JournalError("mission manifest is not approved") from exc
+
+
+def validate_manifest_id(manifest_id: str) -> None:
+    if manifest_id in APPROVED_MANIFESTS:
+        return
+    if isinstance(manifest_id, str) and _DYNAMIC_MANIFEST.fullmatch(manifest_id):
+        return
+    raise JournalError("mission manifest identity is invalid")
 
 
 def _created_payload(manifest: MissionManifest) -> dict[str, Any]:
@@ -209,6 +222,7 @@ def advance_mission(
     journal: MissionJournal,
     executor: MissionStageExecutor,
     expected_stage: Stage | None = None,
+    manifest: MissionManifest | None = None,
 ) -> MissionAdvance:
     """Advance one durable stage; designed to be called by one Cloud Task.
 
@@ -217,7 +231,11 @@ def advance_mission(
     """
 
     validate_cycle_id(cycle_id)
-    manifest = resolve_manifest(manifest_id)
+    if manifest is None:
+        manifest = resolve_manifest(manifest_id)
+    elif manifest.manifest_id != manifest_id:
+        raise JournalError("resolved mission manifest has the wrong identity")
+    validate_manifest_id(manifest.manifest_id)
     entries = journal.read_cycle(cycle_id)
     if entries:
         recorded_manifest = entries[0].payload.get("manifest_id")
@@ -250,7 +268,7 @@ def advance_mission(
             f"mission task expected {expected_stage.value!r} but next stage is {stage.value!r}"
         )
 
-    if stage is Stage.CREATED:
+    if stage is Stage.CREATED and manifest.workflow != "generic_text_classification":
         payload = _created_payload(manifest)
     else:
         payload = executor.execute(cycle_id, stage, manifest, tuple(entries))

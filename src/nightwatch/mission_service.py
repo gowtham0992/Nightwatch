@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import threading
-from typing import Any, Protocol
+from typing import Any, Callable, Protocol
 
 from flask import Flask, Response, jsonify, request
 from google.api_core.exceptions import GoogleAPICallError, RetryError
@@ -128,7 +128,9 @@ def create_control_app(*, task_queue: MissionQueue | None = None) -> Flask:
     return app
 
 
-def _configured_worker() -> tuple[MissionJournal, MissionStageExecutor, MissionQueue]:
+def _configured_worker() -> tuple[MissionJournal, MissionStageExecutor, MissionQueue, Callable[[str], Any]]:
+    from nightwatch.generic_mission_stages import GenericTextClassificationStageExecutor
+    from nightwatch.generic_runtime import GCSRuntimeCallStore, GenericModalRuntime
     from nightwatch.modal_scam_training_stage import ModalScamTrainingCampaign
     from nightwatch.modal_training_stage import GCSModalCallStore, ModalClassifierTrainingStage
     from nightwatch.safety_mission_stages import SafetyQualificationStageExecutor
@@ -139,6 +141,7 @@ def _configured_worker() -> tuple[MissionJournal, MissionStageExecutor, MissionQ
         retained_verified_diagnosis,
     )
     from nightwatch.stage_artifacts import GCSStageArtifactStore
+    from nightwatch.operator_contracts import GCSOperatorStore, mission_manifest_from_contract, require_contract
 
     project = os.environ.get("GOOGLE_CLOUD_PROJECT")
     bucket_name = os.environ.get("NIGHTWATCH_MISSION_ARTIFACTS_BUCKET")
@@ -147,6 +150,7 @@ def _configured_worker() -> tuple[MissionJournal, MissionStageExecutor, MissionQ
     journal = FirestoreJournal.from_default(project=project)
     artifacts = GCSStageArtifactStore.from_default(project=project, bucket_name=bucket_name)
     call_store = GCSModalCallStore.from_default(project=project, bucket_name=bucket_name)
+    operator_store = GCSOperatorStore.from_default(project=project, bucket_name=bucket_name)
     training = ModalClassifierTrainingStage(artifacts, call_store)
     scam_training = ModalScamTrainingCampaign(call_store)
     executor = ManifestStageExecutor(
@@ -164,12 +168,24 @@ def _configured_worker() -> tuple[MissionJournal, MissionStageExecutor, MissionQ
                 artifacts,
                 training_campaign=scam_training,
             ),
+            "generic_text_classification": GenericTextClassificationStageExecutor(
+                artifacts,
+                operator_store,
+                GenericModalRuntime(
+                    GCSRuntimeCallStore.from_default(project=project, bucket_name=bucket_name)
+                ),
+            ),
         }
     )
+    def resolve_worker_manifest(manifest_id: str):
+        if manifest_id.startswith("contract-"):
+            return mission_manifest_from_contract(require_contract(operator_store, manifest_id))
+        return resolve_manifest(manifest_id)
     return (
         journal,
         executor,
         _configured_queue(),
+        resolve_worker_manifest,
     )
 
 
@@ -178,17 +194,18 @@ def create_worker_app(
     journal: MissionJournal | None = None,
     executor: MissionStageExecutor | None = None,
     task_queue: MissionQueue | None = None,
+    manifest_resolver: Callable[[str], Any] | None = None,
 ) -> Flask:
     app = Flask(__name__)
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024
     dependencies = (
-        (journal, executor, task_queue)
+        (journal, executor, task_queue, manifest_resolver or resolve_manifest)
         if journal is not None and executor is not None and task_queue is not None
         else None
     )
     dependency_lock = threading.Lock()
 
-    def get_dependencies() -> tuple[MissionJournal, MissionStageExecutor, MissionQueue]:
+    def get_dependencies() -> tuple[MissionJournal, MissionStageExecutor, MissionQueue, Callable[[str], Any]]:
         nonlocal dependencies
         if dependencies is None:
             with dependency_lock:
@@ -223,13 +240,15 @@ def create_worker_app(
             return _error("invalid_task", "The task envelope is invalid.", 400)
 
         try:
-            active_journal, active_executor, queue = get_dependencies()
+            active_journal, active_executor, queue, resolve_worker_manifest = get_dependencies()
+            manifest = resolve_worker_manifest(body["manifest_id"])
             result = advance_mission(
                 body["cycle_id"],
                 body["manifest_id"],
                 journal=active_journal,
                 executor=active_executor,
                 expected_stage=expected_stage,
+                manifest=manifest,
             )
             entries = active_journal.read_cycle(body["cycle_id"])
             following_stage = next_stage(entries)

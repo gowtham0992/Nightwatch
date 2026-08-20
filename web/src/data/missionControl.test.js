@@ -1,11 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import {
   buildAgentGraph,
   launchMission,
+  missionAtEntry,
   missionMetrics,
   missionFromJournal,
+  SELF_SERVICE_MISSION_ID,
 } from './missionControl.js';
 
 const hash = (character) => character.repeat(64);
@@ -63,7 +66,7 @@ test('journal projection exposes real parallel authors and pending downstream wo
   assert.equal(graph.find((node) => node.id === 'gate').status, 'waiting');
 });
 
-test('launch sends no user-selectable training parameters', async () => {
+test('launch sends only the frozen contract identity', async () => {
   const calls = [];
   const fetchImpl = async (...args) => {
     calls.push(args);
@@ -73,10 +76,10 @@ test('launch sends no user-selectable training parameters', async () => {
     };
   };
 
-  await launchMission('nightwatch-demo-20260814', { fetchImpl });
+  await launchMission('contract-1234567890abcdef12345678', 'nightwatch-demo-20260814', { fetchImpl });
 
   assert.equal(calls[0][0], '/api/operator/missions');
-  assert.equal(calls[0][1].body, '{}');
+  assert.equal(calls[0][1].body, '{"contract_id":"contract-1234567890abcdef12345678"}');
   assert.equal(calls[0][1].headers['Idempotency-Key'], 'nightwatch-demo-20260814');
 });
 
@@ -125,12 +128,54 @@ test('live refusal metrics explain why a perfect target and safety result stayed
   assert.deepEqual(metrics, {
     target: { before: 23 / 36, after: 1 },
     safety: { before: 23 / 24, after: 1 },
+    regression: { before: 28 / 32, after: 26 / 32 },
     routineRecall: { before: 0.875, after: 0.75 },
     criticalMisses: 0,
     failedInvariant: 'routine_recall_regressed',
+    failedInvariants: [],
   });
   assert.equal(gate.status, 'complete');
   assert.equal(gate.decision, 'refused');
   assert.deepEqual(gate.evidence.payload.decision.reasons, ['regression routine recall declined by 0.125; allowed drop is 0.000']);
   assert.equal(gate.evidence.payload.critical_miss_count, 0);
+});
+
+test('self-service public case exposes the real contract-to-gate mission', () => {
+  const path = new URL('../../../artifacts/public-mission-live-fe8a4e9d756508004f9214de.json', import.meta.url);
+  const mission = missionFromJournal(JSON.parse(readFileSync(path, 'utf8')));
+  const metrics = missionMetrics(mission);
+  const graph = buildAgentGraph(mission);
+
+  assert.equal(mission.id, SELF_SERVICE_MISSION_ID);
+  assert.equal(mission.manifestId, 'contract-39056bbfd17e7fea529aa7db');
+  assert.equal(mission.trigger.observed_error_count, 14);
+  assert.deepEqual(metrics.failedInvariants, [
+    'minimum_target_gain',
+    'maximum_regression_drop',
+    'minimum_safety_accuracy',
+    'require_zero_critical_misses',
+  ]);
+  assert.deepEqual(metrics.regression, { before: 25 / 32, after: 21 / 32 });
+  assert.equal(metrics.criticalMisses, 7);
+  assert.equal(graph.filter((node) => node.lane === 'parallel').length, 3);
+  assert.equal(graph.at(-1).decision, 'refused');
+});
+
+test('verified mission replay reveals the real journal without changing its evidence', () => {
+  const path = new URL('../../../artifacts/public-mission-live-fe8a4e9d756508004f9214de.json', import.meta.url);
+  const mission = missionFromJournal(JSON.parse(readFileSync(path, 'utf8')));
+  const first = missionAtEntry(mission, 1);
+  const evaluated = missionAtEntry(mission, 5);
+  const terminal = missionAtEntry(mission, 6);
+
+  assert.equal(first.entries.length, 1);
+  assert.equal(first.entries[0].stage, 'created');
+  assert.equal(first.outcome, 'running');
+  assert.equal(first.terminal, false);
+  assert.equal(first.headHash, mission.entries[0].entry_hash);
+  assert.equal(evaluated.entries.at(-1).stage, 'evaluated');
+  assert.equal(evaluated.outcome, 'running');
+  assert.equal(terminal.outcome, 'refused');
+  assert.equal(terminal.terminal, true);
+  assert.equal(terminal.headHash, mission.headHash);
 });

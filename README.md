@@ -15,6 +15,8 @@
 
 Nightwatch is an autonomous repair line for specialized AI models. One authenticated request starts a bounded mission that detects a failure, diagnoses it with Gemini, asks Google ADK specialists to design a repair, trains a pinned Gemma candidate, evaluates frozen evidence, and records a deterministic release decision. The model can propose an upgrade; it cannot approve one.
 
+> **Build status:** the public case study and authenticated self-service product are deployed and verified on Google Cloud. A real model + dataset mission completed all six stages on August 20, 2026 and correctly ended `refused_not_deployed`; its strictly redacted projection is now the third public case file, while the judge service remains isolated from operator authority.
+
 **Hackathon:** [All Things Agentic Hackathon](https://allthingsagentichackathon.devpost.com/)<br>
 **Track:** The Taskmaster<br>
 **Core stack:** Gemini 3.6 Flash · Google ADK · Cloud Run · Cloud Tasks · Firestore · Cloud Storage · Vertex AI · Gemma 3 · Modal
@@ -33,9 +35,11 @@ The default public case is a real unattended Google Cloud mission: `nightwatch-l
 
 The candidate looked excellent if judged only by its headline scores. Nightwatch caught the hidden regression and kept the release boundary locked. A second real case in the UI shows the opposite branch: a candidate that passed every fixed invariant was **qualified, not deployed**. Qualification never mutates a production model pointer.
 
+The authenticated product has also completed its first real self-service run: `nightwatch-live-fe8a4e9d756508004f9214de`. Nightwatch evaluated the selected Gemma adapter on a content-addressed 92-row dataset, discovered 14 errors, diagnosed the failure with Gemini, accepted 32 rows from three parallel ADK specialists after deterministic validation, trained exactly one Modal candidate, and refused it. Target accuracy fell from 83.3% to 72.2%, regression accuracy fell from 78.1% to 65.6%, safety accuracy fell from 95.8% to 45.8%, and seven critical cases were missed. Its terminal hash is `a738d0dafde538062d63dfbe6b5fd1540a261b303af5a74155397fa9e6d4bd0b`; production remained untouched. The same run is available in the public UI as **Self-service run**, using an allowlisted projection that removes raw examples, model revision, dataset identity, Modal call IDs, and every control credential.
+
 The refusal baseline is historical evidence from an earlier live worker input on the expanded 92-case suite; its coverage record contains 24 mismatched case identities. The candidate has complete coverage, and the gate refused it for the independently measured routine-recall regression—not for baseline coverage. A later full-coverage reproduction scored the same retained baseline at 30/36 target cases before qualifying a separate cycle-bound candidate. These baselines are different evidence versions and are not presented as interchangeable measurements. The exact provenance is documented in [the scam-safety evidence archive](artifacts/scam-safety/README.md).
 
-Open the [live judge experience](https://nightwatch-public-w3a6oefsma-uc.a.run.app/), replay the six-stage mission, inspect every handoff, and request a fresh proof. The proof request crosses an isolated Cloud Tasks queue; a private verifier re-reads the Firestore chain and seals an immutable Cloud Storage receipt.
+Open the [live judge experience](https://nightwatch-public-w3a6oefsma-uc.a.run.app/) and choose **Guided demo**. Review the prefilled, redacted mission contract, replay its six real handoffs to the deterministic refusal, then compare it with the qualified case. The public walkthrough starts no compute and exposes no operator authority.
 
 ## This is a Taskmaster, not a chatbot
 
@@ -45,7 +49,7 @@ Nightwatch owns that workflow from trigger to decision:
 
 | Stage | Accountable worker | Real action | Durable evidence |
 |---|---|---|---|
-| 1. Watch | Watcher | Freezes the approved manifest, model revision, budget, and gate | Firestore `created` entry |
+| 1. Watch | Watcher | Evaluates the selected baseline on the uploaded evidence and proves a repairable failure exists | Immutable baseline predictions and Firestore `created` entry |
 | 2. Diagnose | Gemini/ADK diagnostician | Sees bounded failure evidence and isolates repair families | Create-only diagnosis artifact |
 | 3. Design | Three ADK curriculum specialists | Author parallel, targeted repair examples | Validated curriculum and leakage report |
 | 4. Train | Trainer | Launches one pinned Gemma LoRA training call on Modal | Call claim, adapter, predictions, training report |
@@ -66,7 +70,7 @@ The Google Cloud view shows how separate services, queues, identities, and evide
 
 There are two deliberately separate paths:
 
-1. **Private autonomous execution.** An IAM-protected Cloud Run control service enqueues a fixed mission. A private, OIDC-only Cloud Run worker advances six idempotent stages through Cloud Tasks. Gemini 3.6 Flash runs through Vertex AI and Google ADK; Modal performs the bounded Gemma training step. Firestore and Cloud Storage retain the evidence.
+1. **Private autonomous execution.** An IAM-protected Cloud Run interface accepts a bounded Gemma checkpoint, a CSV/JSONL evaluation dataset, explicit field mappings, release thresholds, and compute limits. It canonicalizes the dataset, freezes a content-addressed contract, and enqueues only that contract ID. A private, OIDC-only worker advances six idempotent stages through Cloud Tasks. Gemini 3.6 Flash runs through Vertex AI and Google ADK; Modal performs baseline evaluation and the single bounded Gemma training attempt. Firestore and Cloud Storage retain the evidence.
 2. **Public, independently verifiable proof.** The judge UI runs on a different public Cloud Run identity. It serves a checked-in redacted projection and has no Firestore, Gemini, Modal, or mission-launch permission. A separate fixed-purpose verifier can re-read the exact private chain and create—but never overwrite—an isolated receipt.
 
 Every interaction has a failure policy. Stage task IDs are deterministic, Firestore appends are transactional, external effects are cycle-and-stage keyed, artifacts are create-only, queue attempts are bounded, and malformed evidence fails closed.
@@ -121,10 +125,10 @@ The public and private services do not share authority simply because they share
 | Boundary | Enforcement |
 |---|---|
 | Public judge surface | Separate identity; redacted bundled evidence; no Firestore, Vertex AI, Modal, or mission-start access |
-| Private operator | Google Cloud IAM authentication; fixed manifest; server-derived cycle ID; allowlisted queue only |
+| Private operator | Google Cloud IAM authentication; content-addressed contract; server-derived cycle ID; allowlisted queue only |
 | Workers | OIDC-only Cloud Run invocation; one-purpose service accounts; least-privilege IAM |
 | Evidence | SHA-256 hash chain in Firestore; create-only Cloud Storage artifacts and receipts |
-| Inputs | Strict schemas, 16 KiB request limits, safe identifiers, no user-controlled model or storage URIs |
+| Inputs | CSV/JSONL only; 2 MB, 10,000-row, 32-column, and cell-size caps; pinned model revisions and registered adapters; no URLs, code, shell, storage URI, or runtime selection |
 | Browser | CSP, frame denial, no-referrer, no-sniff, and no-store API responses |
 | Secrets | Environment or managed secret injection only; `.env*`, credentials, adapters, and generated artifacts are ignored |
 | Spend | Gemini Flash, scale-to-zero Cloud Run services, maximum instance caps, one concurrent mission stage, bounded retries, one training attempt, and a 20-GPU-minute manifest ceiling |
@@ -190,8 +194,9 @@ A live mission has external effects and can spend Gemini and Modal credits. Do n
 3. Install the live dependencies with `uv sync --extra agent --extra experiment --extra service --extra dev`.
 4. Create the separate runtime and OIDC invoker service accounts described in [cloud/DEPLOYMENT.md](cloud/DEPLOYMENT.md).
 5. Build with [cloud/service-build.yaml](cloud/service-build.yaml) and [cloud/mission-build.yaml](cloud/mission-build.yaml), deploy immutable image digests, then enable only the private operator route.
+   Set `NIGHTWATCH_MODAL_CONNECTED=1` on the private UI only after the worker identity has working server-side Modal credentials; never copy those credentials into the browser-facing service.
 6. Keep Cloud Run minimum instances at zero, preserve the documented maximum-instance and queue caps, and set a billing alert before launching a mission.
-7. Start one fixed mission from the authenticated operator UI and record the Cloud Run URL, Cloud Tasks progression, terminal Firestore head, and verification receipt.
+7. From the authenticated UI, select a registered Gemma baseline, upload a real CSV/JSONL evaluation dataset, map its fields, freeze the contract, and run one mission. Record the Cloud Run URL, baseline scan, Cloud Tasks progression, Modal calls, terminal Firestore head, and verification receipt.
 
 The exact deployed topology, resource names, release digests, IAM boundaries, verification request, and rollback procedure live in the [deployment runbook](cloud/DEPLOYMENT.md). The public service must never receive the private service’s environment variables or IAM roles.
 
@@ -229,7 +234,7 @@ tests/                Python behavior, security, persistence, and orchestration 
 
 ## Deliberate limits
 
-Nightwatch currently operates one allowlisted scam-safety manifest. It does not accept arbitrary uploads, models, datasets, hyperparameters, or deployment targets; it does not schedule open-ended self-improvement; and it never updates a production adapter pointer. Those are safety boundaries, not missing demo controls.
+Nightwatch accepts evaluation data, not arbitrary programs. The self-service path is limited to registered Gemma/PEFT classifier adapters, pinned model revisions, CSV or JSONL datasets, explicit target/regression/safety suites, an approved hyperparameter grid, one training attempt, and a 20-GPU-minute ceiling. It does not accept URLs, arbitrary model IDs, user code, storage locations, runtime choices, open-ended optimization loops, or deployment targets, and it never updates a production adapter pointer. Those are product safety boundaries, not missing demo controls.
 
 The system proves autonomous repair and qualification—not universal model safety. A future production version would add tenant isolation, an independently authorized deployment service, shadow rollout, monitored rollback, and a human-owned policy-version process.
 

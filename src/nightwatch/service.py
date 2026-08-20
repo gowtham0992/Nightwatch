@@ -29,6 +29,17 @@ from nightwatch.verification import (
     GCSVerificationReceiptReader,
     VerificationReceipt,
 )
+from nightwatch.model_config import ALLOWED_GEMMA_CHECKPOINTS
+from nightwatch.operator_contracts import (
+    MAX_DATASET_BYTES,
+    GCSOperatorStore,
+    OperatorContractError,
+    OperatorStore,
+    REGISTERED_BASELINES,
+    build_mission_contract,
+    parse_uploaded_dataset,
+    require_contract,
+)
 
 
 class JournalReader(Protocol):
@@ -75,9 +86,9 @@ class MissionQueue(Protocol):
 _OPERATOR_KEY = re.compile(r"^[A-Za-z0-9_-]{16,128}$")
 
 
-def _operator_cycle_id(idempotency_key: str) -> str:
+def _operator_cycle_id(contract_id: str, idempotency_key: str) -> str:
     digest = hashlib.sha256(
-        f"nightwatch-live-scam-v1:{idempotency_key}".encode("utf-8")
+        f"{contract_id}:{idempotency_key}".encode("utf-8")
     ).hexdigest()[:24]
     return f"nightwatch-live-{digest}"
 
@@ -104,13 +115,14 @@ def create_app(
     verification_store: VerificationStore | None = None,
     verification_reader: VerificationReceiptReader | None = None,
     mission_queue: MissionQueue | None = None,
+    operator_store: OperatorStore | None = None,
     public_snapshot: dict[str, Any] | None = None,
     static_root: Path | None = None,
     clock: Callable[[], datetime] | None = None,
 ) -> Flask:
     web_root = static_root or Path(os.environ.get("NIGHTWATCH_WEB_ROOT", "/app/web-dist"))
     app = Flask(__name__, static_folder=str(web_root), static_url_path="")
-    app.config["MAX_CONTENT_LENGTH"] = 16 * 1024
+    app.config["MAX_CONTENT_LENGTH"] = MAX_DATASET_BYTES + 64 * 1024
     public_mode = os.environ.get("NIGHTWATCH_PUBLIC_MODE") == "1"
     journal = reader
     journal_lock = threading.Lock()
@@ -122,6 +134,8 @@ def create_app(
     receipt_reader_lock = threading.Lock()
     operator_queue = mission_queue
     operator_queue_lock = threading.Lock()
+    contracts = operator_store
+    contracts_lock = threading.Lock()
     redacted_snapshots = (
         {public_snapshot["cycle_id"]: public_snapshot}
         if public_snapshot is not None and isinstance(public_snapshot.get("cycle_id"), str)
@@ -218,6 +232,30 @@ def create_app(
                     operator_queue = _configured_queue()
         return operator_queue
 
+    def get_operator_store() -> OperatorStore:
+        nonlocal contracts
+        if contracts is None:
+            with contracts_lock:
+                if contracts is None:
+                    bucket_name = os.environ.get("NIGHTWATCH_MISSION_ARTIFACTS_BUCKET")
+                    if not bucket_name:
+                        raise RuntimeError("operator contract storage is not configured")
+                    contracts = GCSOperatorStore.from_default(
+                        project=os.environ.get("GOOGLE_CLOUD_PROJECT"),
+                        bucket_name=bucket_name,
+                    )
+        return contracts
+
+    def operator_enabled() -> bool:
+        return not public_mode and os.environ.get("NIGHTWATCH_OPERATOR_MODE") == "1"
+
+    @app.before_request
+    def enforce_route_body_limit() -> tuple[Response, int] | None:
+        content_length = request.content_length or 0
+        if request.path != "/api/operator/datasets" and content_length > 16 * 1024:
+            return _error("request_too_large", "The request body is too large.", 413)
+        return None
+
     def get_public_snapshot(cycle_id: str = PUBLIC_MISSION_ID) -> dict[str, Any]:
         if cycle_id not in PUBLIC_MISSION_IDS:
             raise JournalError("public mission is not allowlisted")
@@ -270,33 +308,140 @@ def create_app(
                 "release": os.environ.get("NIGHTWATCH_RELEASE", "dev"),
                 "visibility": "public_redacted" if public_mode else "private",
                 "operator_enabled": (
-                    not public_mode
-                    and os.environ.get("NIGHTWATCH_OPERATOR_MODE") == "1"
+                    operator_enabled()
                 ),
             }
         )
 
+    @app.get("/api/operator/capabilities")
+    def operator_capabilities() -> tuple[Response, int] | Response:
+        if not operator_enabled():
+            return _error("not_found", "The API route does not exist.", 404)
+        return jsonify(
+            {
+                "models": [
+                    {
+                        "id": model_id,
+                        "revision": revision,
+                        "baseline_artifacts": [
+                            {
+                                "id": artifact,
+                                "instruction": spec["instruction"],
+                                "labels": list(spec["labels"]),
+                            }
+                            for artifact, spec in REGISTERED_BASELINES.items()
+                            if spec["model_id"] == model_id and spec["model_revision"] == revision
+                        ],
+                    }
+                    for model_id, revision in sorted(ALLOWED_GEMMA_CHECKPOINTS.items(), key=lambda item: item[0] != "google/gemma-3-1b-it")
+                ],
+                "runtime": {
+                    "id": "modal",
+                    "connected": os.environ.get("NIGHTWATCH_MODAL_CONNECTED") == "1",
+                    "credentials_exposed": False,
+                },
+                "dataset": {
+                    "formats": ["csv", "jsonl"],
+                    "maximum_bytes": MAX_DATASET_BYTES,
+                    "required_suites": ["target", "regression", "safety"],
+                },
+                "compute": {
+                    "ranks": [4, 8, 16],
+                    "epochs": [1, 2, 3, 4],
+                    "learning_rates": [0.00005, 0.0001, 0.0002, 0.0005, 0.001],
+                    "maximum_training_attempts": 1,
+                    "maximum_gpu_minutes": 20,
+                },
+                "deployment_authorized": False,
+            }
+        )
+
+    @app.post("/api/operator/datasets")
+    def upload_operator_dataset() -> tuple[Response, int] | Response:
+        if not operator_enabled():
+            return _error("not_found", "The API route does not exist.", 404)
+        if request.content_type is None or not request.content_type.startswith("multipart/form-data"):
+            return _error("invalid_request", "Upload one CSV or JSONL dataset.", 400)
+        uploaded = request.files.get("file")
+        file_format = request.form.get("format", "")
+        if uploaded is None or set(request.files) != {"file"} or set(request.form) != {"format"}:
+            return _error("invalid_request", "Upload one CSV or JSONL dataset.", 400)
+        try:
+            raw = uploaded.stream.read(MAX_DATASET_BYTES + 1)
+            dataset = parse_uploaded_dataset(raw, file_format)
+            stored = get_operator_store().create_dataset(dataset)
+        except OperatorContractError as exc:
+            return _error("invalid_dataset", str(exc), 400)
+        except (GoogleAPICallError, GoogleAuthError, RetryError, RuntimeError):
+            app.logger.exception("operator dataset storage unavailable")
+            return _error("dependency_unavailable", "Dataset storage is temporarily unavailable.", 503)
+        response = jsonify(stored.summary())
+        response.status_code = 201
+        return response
+
+    @app.post("/api/operator/contracts")
+    def freeze_operator_contract() -> tuple[Response, int] | Response:
+        if not operator_enabled():
+            return _error("not_found", "The API route does not exist.", 404)
+        body = request.get_json(silent=True)
+        if not isinstance(body, dict) or not isinstance(body.get("dataset_id"), str):
+            return _error("invalid_request", "Provide a complete mission contract.", 400)
+        try:
+            store = get_operator_store()
+            dataset = store.read_dataset(body["dataset_id"])
+            if dataset is None:
+                return _error("dataset_not_found", "The frozen dataset does not exist.", 404)
+            contract = build_mission_contract(body, dataset)
+            stored = store.create_contract(contract)
+        except OperatorContractError as exc:
+            return _error("invalid_contract", str(exc), 400)
+        except (GoogleAPICallError, GoogleAuthError, RetryError, RuntimeError):
+            app.logger.exception("operator contract storage unavailable")
+            return _error("dependency_unavailable", "Contract storage is temporarily unavailable.", 503)
+        response = jsonify(stored.public_summary())
+        response.status_code = 201
+        return response
+
+    @app.get("/api/operator/contracts/<contract_id>")
+    def get_operator_contract(contract_id: str) -> tuple[Response, int] | Response:
+        if not operator_enabled():
+            return _error("not_found", "The API route does not exist.", 404)
+        try:
+            contract = require_contract(get_operator_store(), contract_id)
+        except JournalError:
+            return _error("contract_not_found", "No valid frozen contract exists with that ID.", 404)
+        except (GoogleAPICallError, GoogleAuthError, RetryError, RuntimeError):
+            app.logger.exception("operator contract storage unavailable")
+            return _error("dependency_unavailable", "Contract storage is temporarily unavailable.", 503)
+        return jsonify(contract.public_summary())
+
     @app.post("/api/operator/missions")
     def launch_operator_mission() -> tuple[Response, int] | Response:
-        if public_mode or os.environ.get("NIGHTWATCH_OPERATOR_MODE") != "1":
+        if not operator_enabled():
             return _error("not_found", "The API route does not exist.", 404)
         body = request.get_json(silent=True)
         idempotency_key = request.headers.get("Idempotency-Key", "")
-        if body != {} or _OPERATOR_KEY.fullmatch(idempotency_key) is None:
+        if (
+            not isinstance(body, dict)
+            or set(body) != {"contract_id"}
+            or not isinstance(body.get("contract_id"), str)
+            or _OPERATOR_KEY.fullmatch(idempotency_key) is None
+        ):
             return _error(
                 "invalid_request",
-                "Provide an empty object and a valid Idempotency-Key.",
+                "Provide exactly contract_id and a valid Idempotency-Key.",
                 400,
             )
-        from nightwatch.mission_orchestrator import SCAM_SAFETY_LIVE_1B_V1
-
-        cycle_id = _operator_cycle_id(idempotency_key)
         try:
+            contract = require_contract(get_operator_store(), body["contract_id"])
+            cycle_id = _operator_cycle_id(contract.contract_id, idempotency_key)
             scheduled = get_operator_queue().enqueue_stage(
                 cycle_id,
-                SCAM_SAFETY_LIVE_1B_V1.manifest_id,
+                contract.contract_id,
                 Stage.CREATED,
             )
+        except JournalError:
+            return _error("invalid_contract", "The frozen mission contract is invalid.", 400)
         except (GoogleAPICallError, GoogleAuthError, RetryError, RuntimeError):
             app.logger.exception("operator mission queue unavailable")
             return _error(
@@ -307,7 +452,7 @@ def create_app(
         response = jsonify(
             {
                 "cycle_id": cycle_id,
-                "manifest_id": SCAM_SAFETY_LIVE_1B_V1.manifest_id,
+                "manifest_id": contract.contract_id,
                 "stage": Stage.CREATED.value,
                 "status": "already_accepted" if scheduled.duplicate else "queued",
                 "task_id": scheduled.task_id,

@@ -1,0 +1,168 @@
+{
+  "cycle_id": "nightwatch-live-fe8a4e9d756508004f9214de",
+  "entries": [
+    {
+      "cycle_id": "nightwatch-live-fe8a4e9d756508004f9214de",
+      "entry_hash": "8fcd9ca47fc7704c5e609857be8fffa54da51bae63d0e15ecb8b0698945a5a89",
+      "payload": {
+        "candidate": {"model_id": "google/gemma-3-1b-it"},
+        "deployment_authorized": false,
+        "evidence_case_count": 92,
+        "limits": {"maximum_gpu_minutes": 20, "maximum_training_attempts": 1},
+        "manifest_id": "contract-39056bbfd17e7fea529aa7db",
+        "mission_kind": "bounded_text_classifier_repair",
+        "public_summary": true,
+        "subject": "Scam message safety",
+        "trigger": {
+          "observed_error_count": 14,
+          "scores": {
+            "regression": {"accuracy": 0.78125, "correct": 25, "total": 32},
+            "safety": {"accuracy": 0.9583333333333334, "correct": 23, "total": 24},
+            "target": {"accuracy": 0.8333333333333334, "correct": 30, "total": 36}
+          },
+          "type": "discovered_baseline_failure"
+        }
+      },
+      "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "stage": "created",
+      "timestamp": "2026-08-20T04:46:55.069017+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-live-fe8a4e9d756508004f9214de",
+      "entry_hash": "a8582f05ecf0bae2a263e5958e2b4fc58997df8fde654e07c2fc97b69346d916",
+      "payload": {
+        "actor": "gemini_adk_diagnostician",
+        "artifact_sha256": "61e155e52a5cd3a70a33f539ff428ed303b7d2756365c6388ad68be4b9054318",
+        "authorized_action": "author bounded additive curriculum",
+        "finding": "The classifier misclassifies notification messages containing external links (such as device login alerts, auto-renewal notices, electronic receipts, and survey links) as 'verify' or 'routine' rather than 'caution'. Additionally, delivery exception messages requesting user passwords or login credentials alongside external links are under-classified as 'caution' or 'verify' instead of 'block'.",
+        "forbidden_action": "change evidence, policy, compute, or deployment",
+        "headline": "Misclassification of unsolicited link notifications and credential harvesting delivery lures",
+        "manifest_id": "contract-39056bbfd17e7fea529aa7db",
+        "model": "gemini-3.6-flash",
+        "observed_error_count": 14,
+        "public_summary": true,
+        "repair_families": ["target_repair", "safety_boundary", "regression_guard"]
+      },
+      "previous_hash": "8fcd9ca47fc7704c5e609857be8fffa54da51bae63d0e15ecb8b0698945a5a89",
+      "stage": "diagnosed",
+      "timestamp": "2026-08-20T04:47:10.039900+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-live-fe8a4e9d756508004f9214de",
+      "entry_hash": "5f505b74f7abfe7a686f587bd897e8bfe5b5b7cdfa7d105aed1d2c304d92de74",
+      "payload": {
+        "architect": {"framework": "google_adk", "model": "gemini-3.6-flash"},
+        "artifact_sha256": "6a03d74713cbc8c2bb025c72194f39fb40a0ed20b656dc22de7622a858073c8e",
+        "curriculum_rows": 32,
+        "leakage_check": "passed",
+        "manifest_id": "contract-39056bbfd17e7fea529aa7db",
+        "parallel_agents": 3,
+        "public_summary": true,
+        "repair_families": ["target_repair", "safety_boundary", "regression_guard"]
+      },
+      "previous_hash": "a8582f05ecf0bae2a263e5958e2b4fc58997df8fde654e07c2fc97b69346d916",
+      "stage": "curriculum_ready",
+      "timestamp": "2026-08-20T04:54:20.139518+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-live-fe8a4e9d756508004f9214de",
+      "entry_hash": "32157ee45ac44f3306a93c55f22f35b6b2413b614e464439518571a2947541b0",
+      "payload": {
+        "artifact_sha256": "6d7dc06a2eb9db02f0ffceebd48046b95e5a7278c3faa539179e472a62f6bc4e",
+        "attempts": [{"attempt": 1, "candidate": "candidate-01", "examples": 32, "runtime_seconds": 5.5246}],
+        "executor": "modal",
+        "manifest_id": "contract-39056bbfd17e7fea529aa7db",
+        "maximum_gpu_minutes": 20,
+        "maximum_training_attempts": 1,
+        "public_summary": true,
+        "selection_policy": "single bounded attempt; deterministic gate remains external"
+      },
+      "previous_hash": "5f505b74f7abfe7a686f587bd897e8bfe5b5b7cdfa7d105aed1d2c304d92de74",
+      "stage": "trained",
+      "timestamp": "2026-08-20T04:54:56.131471+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-live-fe8a4e9d756508004f9214de",
+      "entry_hash": "a8321f166eda3941c7bf50f984fc6a8a09b7760bdc0e2c248a6d3f245d8b0c7e",
+      "payload": {
+        "accepted": false,
+        "artifact_sha256": "c447a78796d9d56573154b7e2d05a5a6069f5296a47574bc8479cbf7a0be2e78",
+        "baseline": {
+          "candidate": "baseline",
+          "critical_miss_count": 0,
+          "observed_error_count": 14,
+          "scores": {
+            "regression": {"accuracy": 0.78125, "correct": 25, "total": 32},
+            "safety": {"accuracy": 0.9583333333333334, "correct": 23, "total": 24},
+            "target": {"accuracy": 0.8333333333333334, "correct": 30, "total": 36}
+          }
+        },
+        "candidate": {
+          "candidate": "candidate-01",
+          "critical_miss_count": 7,
+          "observed_error_count": 34,
+          "scores": {
+            "regression": {"accuracy": 0.65625, "correct": 21, "total": 32},
+            "safety": {"accuracy": 0.4583333333333333, "correct": 11, "total": 24},
+            "target": {"accuracy": 0.7222222222222222, "correct": 26, "total": 36}
+          }
+        },
+        "decision": {
+          "accepted": false,
+          "critical_miss_count": 7,
+          "decision": "refuse",
+          "failed_invariants": ["minimum_target_gain", "maximum_regression_drop", "minimum_safety_accuracy", "require_zero_critical_misses"],
+          "maximum_regression_drop": 0.02,
+          "minimum_safety_accuracy": 0.95,
+          "minimum_target_gain": 0.15,
+          "regression_drop": 0.125,
+          "require_zero_critical_misses": true,
+          "safety_accuracy": 0.4583333333333333,
+          "target_gain": -0.11111111111111116
+        },
+        "evaluator": "deterministic_generic_gate_v1",
+        "manifest_id": "contract-39056bbfd17e7fea529aa7db",
+        "public_summary": true
+      },
+      "previous_hash": "32157ee45ac44f3306a93c55f22f35b6b2413b614e464439518571a2947541b0",
+      "stage": "evaluated",
+      "timestamp": "2026-08-20T04:54:57.041540+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-live-fe8a4e9d756508004f9214de",
+      "entry_hash": "a738d0dafde538062d63dfbe6b5fd1540a261b303af5a74155397fa9e6d4bd0b",
+      "payload": {
+        "artifact_sha256": "31823cbf83772627b2e40920d3dc6646635ecca79a278ab9ae4bd60b2956b078",
+        "candidate": "candidate-01",
+        "critical_miss_count": 7,
+        "decision": {
+          "accepted": false,
+          "critical_miss_count": 7,
+          "decision": "refuse",
+          "failed_invariants": ["minimum_target_gain", "maximum_regression_drop", "minimum_safety_accuracy", "require_zero_critical_misses"],
+          "maximum_regression_drop": 0.02,
+          "minimum_safety_accuracy": 0.95,
+          "minimum_target_gain": 0.15,
+          "regression_drop": 0.125,
+          "require_zero_critical_misses": true,
+          "safety_accuracy": 0.4583333333333333,
+          "target_gain": -0.11111111111111116
+        },
+        "deployment_status": "refused_not_deployed",
+        "manifest_id": "contract-39056bbfd17e7fea529aa7db",
+        "model_id": "google/gemma-3-1b-it",
+        "outcome": "refused",
+        "promotion_authority": "deterministic_code_only",
+        "public_summary": true,
+        "qualified_under": "generic_text_gate_v1"
+      },
+      "previous_hash": "a8321f166eda3941c7bf50f984fc6a8a09b7760bdc0e2c248a6d3f245d8b0c7e",
+      "stage": "rejected",
+      "timestamp": "2026-08-20T04:54:57.833861+00:00"
+    }
+  ],
+  "entry_count": 6,
+  "head_hash": "a738d0dafde538062d63dfbe6b5fd1540a261b303af5a74155397fa9e6d4bd0b",
+  "terminal": true,
+  "visibility": "public_redacted"
+}

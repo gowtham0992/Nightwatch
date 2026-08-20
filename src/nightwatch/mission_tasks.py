@@ -10,7 +10,7 @@ from google.protobuf import duration_pb2
 
 from nightwatch.contracts import Stage
 from nightwatch.firestore_journal import validate_cycle_id
-from nightwatch.mission_orchestrator import resolve_manifest
+from nightwatch.mission_orchestrator import validate_manifest_id
 
 MISSION_TASK_DEADLINE_SECONDS = 30 * 60
 
@@ -24,7 +24,7 @@ class ScheduledMissionStage:
 
 def mission_task_id(cycle_id: str, manifest_id: str, expected_stage: Stage) -> str:
     validate_cycle_id(cycle_id)
-    resolve_manifest(manifest_id)
+    validate_manifest_id(manifest_id)
     material = f"{cycle_id}\n{manifest_id}\n{expected_stage.value}".encode()
     return f"mission-{hashlib.sha256(material).hexdigest()[:40]}"
 

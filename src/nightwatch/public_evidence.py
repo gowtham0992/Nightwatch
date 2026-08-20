@@ -14,8 +14,14 @@ from nightwatch.journal import ALLOWED_TRANSITIONS, GENESIS_HASH, JournalEntry, 
 PUBLIC_MISSION_ID = "nightwatch-v2-qualification"
 LIVE_PUBLIC_MISSION_ID = "nightwatch-cloud-20260811-001"
 JUDGE_LIVE_MISSION_ID = "nightwatch-live-89e73407c43d525c4bc19272"
+SELF_SERVICE_PUBLIC_MISSION_ID = "nightwatch-live-fe8a4e9d756508004f9214de"
 PUBLIC_MISSION_IDS = frozenset(
-    {PUBLIC_MISSION_ID, LIVE_PUBLIC_MISSION_ID, JUDGE_LIVE_MISSION_ID}
+    {
+        PUBLIC_MISSION_ID,
+        LIVE_PUBLIC_MISSION_ID,
+        JUDGE_LIVE_MISSION_ID,
+        SELF_SERVICE_PUBLIC_MISSION_ID,
+    }
 )
 PUBLIC_IDEMPOTENCY_KEY = "public:nightwatch-v2-proof:isolated-v1"
 PUBLIC_VERIFICATION_GRACE_MINUTES = 5
@@ -94,8 +100,10 @@ _ALLOWED_KEYS = {
     "macro_f1",
     "manifest_id",
     "maximum_gpu_minutes",
+    "maximum_regression_drop",
     "maximum_training_attempts",
     "minimum_safety_block_recall",
+    "minimum_safety_accuracy",
     "minimum_target_gain",
     "maximum_similarity",
     "mission_kind",
@@ -114,6 +122,7 @@ _ALLOWED_KEYS = {
     "regression_drop",
     "regression_label_recall",
     "repair_families",
+    "require_zero_critical_misses",
     "reason_count",
     "reasons",
     "required_safety_accuracy",
@@ -133,6 +142,7 @@ _ALLOWED_KEYS = {
     "token_jaccard",
     "total",
     "total_examples",
+    "parallel_agents",
     "training_runtime_seconds",
     "runtime_seconds",
     "trigger",
@@ -373,7 +383,156 @@ def _public_scam_payload(entry: JournalEntry) -> dict[str, Any]:
     raise JournalError(f"unsupported public scam stage: {entry.stage.value}")
 
 
+def _public_generic_report(value: object, *, candidate: str) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise JournalError("public generic evaluation is malformed")
+    scores = _required(value, "scores")
+    if not isinstance(scores, dict):
+        raise JournalError("public generic scores are malformed")
+    return {
+        "candidate": candidate,
+        "scores": {
+            suite: _public_score(_required(scores, suite))
+            for suite in ("target", "safety", "regression")
+        },
+        "observed_error_count": _required(value, "error_count"),
+        "critical_miss_count": _required(value, "critical_miss_count"),
+    }
+
+
+def _public_generic_decision(value: object) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise JournalError("public generic decision is malformed")
+    observed = _required(value, "observed")
+    policy = _required(value, "policy")
+    if not isinstance(observed, dict) or not isinstance(policy, dict):
+        raise JournalError("public generic gate evidence is malformed")
+    failed = _required(value, "failed_invariants")
+    if not isinstance(failed, list) or not all(isinstance(item, str) for item in failed):
+        raise JournalError("public generic failed invariants are malformed")
+    return {
+        "decision": _required(value, "decision"),
+        "accepted": _required(value, "accepted"),
+        "failed_invariants": failed,
+        "target_gain": _required(observed, "target_gain"),
+        "regression_drop": _required(observed, "regression_drop"),
+        "safety_accuracy": _required(observed, "safety_accuracy"),
+        "critical_miss_count": _required(observed, "critical_miss_count"),
+        "minimum_target_gain": _required(policy, "minimum_target_gain"),
+        "maximum_regression_drop": _required(policy, "maximum_regression_drop"),
+        "minimum_safety_accuracy": _required(policy, "minimum_safety_accuracy"),
+        "require_zero_critical_misses": _required(policy, "require_zero_critical_misses"),
+    }
+
+
+def _public_generic_payload(entry: JournalEntry) -> dict[str, Any]:
+    payload = entry.payload
+    common = {"public_summary": True, "manifest_id": _required(payload, "manifest_id")}
+    if entry.stage is Stage.CREATED:
+        trigger = _required(payload, "trigger")
+        candidate = _required(payload, "candidate")
+        limits = _required(payload, "limits")
+        if not all(isinstance(item, dict) for item in (trigger, candidate, limits)):
+            raise JournalError("public generic creation evidence is malformed")
+        scores = _required(trigger, "scores")
+        if not isinstance(scores, dict):
+            raise JournalError("public generic baseline scores are malformed")
+        return {
+            **common,
+            "mission_kind": _required(payload, "mission_kind"),
+            "subject": _required(payload, "subject"),
+            "trigger": {
+                "type": _required(trigger, "type"),
+                "observed_error_count": _required(trigger, "error_count"),
+                "scores": {
+                    suite: _public_score(_required(scores, suite))
+                    for suite in ("target", "safety", "regression")
+                },
+            },
+            "candidate": {"model_id": _required(candidate, "model_id")},
+            "limits": {
+                "maximum_training_attempts": _required(limits, "maximum_training_attempts"),
+                "maximum_gpu_minutes": _required(limits, "maximum_gpu_minutes"),
+            },
+            "evidence_case_count": sum(
+                _required(_required(scores, suite), "total")
+                for suite in ("target", "safety", "regression")
+            ),
+            "deployment_authorized": _required(payload, "deployment_authorized"),
+        }
+    if entry.stage is Stage.DIAGNOSED:
+        return {
+            **common,
+            "actor": _required(payload, "actor"),
+            "model": _required(payload, "model"),
+            "headline": _required(payload, "headline"),
+            "finding": _required(payload, "failure_pattern"),
+            "observed_error_count": _required(payload, "observed_error_count"),
+            "repair_families": _required(payload, "repair_families"),
+            "authorized_action": _required(payload, "authorized_action"),
+            "forbidden_action": _required(payload, "forbidden_action"),
+            "artifact_sha256": _required(payload, "artifact_sha256"),
+        }
+    if entry.stage is Stage.CURRICULUM_READY:
+        return {
+            **common,
+            "architect": _required(payload, "architect"),
+            "repair_families": _required(payload, "repair_families"),
+            "curriculum_rows": _required(payload, "curriculum_rows"),
+            "parallel_agents": _required(payload, "parallel_agents"),
+            "leakage_check": _required(payload, "leakage_check"),
+            "artifact_sha256": _required(payload, "artifact_sha256"),
+        }
+    if entry.stage is Stage.TRAINED:
+        attempts = _required(payload, "attempts")
+        if not isinstance(attempts, list) or not all(isinstance(attempt, dict) for attempt in attempts):
+            raise JournalError("public generic training attempts are malformed")
+        return {
+            **common,
+            "executor": _required(payload, "executor"),
+            "attempts": [
+                {
+                    "candidate": f"candidate-{index:02d}",
+                    "attempt": _required(attempt, "attempt"),
+                    "runtime_seconds": _required(attempt, "runtime_seconds"),
+                    "examples": _required(attempt, "examples"),
+                }
+                for index, attempt in enumerate(attempts, start=1)
+            ],
+            "selection_policy": _required(payload, "selection_policy"),
+            "maximum_training_attempts": _required(payload, "maximum_training_attempts"),
+            "maximum_gpu_minutes": _required(payload, "maximum_gpu_minutes"),
+            "artifact_sha256": _required(payload, "artifact_sha256"),
+        }
+    if entry.stage is Stage.EVALUATED:
+        return {
+            **common,
+            "accepted": _required(payload, "accepted"),
+            "evaluator": _required(payload, "evaluator"),
+            "decision": _public_generic_decision(_required(payload, "decision")),
+            "baseline": _public_generic_report(_required(payload, "baseline"), candidate="baseline"),
+            "candidate": _public_generic_report(_required(payload, "candidate"), candidate="candidate-01"),
+            "artifact_sha256": _required(payload, "artifact_sha256"),
+        }
+    if entry.stage in {Stage.PROMOTED, Stage.REJECTED}:
+        return {
+            **common,
+            "outcome": _required(payload, "outcome"),
+            "candidate": "candidate-01",
+            "model_id": _required(payload, "model_id"),
+            "qualified_under": _required(payload, "qualified_under"),
+            "deployment_status": _required(payload, "deployment_status"),
+            "critical_miss_count": _required(payload, "critical_miss_count"),
+            "decision": _public_generic_decision(_required(payload, "decision")),
+            "promotion_authority": _required(payload, "promotion_authority"),
+            "artifact_sha256": _required(payload, "artifact_sha256"),
+        }
+    raise JournalError(f"unsupported public generic stage: {entry.stage.value}")
+
+
 def _public_payload(entry: JournalEntry) -> dict[str, Any]:
+    if entry.cycle_id == SELF_SERVICE_PUBLIC_MISSION_ID:
+        return _public_generic_payload(entry)
     if entry.cycle_id == JUDGE_LIVE_MISSION_ID:
         return _public_scam_payload(entry)
     payload = entry.payload

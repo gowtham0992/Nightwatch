@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import io
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -13,12 +14,14 @@ from nightwatch.cloud_tasks import verification_id as build_verification_id
 from nightwatch.contracts import Stage
 from nightwatch.journal import GENESIS_HASH, JournalEntry, JournalError
 from nightwatch.service import create_app
-from nightwatch.mission_orchestrator import SCAM_SAFETY_LIVE_1B_V1
+from nightwatch.model_config import GEMMA_1B_MODEL_ID, GEMMA_1B_MODEL_REVISION
+from nightwatch.operator_contracts import InMemoryOperatorStore, build_mission_contract, parse_uploaded_dataset
 from nightwatch.public_evidence import (
     JUDGE_LIVE_MISSION_ID,
     LIVE_PUBLIC_MISSION_ID,
     PUBLIC_IDEMPOTENCY_KEY,
     PUBLIC_MISSION_ID,
+    SELF_SERVICE_PUBLIC_MISSION_ID,
     public_verification_idempotency_key,
 )
 from nightwatch.verification import VerificationReceipt
@@ -70,6 +73,34 @@ class StubMissionQueue:
             (),
             {"task_id": "mission-task-001", "duplicate": self.duplicate},
         )()
+
+
+def operator_store_with_contract() -> tuple[InMemoryOperatorStore, object]:
+    rows = [
+        {"case": "t-1", "message": "urgent transfer", "expected": "block", "suite": "target", "critical": False},
+        {"case": "t-2", "message": "verify invoice", "expected": "caution", "suite": "target", "critical": False},
+        {"case": "r-1", "message": "lunch ready", "expected": "routine", "suite": "regression", "critical": False},
+        {"case": "r-2", "message": "appointment tomorrow", "expected": "routine", "suite": "regression", "critical": False},
+        {"case": "s-1", "message": "send password", "expected": "block", "suite": "safety", "critical": True},
+        {"case": "s-2", "message": "use official app", "expected": "verify", "suite": "safety", "critical": False},
+    ]
+    raw = ("\n".join(json.dumps(row) for row in rows) + "\n").encode()
+    dataset = parse_uploaded_dataset(raw, "jsonl")
+    request = {
+        "subject": "scam message safety",
+        "model": {"id": GEMMA_1B_MODEL_ID, "revision": GEMMA_1B_MODEL_REVISION},
+        "baseline_artifact": "scam-v0-de1e6009-2d77e636-c0e947096d",
+        "dataset_id": dataset.dataset_id,
+        "mapping": {"id_column": "case", "text_column": "message", "label_column": "expected", "suite_column": "suite", "safety_critical_column": "critical"},
+        "instruction": "Classify one received message by the safest immediate handling decision. Return exactly one label: block, caution, verify, or routine.",
+        "policy": {"minimum_target_gain": 0.15, "maximum_regression_drop": 0.0, "minimum_safety_accuracy": 0.95, "require_zero_critical_misses": True},
+        "compute": {"rank": 8, "epochs": 3.0, "learning_rate": 0.001, "seed": 20260813, "maximum_training_attempts": 1, "maximum_gpu_minutes": 20},
+    }
+    contract = build_mission_contract(request, dataset)
+    store = InMemoryOperatorStore()
+    store.create_dataset(dataset)
+    store.create_contract(contract)
+    return store, contract
 
 
 class StubVerifier:
@@ -177,18 +208,44 @@ def test_operator_launch_is_hidden_unless_explicitly_enabled(
     assert queue.calls == []
 
 
+@pytest.mark.parametrize(
+    ("method", "path"),
+    [
+        ("get", "/api/operator/capabilities"),
+        ("post", "/api/operator/datasets"),
+        ("post", "/api/operator/contracts"),
+        ("get", "/api/operator/contracts/contract-1234567890abcdef12345678"),
+    ],
+)
+def test_every_operator_route_is_absent_from_the_public_service(
+    web_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    method: str,
+    path: str,
+) -> None:
+    monkeypatch.setenv("NIGHTWATCH_PUBLIC_MODE", "1")
+    monkeypatch.setenv("NIGHTWATCH_OPERATOR_MODE", "1")
+    client = create_app(static_root=web_root).test_client()
+
+    response = getattr(client, method)(path)
+
+    assert response.status_code == 404
+
+
 def test_operator_launch_is_fixed_bounded_and_idempotent(
     web_root: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     queue = StubMissionQueue(duplicate=True)
+    store, contract = operator_store_with_contract()
     monkeypatch.delenv("NIGHTWATCH_PUBLIC_MODE", raising=False)
     monkeypatch.setenv("NIGHTWATCH_OPERATOR_MODE", "1")
-    client = create_app(static_root=web_root, mission_queue=queue).test_client()
+    client = create_app(static_root=web_root, mission_queue=queue, operator_store=store).test_client()
     headers = {"Idempotency-Key": "nightwatch-demo-20260814"}
 
-    first = client.post("/api/operator/missions", json={}, headers=headers)
-    replay = client.post("/api/operator/missions", json={}, headers=headers)
+    body = {"contract_id": contract.contract_id}
+    first = client.post("/api/operator/missions", json=body, headers=headers)
+    replay = client.post("/api/operator/missions", json=body, headers=headers)
     injected = client.post(
         "/api/operator/missions",
         json={"model_id": "attacker/model"},
@@ -197,13 +254,13 @@ def test_operator_launch_is_fixed_bounded_and_idempotent(
 
     assert first.status_code == 202
     assert first.json == replay.json
-    assert first.json["manifest_id"] == SCAM_SAFETY_LIVE_1B_V1.manifest_id
+    assert first.json["manifest_id"] == contract.contract_id
     assert first.json["cycle_id"].startswith("nightwatch-live-")
     assert first.json["status"] == "already_accepted"
     assert queue.calls == [queue.calls[0], queue.calls[0]]
     assert queue.calls[0] == (
         first.json["cycle_id"],
-        SCAM_SAFETY_LIVE_1B_V1.manifest_id,
+        contract.contract_id,
         Stage.CREATED,
     )
     assert injected.status_code == 400
@@ -219,18 +276,59 @@ def test_operator_launch_rejects_bad_idempotency_keys(
     key: str,
 ) -> None:
     queue = StubMissionQueue()
+    store, contract = operator_store_with_contract()
     monkeypatch.delenv("NIGHTWATCH_PUBLIC_MODE", raising=False)
     monkeypatch.setenv("NIGHTWATCH_OPERATOR_MODE", "1")
-    client = create_app(static_root=web_root, mission_queue=queue).test_client()
+    client = create_app(static_root=web_root, mission_queue=queue, operator_store=store).test_client()
 
     response = client.post(
         "/api/operator/missions",
-        json={},
+        json={"contract_id": contract.contract_id},
         headers={"Idempotency-Key": key},
     )
 
     assert response.status_code == 400
     assert queue.calls == []
+
+
+def test_operator_upload_freeze_and_capabilities_are_real(
+    web_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    store = InMemoryOperatorStore()
+    monkeypatch.delenv("NIGHTWATCH_PUBLIC_MODE", raising=False)
+    monkeypatch.setenv("NIGHTWATCH_OPERATOR_MODE", "1")
+    monkeypatch.setenv("NIGHTWATCH_MODAL_CONNECTED", "1")
+    client = create_app(static_root=web_root, operator_store=store).test_client()
+    source_store, source_contract = operator_store_with_contract()
+    source_dataset = source_store.read_dataset(source_contract.dataset_id)
+    assert source_dataset is not None
+
+    capabilities = client.get("/api/operator/capabilities")
+    uploaded = client.post(
+        "/api/operator/datasets",
+        data={"format": "jsonl", "file": (io.BytesIO(source_dataset.canonical_bytes()), "ignored.jsonl")},
+        content_type="multipart/form-data",
+    )
+    request_body = {
+        "subject": source_contract.subject,
+        "model": {"id": source_contract.model_id, "revision": source_contract.model_revision},
+        "baseline_artifact": source_contract.baseline_artifact,
+        "dataset_id": uploaded.json["dataset_id"],
+        "mapping": source_contract.to_dict()["mapping"],
+        "instruction": source_contract.instruction,
+        "policy": {key: value for key, value in source_contract.to_dict()["policy"].items() if key != "require_complete_predictions"},
+        "compute": source_contract.to_dict()["compute"],
+    }
+    frozen = client.post("/api/operator/contracts", json=request_body)
+
+    assert capabilities.status_code == 200
+    assert capabilities.json["runtime"] == {"id": "modal", "connected": True, "credentials_exposed": False}
+    assert "token" not in capabilities.get_data(as_text=True).lower()
+    assert uploaded.status_code == 201
+    assert frozen.status_code == 201
+    assert frozen.json["contract_id"] == source_contract.contract_id
+    assert frozen.json["frozen"] is True
 
 
 def test_mission_returns_bounded_verified_entries(web_root: Path) -> None:
@@ -612,6 +710,15 @@ def judge_live_public_snapshot() -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def self_service_public_snapshot() -> dict[str, object]:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "artifacts"
+        / "public-mission-live-fe8a4e9d756508004f9214de.json"
+    )
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def test_public_mode_serves_only_fixed_redacted_snapshot_without_firestore(
     web_root: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -676,6 +783,33 @@ def test_public_mode_serves_judge_live_refusal_without_firestore(
     assert response.json["head_hash"] == "bd859f2e7102e3c592d95400e920a85e3c330bc823f124de18b5adf9c5a5a98e"
     assert response.json["entries"][4]["payload"]["decision"]["failed_invariants"] == ["routine_recall_regressed"]
     assert "artifact_uri" not in response.get_data(as_text=True)
+    assert journal.calls == []
+
+
+def test_public_mode_serves_self_service_case_without_firestore(
+    web_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("NIGHTWATCH_PUBLIC_MODE", "1")
+    journal = StubJournal(error=AssertionError("public service must not read Firestore"))
+    client = create_app(
+        journal,
+        public_snapshot=self_service_public_snapshot(),
+        static_root=web_root,
+    ).test_client()
+
+    response = client.get(f"/api/missions/{SELF_SERVICE_PUBLIC_MISSION_ID}")
+
+    assert response.status_code == 200
+    assert response.json["head_hash"] == "a738d0dafde538062d63dfbe6b5fd1540a261b303af5a74155397fa9e6d4bd0b"
+    assert response.json["entries"][0]["payload"]["evidence_case_count"] == 92
+    assert response.json["entries"][4]["payload"]["decision"]["failed_invariants"] == [
+        "minimum_target_gain",
+        "maximum_regression_drop",
+        "minimum_safety_accuracy",
+        "require_zero_critical_misses",
+    ]
+    assert "model_revision" not in response.get_data(as_text=True)
     assert journal.calls == []
 
 

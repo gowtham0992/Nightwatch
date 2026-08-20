@@ -27,6 +27,7 @@ COPY --from=web-builder /workspace/web/dist ./web-dist
 COPY artifacts/public-mission-v2.json ./public-missions/nightwatch-v2-qualification.json
 COPY artifacts/public-mission-cloud-20260811-001.json ./public-missions/nightwatch-cloud-20260811-001.json
 COPY artifacts/public-mission-live-89e73407c43d525c4bc19272.json ./public-missions/nightwatch-live-89e73407c43d525c4bc19272.json
+COPY artifacts/public-mission-live-fe8a4e9d756508004f9214de.json ./public-missions/nightwatch-live-fe8a4e9d756508004f9214de.json
 COPY containers/gunicorn.conf.py ./containers/gunicorn.conf.py
 
 USER nightwatch

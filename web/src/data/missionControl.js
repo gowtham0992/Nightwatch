@@ -3,6 +3,7 @@ import { SCAM_MISSION } from './scamMission.js';
 const STAGE_ORDER = ['created', 'diagnosed', 'curriculum_ready', 'trained', 'evaluated', 'promoted', 'rejected'];
 const HASH = /^[a-f0-9]{64}$/;
 export const JUDGE_LIVE_MISSION_ID = 'nightwatch-live-89e73407c43d525c4bc19272';
+export const SELF_SERVICE_MISSION_ID = 'nightwatch-live-fe8a4e9d756508004f9214de';
 
 export class MissionControlError extends Error {
   constructor(code, message, status = 0) {
@@ -90,6 +91,25 @@ export function missionFromJournal(value) {
   };
 }
 
+export function missionAtEntry(mission, visibleEntryCount) {
+  if (mission?.mode !== 'live' || !Array.isArray(mission.entries) || mission.entries.length < 1) {
+    throw new MissionControlError('invalid_evidence', 'Only a live mission journal can be replayed.');
+  }
+  const count = Math.max(1, Math.min(mission.entries.length, Math.trunc(visibleEntryCount)));
+  if (!Number.isFinite(count)) {
+    throw new MissionControlError('invalid_evidence', 'Replay position is invalid.');
+  }
+  const entries = mission.entries.slice(0, count);
+  const complete = count === mission.entries.length;
+  return {
+    ...mission,
+    terminal: complete && mission.terminal,
+    outcome: complete ? mission.outcome : 'running',
+    headHash: entries.at(-1).entry_hash,
+    entries,
+  };
+}
+
 export function retainedMission() {
   return {
     id: SCAM_MISSION.id,
@@ -119,6 +139,8 @@ export function missionMetrics(mission) {
   }
   const evaluated = mission.entries.find((entry) => entry.stage === 'evaluated')?.payload;
   if (!evaluated?.baseline || !evaluated?.candidate) return null;
+  const routineBefore = evaluated.baseline.label_recall?.regression?.routine?.accuracy;
+  const routineAfter = evaluated.candidate.label_recall?.regression?.routine?.accuracy;
   return {
     target: {
       before: evaluated.baseline.scores?.target?.accuracy,
@@ -128,12 +150,16 @@ export function missionMetrics(mission) {
       before: evaluated.baseline.scores?.safety?.accuracy,
       after: evaluated.candidate.scores?.safety?.accuracy,
     },
-    routineRecall: {
-      before: evaluated.baseline.label_recall?.regression?.routine?.accuracy,
-      after: evaluated.candidate.label_recall?.regression?.routine?.accuracy,
+    regression: {
+      before: evaluated.baseline.scores?.regression?.accuracy,
+      after: evaluated.candidate.scores?.regression?.accuracy,
     },
+    routineRecall: Number.isFinite(routineBefore) && Number.isFinite(routineAfter)
+      ? { before: routineBefore, after: routineAfter }
+      : null,
     criticalMisses: criticalMissCount(evaluated.candidate),
     failedInvariant: decisionInvariant(evaluated.decision),
+    failedInvariants: evaluated.decision?.failed_invariants || [],
   };
 }
 
@@ -225,10 +251,27 @@ export async function fetchMission(cycleId, { fetchImpl = globalThis.fetch, sign
   return missionFromJournal(await responseJson(response));
 }
 
-export async function launchMission(idempotencyKey, { fetchImpl = globalThis.fetch } = {}) {
+export async function getOperatorCapabilities({ fetchImpl = globalThis.fetch } = {}) {
+  return responseJson(await fetchImpl('/api/operator/capabilities', { headers: { Accept: 'application/json' } }));
+}
+
+export async function uploadDataset(file, format, { fetchImpl = globalThis.fetch } = {}) {
+  const body = new FormData();
+  body.append('format', format);
+  body.append('file', file);
+  return responseJson(await fetchImpl('/api/operator/datasets', { method: 'POST', headers: { Accept: 'application/json' }, body }));
+}
+
+export async function freezeContract(contract, { fetchImpl = globalThis.fetch } = {}) {
+  return responseJson(await fetchImpl('/api/operator/contracts', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(contract),
+  }));
+}
+
+export async function launchMission(contractId, idempotencyKey, { fetchImpl = globalThis.fetch } = {}) {
   return responseJson(await fetchImpl('/api/operator/missions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'Idempotency-Key': idempotencyKey },
-    body: JSON.stringify({}),
+    body: JSON.stringify({ contract_id: contractId }),
   }));
 }

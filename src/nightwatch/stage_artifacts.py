@@ -10,7 +10,7 @@ from google.api_core.exceptions import Conflict, NotFound, PreconditionFailed
 from nightwatch.contracts import Stage
 from nightwatch.firestore_journal import validate_cycle_id
 from nightwatch.journal import JournalError
-from nightwatch.mission_orchestrator import resolve_manifest
+from nightwatch.mission_orchestrator import validate_manifest_id
 
 GCS_TIMEOUT_SECONDS = 10.0
 MAX_STAGE_ARTIFACT_BYTES = 4 * 1024 * 1024
@@ -61,7 +61,7 @@ def _artifact_from_bytes(raw: bytes, *, uri: str) -> StageArtifact:
         manifest_id = value["manifest_id"]
         payload = value["payload"]
         validate_cycle_id(cycle_id)
-        resolve_manifest(manifest_id)
+        validate_manifest_id(manifest_id)
         if not isinstance(payload, dict):
             raise JournalError("stored stage artifact payload is malformed")
     except (TypeError, ValueError) as exc:
@@ -104,9 +104,9 @@ class GCSStageArtifactStore:
         manifest_id: str,
     ) -> tuple[str, str]:
         validate_cycle_id(cycle_id)
-        resolve_manifest(manifest_id)
-        if stage is Stage.CREATED:
-            raise JournalError("created-stage evidence belongs in the mission journal")
+        validate_manifest_id(manifest_id)
+        if stage is Stage.CREATED and not manifest_id.startswith("contract-"):
+            raise JournalError("created-stage evidence for static missions belongs in the journal")
         object_name = f"missions/{cycle_id}/stages/{stage.value}.json"
         return object_name, f"gs://{self._bucket.name}/{object_name}"
 

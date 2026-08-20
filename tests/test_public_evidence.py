@@ -11,6 +11,7 @@ from nightwatch.public_evidence import (
     JUDGE_LIVE_MISSION_ID,
     LIVE_PUBLIC_MISSION_ID,
     PUBLIC_MISSION_ID,
+    SELF_SERVICE_PUBLIC_MISSION_ID,
     build_public_snapshot,
     load_public_snapshot,
     validate_public_snapshot,
@@ -328,4 +329,33 @@ def test_judge_live_snapshot_is_redacted_and_bound_to_real_terminal_head() -> No
     assert snapshot["entries"][4]["payload"]["candidate"]["scores"]["safety"]["accuracy"] == 1.0
     assert snapshot["entries"][4]["payload"]["decision"]["failed_invariants"] == ["routine_recall_regressed"]
     for forbidden in ["artifact_uri", "modal_call_id", "model_revision", "evidence_case_ids", "selected_artifact"]:
+        assert forbidden not in serialized
+
+
+def test_self_service_snapshot_is_redacted_and_bound_to_real_terminal_head() -> None:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "artifacts"
+        / "public-mission-live-fe8a4e9d756508004f9214de.json"
+    )
+
+    snapshot = load_public_snapshot(path, expected_cycle_id=SELF_SERVICE_PUBLIC_MISSION_ID)
+    serialized = json.dumps(snapshot, sort_keys=True)
+    created = snapshot["entries"][0]["payload"]
+    evaluated = snapshot["entries"][4]["payload"]
+
+    assert snapshot["head_hash"] == "a738d0dafde538062d63dfbe6b5fd1540a261b303af5a74155397fa9e6d4bd0b"
+    assert created["evidence_case_count"] == 92
+    assert created["trigger"]["observed_error_count"] == 14
+    assert evaluated["candidate"]["critical_miss_count"] == 7
+    assert evaluated["decision"]["failed_invariants"] == [
+        "minimum_target_gain",
+        "maximum_regression_drop",
+        "minimum_safety_accuracy",
+        "require_zero_critical_misses",
+    ]
+    for forbidden in [
+        "artifact_uri", "artifact_name", "dataset_id", "evidence_case_ids",
+        "modal_call_id", "model_revision", "selected_artifact", "seed",
+    ]:
         assert forbidden not in serialized

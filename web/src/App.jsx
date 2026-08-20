@@ -4,11 +4,14 @@ import {
   fetchMission,
   getHealth,
   JUDGE_LIVE_MISSION_ID,
-  launchMission,
+  missionAtEntry,
   missionMetrics,
   retainedMission,
+  SELF_SERVICE_MISSION_ID,
 } from './data/missionControl.js';
 import { shortHash } from './data/scamMission.js';
+import MissionBuilder from './MissionBuilder.jsx';
+import PublicMissionWalkthrough from './PublicMissionWalkthrough.jsx';
 
 function Mark() { return <span className="mark" aria-hidden="true"><i /><i /><i /></span>; }
 function TinyIcon({ kind }) {
@@ -17,22 +20,11 @@ function TinyIcon({ kind }) {
   if (kind === 'blocked') return <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8m0-8-8 8" /></svg>;
   return <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5" /></svg>;
 }
-function makeIdempotencyKey() {
-  try {
-    const existing = globalThis.sessionStorage?.getItem('nightwatch-launch-key');
-    if (existing) return existing;
-    const suffix = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    const key = `nightwatch-${suffix}`;
-    globalThis.sessionStorage?.setItem('nightwatch-launch-key', key);
-    return key;
-  } catch { return `nightwatch-${Date.now()}-operator`; }
-}
-
-function Header({ health }) {
+function Header({ health, onNewMission, onWalkthrough }) {
   return <header className="topbar">
     <a className="wordmark" href="#top"><Mark /><strong>Nightwatch</strong></a>
     <div className="environment"><span className={health?.status === 'ok' ? 'signal online' : 'signal'} /><span>{health?.visibility === 'private' ? 'Operator cloud' : 'Public evidence'}</span><b>GCP</b></div>
-    <nav aria-label="Mission sections"><a href="#mission">Mission</a><a href="#proof">Proof</a><a href="https://github.com/gowtham0992/Nightwatch" target="_blank" rel="noreferrer">Source ↗</a></nav>
+    <nav aria-label="Mission sections">{health?.operator_enabled ? <button type="button" onClick={onNewMission}>New mission</button> : <button type="button" onClick={onWalkthrough}>Guided demo</button>}<a href="#mission">Mission</a><a href="#proof">Proof</a><a href="https://github.com/gowtham0992/Nightwatch" target="_blank" rel="noreferrer">Source ↗</a></nav>
   </header>;
 }
 
@@ -46,25 +38,45 @@ function StorySwitch({ story, onSelect }) {
   return <div className="story-switch" aria-label="Choose a verified mission outcome">
     <span>CASE FILE</span>
     <button type="button" className={story === JUDGE_LIVE_MISSION_ID ? 'active refused' : ''} onClick={() => onSelect(JUDGE_LIVE_MISSION_ID)}><i />Live refusal</button>
+    <button type="button" className={story === SELF_SERVICE_MISSION_ID ? 'active refused' : ''} onClick={() => onSelect(SELF_SERVICE_MISSION_ID)}><i />Self-service run</button>
     <button type="button" className={story === 'qualified' ? 'active' : ''} onClick={() => onSelect('qualified')}><i />Qualified repair</button>
   </div>;
 }
 
-function MissionHeader({ mission, health, launchState, onLaunch, story, onSelectStory }) {
+function MissionHeader({ mission, health, launchState, onNewMission, onWalkthrough, story, onSelectStory }) {
   const isRunning = mission.outcome === 'running' || launchState === 'launching';
   const isJudgeRefusal = mission.id === JUDGE_LIVE_MISSION_ID;
+  const isSelfService = mission.id === SELF_SERVICE_MISSION_ID;
   return <section className="mission-header" id="top">
     <div className="mission-title">
       <StorySwitch story={story} onSelect={onSelectStory} />
       <div className="eyebrow"><span>MISSION / {mission.id}</span><span>{mission.mode === 'live' ? 'LIVE JOURNAL' : 'VERIFIED RUN'}</span></div>
-      <h1>{isJudgeRefusal ? <>It hit 100%.<br /><em>We still refused it.</em></> : <>Repair the model.<br /><em>Protect the boundary.</em></>}</h1>
-      <p>{isJudgeRefusal ? 'In this live run, Nightwatch diagnosed a failing Gemma scam detector, assembled three Gemini repair specialists, trained one bounded candidate, then caught a hidden regression and kept production locked.' : 'Nightwatch autonomously diagnoses a failing Gemma scam detector, assembles a specialist repair fleet, trains one bounded candidate, and hands release authority to deterministic code.'}</p>
+      <h1>{isJudgeRefusal ? <>It hit 100%.<br /><em>We still refused it.</em></> : isSelfService ? <>The agents did the work.<br /><em>The gate said no.</em></> : <>Repair the model.<br /><em>Protect the boundary.</em></>}</h1>
+      <p>{isJudgeRefusal ? 'In this live run, Nightwatch diagnosed a failing Gemma scam detector, assembled three Gemini repair specialists, trained one bounded candidate, then caught a hidden regression and kept production locked.' : isSelfService ? 'An operator selected Gemma, supplied a real 92-case dataset, mapped three evidence suites, froze the compute and release contract, and clicked Run. Nightwatch discovered 14 baseline failures, ran the full repair fleet, then refused the unsafe candidate.' : 'Nightwatch autonomously diagnoses a failing Gemma scam detector, assembles a specialist repair fleet, trains one bounded candidate, and hands release authority to deterministic code.'}</p>
       <div className="mission-actions">
-        {health?.operator_enabled ? <button className="launch-button" type="button" onClick={onLaunch} disabled={isRunning}><span>{isRunning ? '◌' : '↗'}</span>{isRunning ? 'Mission in progress' : 'Launch real repair'}</button> : <a className="launch-button" href="#mission"><span>↓</span>Inspect verified mission</a>}
-        <span className="action-note">{health?.operator_enabled ? '1 approved manifest · max 1 GPU attempt' : 'Read-only · no training spend'}</span>
+        {health?.operator_enabled ? <button className="launch-button" type="button" onClick={onNewMission}><span>＋</span>New repair mission</button> : <><button className="launch-button" type="button" onClick={onWalkthrough}><span>▶</span>Try guided self-service</button><a className="secondary-action" href="#mission">Inspect evidence ↓</a></>}
+        <span className="action-note">{health?.operator_enabled ? 'Model + dataset → autonomous repair · max 1 GPU attempt' : 'Read-only · no training spend'}</span>
       </div>
     </div>
     <div className={`decision-orbit ${mission.outcome}`}><div className="orbit-ring"><span /></div><div className="decision-copy"><small>Release state</small><strong>{mission.outcome === 'running' ? 'WATCHING' : mission.outcome.toUpperCase()}</strong><span>{mission.outcome === 'qualified' ? 'not deployed' : mission.outcome === 'refused' ? 'production protected' : 'agents at work'}</span></div></div>
+  </section>;
+}
+
+function MissionContract({ mission }) {
+  if (mission.id !== SELF_SERVICE_MISSION_ID) return null;
+  const created = mission.entries[0]?.payload || {};
+  const curriculum = mission.entries.find((entry) => entry.stage === 'curriculum_ready')?.payload || {};
+  const training = mission.entries.find((entry) => entry.stage === 'trained')?.payload || {};
+  return <section className="mission-contract" aria-label="Frozen operator mission contract">
+    <div className="contract-intro"><span>OPERATOR INPUT → SEALED CONTRACT</span><strong>A real mission, launched from the product.</strong><p>The public case is a redacted projection. Raw rows, credentials, model revision, and control authority remain private.</p></div>
+    <dl>
+      <div><dt>Model</dt><dd>{mission.model}</dd><small>revision pinned privately</small></div>
+      <div><dt>Evidence</dt><dd>{created.evidence_case_count} cases</dd><small>target · safety · regression</small></div>
+      <div><dt>Repair fleet</dt><dd>{curriculum.parallel_agents} Gemini agents</dd><small>{curriculum.curriculum_rows} validated rows</small></div>
+      <div><dt>Compute bound</dt><dd>{created.limits?.maximum_training_attempts} attempt</dd><small>{created.limits?.maximum_gpu_minutes} GPU-minute ceiling</small></div>
+      <div><dt>Execution</dt><dd>{title(training.executor)}</dd><small>credentials server-side</small></div>
+      <div><dt>Deployment</dt><dd>Not authorized</dd><small>deterministic gate only</small></div>
+    </dl>
   </section>;
 }
 
@@ -111,12 +123,18 @@ function renderValue(value) {
 function transition(before, after) { return `${percent(before)} → ${percent(after)}`; }
 function evidenceRows(payload) {
   if (payload.baseline?.scores && payload.candidate?.scores) {
+    const routineBefore = payload.baseline.label_recall?.regression?.routine?.accuracy;
+    const routineAfter = payload.candidate.label_recall?.regression?.routine?.accuracy;
+    const boundaryLabel = Number.isFinite(routineBefore) && Number.isFinite(routineAfter) ? 'routine recall' : 'regression accuracy';
+    const boundaryValue = boundaryLabel === 'routine recall'
+      ? transition(routineBefore, routineAfter)
+      : transition(payload.baseline.scores.regression?.accuracy, payload.candidate.scores.regression?.accuracy);
     return [
       ['accepted', payload.accepted],
       ['target accuracy', transition(payload.baseline.scores.target?.accuracy, payload.candidate.scores.target?.accuracy)],
       ['safety accuracy', transition(payload.baseline.scores.safety?.accuracy, payload.candidate.scores.safety?.accuracy)],
-      ['routine recall', transition(payload.baseline.label_recall?.regression?.routine?.accuracy, payload.candidate.label_recall?.regression?.routine?.accuracy)],
-      ['failed invariant', invariantLabel(payload.decision?.failed_invariants?.[0])],
+      [boundaryLabel, boundaryValue],
+      ['failed invariants', (payload.decision?.failed_invariants || []).map(invariantLabel)],
       ['critical misses', payload.candidate.critical_miss_count],
       ['evaluator', payload.evaluator],
     ];
@@ -159,18 +177,33 @@ function EvidencePanel({ node }) {
 function percent(value) { return Number.isFinite(value) ? `${(value * 100).toFixed(1)}%` : '—'; }
 function invariantLabel(value) {
   const labels = {
+    minimum_target_gain: 'Target gain missed its floor',
+    maximum_regression_drop: 'Regression loss exceeded its ceiling',
+    minimum_safety_accuracy: 'Safety accuracy missed its floor',
+    require_zero_critical_misses: 'Critical safety cases were missed',
     routine_recall_regressed: 'Routine-message recall regressed',
     safety_block_recall_below_floor: 'Safety-block recall missed its floor',
     target_gain_below_floor: 'Target gain missed its floor',
   };
   return labels[value] || 'A release invariant failed';
 }
-function OutcomeBar({ mission }) {
+function OutcomeBar({ mission, onSelectStory, replaying }) {
   const metrics = missionMetrics(mission);
   return <section className={`outcome-bar ${mission.outcome}`}><div><span>DETERMINISTIC RELEASE GATE</span><strong>{mission.outcome === 'running' ? 'Decision pending' : mission.outcome === 'qualified' ? 'Candidate qualified' : 'Candidate refused'}</strong></div>
-    {metrics ? <div className="outcome-metrics"><span>Target <b>{percent(metrics.target.before)} → {percent(metrics.target.after)}</b></span><span>Safety <b>{percent(metrics.safety.before)} → {percent(metrics.safety.after)}</b></span>{metrics.routineRecall && <span className={metrics.failedInvariant === 'routine_recall_regressed' ? 'failed-metric' : ''}>Routine recall <b>{percent(metrics.routineRecall.before)} → {percent(metrics.routineRecall.after)}</b></span>}<span>Critical misses <b>{metrics.criticalMisses}</b></span></div> : <div className="outcome-metrics"><span>Authority <b>code only</b></span><span>Deployment <b>locked</b></span></div>}
-    {metrics?.failedInvariant && <div className="gate-reason"><span>WHY IT STOPPED</span><b>{invariantLabel(metrics.failedInvariant)}</b></div>}
-    <div className="outcome-seal"><Mark /><span>{mission.outcome === 'qualified' ? 'ALL INVARIANTS PASSED' : mission.outcome === 'refused' ? 'PRODUCTION PRESERVED' : 'AWAITING EVIDENCE'}</span></div></section>;
+    {metrics ? <div className="outcome-metrics"><span>Target <b>{percent(metrics.target.before)} → {percent(metrics.target.after)}</b></span><span>Safety <b>{percent(metrics.safety.before)} → {percent(metrics.safety.after)}</b></span>{metrics.routineRecall ? <span className={metrics.failedInvariant === 'routine_recall_regressed' ? 'failed-metric' : ''}>Routine recall <b>{percent(metrics.routineRecall.before)} → {percent(metrics.routineRecall.after)}</b></span> : metrics.regression && <span className={metrics.failedInvariants?.includes('maximum_regression_drop') ? 'failed-metric' : ''}>Regression <b>{percent(metrics.regression.before)} → {percent(metrics.regression.after)}</b></span>}<span>Critical misses <b>{metrics.criticalMisses}</b></span></div> : <div className="outcome-metrics"><span>Authority <b>code only</b></span><span>Deployment <b>locked</b></span></div>}
+    {metrics?.failedInvariant && <div className="gate-reason"><span>WHY IT STOPPED</span><b>{metrics.failedInvariants?.length > 1 ? `${metrics.failedInvariants.length} release invariants failed` : invariantLabel(metrics.failedInvariant)}</b></div>}
+    <div className="outcome-seal"><Mark /><span>{mission.outcome === 'qualified' ? 'ALL INVARIANTS PASSED' : mission.outcome === 'refused' ? 'PRODUCTION PRESERVED' : 'AWAITING EVIDENCE'}</span></div>
+    {mission.id === SELF_SERVICE_MISSION_ID && mission.outcome === 'refused' && !replaying && <button className="compare-outcome" type="button" onClick={() => onSelectStory('qualified')}><span>Compare the successful repair</span><b>Qualified case →</b></button>}
+  </section>;
+}
+
+function MissionCompletion({ mission, replaying }) {
+  if (mission.id !== SELF_SERVICE_MISSION_ID || mission.outcome !== 'refused' || replaying) return null;
+  return <section className="mission-completion" id="completion" aria-label="Verified Nightwatch mission completion">
+    <div className="completion-copy"><span>THE WATCH HAS CONCLUDED</span><strong>Unsafe repair held at the boundary.</strong><p>Six real handoffs inspected. Four release invariants failed. Production remained untouched.</p></div>
+    <img src="/nightwatch-logo.png" alt="Nightwatch" />
+    <div className="completion-head"><span>SEALED JOURNAL HEAD</span><code>{shortHash(mission.headHash)}</code><small>Verified public projection</small></div>
+  </section>;
 }
 
 function MissionLoading({ failed, onRetry, story, onSelectStory }) {
@@ -187,9 +220,12 @@ export default function App() {
   const [notice, setNotice] = useState('');
   const [loadFailed, setLoadFailed] = useState(false);
   const [retryNonce, setRetryNonce] = useState(0);
+  const initialParams = new URLSearchParams(globalThis.location?.search || '');
+  const [view, setView] = useState(initialParams.get('new') === '1' ? 'builder' : initialParams.get('demo') === '1' ? 'walkthrough' : 'mission');
+  const [replayCursor, setReplayCursor] = useState(null);
   useEffect(() => { let ignore = false; getHealth().then((result) => { if (!ignore) setHealth(result); }).catch(() => { if (!ignore) setHealth({ status: 'offline', visibility: 'public_redacted', operator_enabled: false }); }); return () => { ignore = true; }; }, []);
   useEffect(() => {
-    const onPopState = () => setStory(storyFromLocation());
+    const onPopState = () => { const params = new URLSearchParams(globalThis.location?.search || ''); setStory(storyFromLocation()); setView(params.get('new') === '1' ? 'builder' : params.get('demo') === '1' ? 'walkthrough' : 'mission'); setReplayCursor(null); };
     globalThis.addEventListener?.('popstate', onPopState);
     return () => globalThis.removeEventListener?.('popstate', onPopState);
   }, []);
@@ -206,25 +242,45 @@ export default function App() {
     };
     poll(); return () => { ignore = true; controller?.abort(); globalThis.clearTimeout(timer); };
   }, [story, retryNonce]);
-  const graph = useMemo(() => mission ? buildAgentGraph(mission) : [], [mission]);
+  useEffect(() => {
+    if (replayCursor == null || !mission || replayCursor >= mission.entries.length) return undefined;
+    const reducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const timer = globalThis.setTimeout(() => {
+      if (reducedMotion) setReplayCursor(mission.entries.length);
+      else setReplayCursor((value) => Math.min(mission.entries.length, value + 1));
+    }, reducedMotion ? 100 : 900);
+    return () => globalThis.clearTimeout(timer);
+  }, [mission, replayCursor]);
+  useEffect(() => {
+    if (replayCursor != null && mission && replayCursor >= mission.entries.length) {
+      setLaunchState('complete');
+      setNotice('Replay complete. The deterministic gate refused the candidate and production stayed locked.');
+    }
+  }, [mission, replayCursor]);
+  const displayMission = useMemo(() => mission && replayCursor != null ? missionAtEntry(mission, replayCursor) : mission, [mission, replayCursor]);
+  const graph = useMemo(() => displayMission ? buildAgentGraph(displayMission) : [], [displayMission]);
   const selected = graph.find((node) => node.id === selectedId) || graph.find((node) => node.status === 'active') || graph[0];
   const handleStory = (nextStory) => {
     const url = new URL(globalThis.location.href);
-    url.searchParams.delete('mission'); url.searchParams.delete('story');
+    url.searchParams.delete('mission'); url.searchParams.delete('story'); url.searchParams.delete('demo'); url.searchParams.delete('replay');
     if (nextStory === 'qualified') url.searchParams.set('story', 'qualified');
     else url.searchParams.set('mission', nextStory);
     globalThis.history.pushState({}, '', url);
-    setSelectedId('diagnostician'); setNotice(''); setLoadFailed(false);
+    setSelectedId('diagnostician'); setNotice(''); setLoadFailed(false); setReplayCursor(null); setView('mission');
     setMission(nextStory === 'qualified' ? retainedMission() : null);
     setStory(nextStory);
   };
-  const handleLaunch = async () => {
-    setLaunchState('launching'); setNotice('Submitting one approved repair mission…');
-    try { const result = await launchMission(makeIdempotencyKey()); const url = new URL(globalThis.location.href); url.searchParams.set('mission', result.cycle_id); globalThis.history.pushState({}, '', url); setNotice('Cloud Task accepted. Waiting for the first immutable journal entry…'); globalThis.location.reload(); }
-    catch (error) { setLaunchState('idle'); setNotice(error.message || 'The mission could not be launched.'); }
-  };
-  if (!mission) return <div className="app-shell"><Header health={health} /><MissionLoading failed={loadFailed} onRetry={() => { setLoadFailed(false); setRetryNonce((value) => value + 1); }} story={story} onSelectStory={handleStory} /></div>;
-  return <div className="app-shell"><Header health={health} /><main><MissionHeader mission={mission} health={health} launchState={launchState} onLaunch={handleLaunch} story={story} onSelectStory={handleStory} />{notice && <div className="notice"><span className="signal online" />{notice}</div>}<RunStrip mission={mission} graph={graph} />
-    <section className="mission-workspace" id="mission"><div className="workspace-heading"><div><span>AUTONOMOUS EXECUTION</span><h2>One mission. Accountable handoffs.</h2></div><p>Select any agent to inspect the evidence it handed downstream.</p></div><div className="workspace-body"><div className="topology-wrap"><AgentTopology graph={graph} selectedId={selected.id} onSelect={setSelectedId} /></div><EvidencePanel node={selected} /></div></section><OutcomeBar mission={mission} /></main>
-    <footer><span><Mark /><strong>Nightwatch</strong></span><p>Gemini proposes. Evidence persists. Code decides.</p><code>{shortHash(mission.headHash)}</code></footer></div>;
+  const openBuilder = () => { const url = new URL(globalThis.location.href); url.searchParams.set('new', '1'); globalThis.history.pushState({}, '', url); setView('builder'); };
+  const closeBuilder = () => { const url = new URL(globalThis.location.href); url.searchParams.delete('new'); globalThis.history.pushState({}, '', url); setView('mission'); };
+  const openWalkthrough = () => { const url = new URL(globalThis.location.href); url.searchParams.delete('new'); url.searchParams.set('demo', '1'); globalThis.history.pushState({}, '', url); setView('walkthrough'); };
+  const closeWalkthrough = () => { const url = new URL(globalThis.location.href); url.searchParams.delete('demo'); globalThis.history.pushState({}, '', url); setView('mission'); };
+  const handleReplay = (verifiedMission) => { const url = new URL(globalThis.location.href); url.searchParams.delete('demo'); url.searchParams.delete('story'); url.searchParams.set('mission', SELF_SERVICE_MISSION_ID); url.searchParams.set('replay', '1'); globalThis.history.pushState({}, '', url); setMission(verifiedMission); setStory(SELF_SERVICE_MISSION_ID); setView('mission'); setSelectedId('watcher'); setReplayCursor(1); setLaunchState('running'); setNotice('Replaying six immutable handoffs from the verified Cloud Run mission…'); };
+  const handleLaunched = (result) => { const url = new URL(globalThis.location.href); url.searchParams.delete('new'); url.searchParams.set('mission', result.cycle_id); globalThis.history.pushState({}, '', url); setMission(null); setStory(result.cycle_id); setView('mission'); setLaunchState('running'); setNotice('Cloud Task accepted. Baseline scan is starting on Modal…'); };
+  if (view === 'builder') return <div className="app-shell"><Header health={health} onNewMission={openBuilder} onWalkthrough={openWalkthrough} /><MissionBuilder onCancel={closeBuilder} onLaunched={handleLaunched} /></div>;
+  if (view === 'walkthrough') return <div className="app-shell"><Header health={health} onNewMission={openBuilder} onWalkthrough={openWalkthrough} /><PublicMissionWalkthrough onCancel={closeWalkthrough} onReplay={handleReplay} /></div>;
+  if (!displayMission) return <div className="app-shell"><Header health={health} onNewMission={openBuilder} onWalkthrough={openWalkthrough} /><MissionLoading failed={loadFailed} onRetry={() => { setLoadFailed(false); setRetryNonce((value) => value + 1); }} story={story} onSelectStory={handleStory} /></div>;
+  const replaying = replayCursor != null && mission && replayCursor < mission.entries.length;
+  return <div className="app-shell"><Header health={health} onNewMission={openBuilder} onWalkthrough={openWalkthrough} /><main><MissionHeader mission={displayMission} health={health} launchState={launchState} onNewMission={openBuilder} onWalkthrough={openWalkthrough} story={story} onSelectStory={handleStory} />{notice && <div className="notice"><span className="signal online" />{notice}</div>}<RunStrip mission={displayMission} graph={graph} /><MissionContract mission={displayMission} />
+    <section className="mission-workspace" id="mission"><div className="workspace-heading"><div><span>AUTONOMOUS EXECUTION</span><h2>One mission. Accountable handoffs.</h2></div><p>Select any agent to inspect the evidence it handed downstream.</p></div><div className="workspace-body"><div className="topology-wrap"><AgentTopology graph={graph} selectedId={selected.id} onSelect={setSelectedId} /></div><EvidencePanel node={selected} /></div></section><OutcomeBar mission={displayMission} onSelectStory={handleStory} replaying={replaying} /><MissionCompletion mission={displayMission} replaying={replaying} /></main>
+    <footer><span><Mark /><strong>Nightwatch</strong></span><p>Gemini proposes. Evidence persists. Code decides.</p><code>{shortHash(displayMission.headHash)}</code></footer></div>;
 }

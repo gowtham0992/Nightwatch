@@ -22,6 +22,7 @@ image = (
     .uv_pip_install(
         "accelerate>=1.12,<2",
         "datasets>=4.4,<5",
+        "google-api-core>=2.28,<3",
         "peft>=0.18,<1",
         "torch>=2.9,<3",
         "transformers>=4.57,<5",
