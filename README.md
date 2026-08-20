@@ -39,7 +39,7 @@ The authenticated product has also completed its first real self-service run: `n
 
 The refusal baseline is historical evidence from an earlier live worker input on the expanded 92-case suite; its coverage record contains 24 mismatched case identities. The candidate has complete coverage, and the gate refused it for the independently measured routine-recall regression—not for baseline coverage. A later full-coverage reproduction scored the same retained baseline at 30/36 target cases before qualifying a separate cycle-bound candidate. These baselines are different evidence versions and are not presented as interchangeable measurements. The exact provenance is documented in [the scam-safety evidence archive](artifacts/scam-safety/README.md).
 
-Open the [live judge experience](https://nightwatch-public-w3a6oefsma-uc.a.run.app/) and choose **Guided demo**. Review the prefilled, redacted mission contract, replay its six real handoffs to the deterministic refusal, then compare it with the qualified case. The public walkthrough starts no compute and exposes no operator authority.
+Open the [live judge experience](https://nightwatch-public-w3a6oefsma-uc.a.run.app/). It begins with a 30-second Mission Theater that advances through the six real handoffs from measured failure to deterministic refusal. Judges can then inspect the complete evidence ledger or compare the refusal with a qualified case. The public experience starts no compute and exposes no operator authority.
 
 ## This is a Taskmaster, not a chatbot
 

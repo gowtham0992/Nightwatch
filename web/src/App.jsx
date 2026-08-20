@@ -20,11 +20,11 @@ function TinyIcon({ kind }) {
   if (kind === 'blocked') return <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8m0-8-8 8" /></svg>;
   return <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5" /></svg>;
 }
-function Header({ health, onNewMission, onWalkthrough }) {
+function Header({ health, onNewMission, onWalkthrough, onEvidence, guided = false }) {
   return <header className="topbar">
     <a className="wordmark" href="#top" aria-label="Nightwatch home"><img src="/nightwatch-logo.png" alt="Nightwatch" /></a>
     <div className="environment"><span className={health?.status === 'ok' ? 'signal online' : 'signal'} /><span>{health?.visibility === 'private' ? 'Operator cloud' : 'Public evidence'}</span><b>GCP</b></div>
-    <nav aria-label="Mission sections">{health?.operator_enabled ? <button type="button" onClick={onNewMission}>New mission</button> : <button type="button" onClick={onWalkthrough}>Guided demo</button>}<a href="#mission">Mission</a><a href="#proof">Proof</a><a href="https://github.com/gowtham0992/Nightwatch" target="_blank" rel="noreferrer">Source ↗</a></nav>
+    {guided ? <nav aria-label="Judge experience"><span className="nav-current">Mission demo</span><button type="button" onClick={onEvidence}>Full evidence</button><a href="https://github.com/gowtham0992/Nightwatch" target="_blank" rel="noreferrer">Source ↗</a></nav> : <nav aria-label="Mission sections">{health?.operator_enabled ? <button type="button" onClick={onNewMission}>New mission</button> : <button type="button" onClick={onWalkthrough}>Guided demo</button>}<a href="#mission">Mission</a><a href="#proof">Proof</a><a href="https://github.com/gowtham0992/Nightwatch" target="_blank" rel="noreferrer">Source ↗</a></nav>}
   </header>;
 }
 
@@ -32,6 +32,15 @@ function storyFromLocation() {
   const params = new URLSearchParams(globalThis.location?.search || '');
   if (params.get('story') === 'qualified') return 'qualified';
   return params.get('mission') || JUDGE_LIVE_MISSION_ID;
+}
+
+function viewFromLocation(operatorEnabled = null) {
+  const params = new URLSearchParams(globalThis.location?.search || '');
+  if (params.get('new') === '1') return 'builder';
+  if (params.get('demo') === '1') return 'walkthrough';
+  if (params.has('mission') || params.has('story') || params.has('replay')) return 'mission';
+  if (operatorEnabled == null) return 'auto';
+  return operatorEnabled ? 'mission' : 'walkthrough';
 }
 
 function StorySwitch({ story, onSelect }) {
@@ -220,15 +229,14 @@ export default function App() {
   const [notice, setNotice] = useState('');
   const [loadFailed, setLoadFailed] = useState(false);
   const [retryNonce, setRetryNonce] = useState(0);
-  const initialParams = new URLSearchParams(globalThis.location?.search || '');
-  const [view, setView] = useState(initialParams.get('new') === '1' ? 'builder' : initialParams.get('demo') === '1' ? 'walkthrough' : 'mission');
+  const [view, setView] = useState(() => viewFromLocation());
   const [replayCursor, setReplayCursor] = useState(null);
-  useEffect(() => { let ignore = false; getHealth().then((result) => { if (!ignore) setHealth(result); }).catch(() => { if (!ignore) setHealth({ status: 'offline', visibility: 'public_redacted', operator_enabled: false }); }); return () => { ignore = true; }; }, []);
+  useEffect(() => { let ignore = false; getHealth().then((result) => { if (!ignore) { setHealth(result); setView((current) => current === 'auto' ? viewFromLocation(result.operator_enabled) : current); } }).catch(() => { if (!ignore) { setHealth({ status: 'offline', visibility: 'public_redacted', operator_enabled: false }); setView((current) => current === 'auto' ? 'walkthrough' : current); } }); return () => { ignore = true; }; }, []);
   useEffect(() => {
-    const onPopState = () => { const params = new URLSearchParams(globalThis.location?.search || ''); setStory(storyFromLocation()); setView(params.get('new') === '1' ? 'builder' : params.get('demo') === '1' ? 'walkthrough' : 'mission'); setReplayCursor(null); };
+    const onPopState = () => { setStory(storyFromLocation()); setView(viewFromLocation(health?.operator_enabled ?? false)); setReplayCursor(null); };
     globalThis.addEventListener?.('popstate', onPopState);
     return () => globalThis.removeEventListener?.('popstate', onPopState);
-  }, []);
+  }, [health?.operator_enabled]);
   useEffect(() => {
     if (story === 'qualified') {
       setMission(retainedMission()); setLaunchState('complete'); setLoadFailed(false); setNotice('');
@@ -273,11 +281,12 @@ export default function App() {
   const openBuilder = () => { const url = new URL(globalThis.location.href); url.searchParams.set('new', '1'); globalThis.history.pushState({}, '', url); setView('builder'); };
   const closeBuilder = () => { const url = new URL(globalThis.location.href); url.searchParams.delete('new'); globalThis.history.pushState({}, '', url); setView('mission'); };
   const openWalkthrough = () => { const url = new URL(globalThis.location.href); url.searchParams.delete('new'); url.searchParams.set('demo', '1'); globalThis.history.pushState({}, '', url); setView('walkthrough'); };
-  const closeWalkthrough = () => { const url = new URL(globalThis.location.href); url.searchParams.delete('demo'); globalThis.history.pushState({}, '', url); setView('mission'); };
-  const handleReplay = (verifiedMission) => { const url = new URL(globalThis.location.href); url.searchParams.delete('demo'); url.searchParams.delete('story'); url.searchParams.set('mission', SELF_SERVICE_MISSION_ID); url.searchParams.set('replay', '1'); globalThis.history.pushState({}, '', url); setMission(verifiedMission); setStory(SELF_SERVICE_MISSION_ID); setView('mission'); setSelectedId('watcher'); setReplayCursor(1); setLaunchState('running'); setNotice('Replaying six immutable handoffs from the verified Cloud Run mission…'); };
+  const closeWalkthrough = () => { const url = new URL(globalThis.location.href); url.searchParams.delete('demo'); if (!url.searchParams.has('mission') && !url.searchParams.has('story')) url.searchParams.set('mission', story === 'qualified' ? JUDGE_LIVE_MISSION_ID : story); globalThis.history.pushState({}, '', url); setView('mission'); };
+  const handleInspectMission = (verifiedMission) => { const url = new URL(globalThis.location.href); url.searchParams.delete('demo'); url.searchParams.delete('story'); url.searchParams.delete('replay'); url.searchParams.set('mission', SELF_SERVICE_MISSION_ID); globalThis.history.pushState({}, '', url); setMission(verifiedMission); setStory(SELF_SERVICE_MISSION_ID); setView('mission'); setSelectedId('gate'); setReplayCursor(null); setLaunchState('complete'); setNotice('Verified public projection · six immutable Cloud Run handoffs.'); };
   const handleLaunched = (result) => { const url = new URL(globalThis.location.href); url.searchParams.delete('new'); url.searchParams.set('mission', result.cycle_id); globalThis.history.pushState({}, '', url); setMission(null); setStory(result.cycle_id); setView('mission'); setLaunchState('running'); setNotice('Cloud Task accepted. Baseline scan is starting on Modal…'); };
   if (view === 'builder') return <div className="app-shell"><Header health={health} onNewMission={openBuilder} onWalkthrough={openWalkthrough} /><MissionBuilder onCancel={closeBuilder} onLaunched={handleLaunched} /></div>;
-  if (view === 'walkthrough') return <div className="app-shell"><Header health={health} onNewMission={openBuilder} onWalkthrough={openWalkthrough} /><PublicMissionWalkthrough onCancel={closeWalkthrough} onReplay={handleReplay} /></div>;
+  if (view === 'auto') return <div className="app-shell"><Header health={health} onNewMission={openBuilder} onWalkthrough={openWalkthrough} /><main className="theater-loading"><span>OPENING NIGHTWATCH</span><h1>Preparing the verified mission…</h1></main></div>;
+  if (view === 'walkthrough') return <div className="app-shell"><Header health={health} onNewMission={openBuilder} onWalkthrough={openWalkthrough} onEvidence={closeWalkthrough} guided /><PublicMissionWalkthrough onCancel={closeWalkthrough} onInspect={handleInspectMission} onCompare={() => handleStory('qualified')} /></div>;
   if (!displayMission) return <div className="app-shell"><Header health={health} onNewMission={openBuilder} onWalkthrough={openWalkthrough} /><MissionLoading failed={loadFailed} onRetry={() => { setLoadFailed(false); setRetryNonce((value) => value + 1); }} story={story} onSelectStory={handleStory} /></div>;
   const replaying = replayCursor != null && mission && replayCursor < mission.entries.length;
   return <div className="app-shell"><Header health={health} onNewMission={openBuilder} onWalkthrough={openWalkthrough} /><main><MissionHeader mission={displayMission} health={health} launchState={launchState} onNewMission={openBuilder} onWalkthrough={openWalkthrough} story={story} onSelectStory={handleStory} />{notice && <div className="notice"><span className="signal online" />{notice}</div>}<RunStrip mission={displayMission} graph={graph} /><MissionContract mission={displayMission} />
