@@ -22,7 +22,7 @@ function TinyIcon({ kind }) {
 }
 function Header({ health, onNewMission, onWalkthrough }) {
   return <header className="topbar">
-    <a className="wordmark" href="#top"><Mark /><strong>Nightwatch</strong></a>
+    <a className="wordmark" href="#top" aria-label="Nightwatch home"><img src="/nightwatch-logo.png" alt="Nightwatch" /></a>
     <div className="environment"><span className={health?.status === 'ok' ? 'signal online' : 'signal'} /><span>{health?.visibility === 'private' ? 'Operator cloud' : 'Public evidence'}</span><b>GCP</b></div>
     <nav aria-label="Mission sections">{health?.operator_enabled ? <button type="button" onClick={onNewMission}>New mission</button> : <button type="button" onClick={onWalkthrough}>Guided demo</button>}<a href="#mission">Mission</a><a href="#proof">Proof</a><a href="https://github.com/gowtham0992/Nightwatch" target="_blank" rel="noreferrer">Source ↗</a></nav>
   </header>;
