@@ -73,6 +73,12 @@ The zero-traffic candidate passed the complete walkthrough, refusal, and qualifi
 
 Visual follow-up revision `nightwatch-public-logo-completion` runs immutable image digest `sha256:943ae97eb59e087a7c697534439c53eb47aa52854a5780c898c30f69c83dcfee`. It adds the existing transparent Nightwatch wordmark only after the verified self-service replay reaches its refused terminal state. The zero-traffic candidate loaded the original 600×275 PNG, rendered without overflow at desktop and 390-pixel widths, kept a clean browser console, and returned 404 for the public operator route. Canonical traffic was routed to the branded revision, rolled back to healthy revision `nightwatch-public-guided-demo`, and restored. `nightwatch-public-logo-completion` now serves 100% of canonical traffic with no ERROR-level logs; rollback routes 100% traffic to `nightwatch-public-guided-demo`.
 
+## Public Mission Theater release — August 20, 2026
+
+Public revision `nightwatch-public-mission-theater-0afb0e2` runs immutable image digest `sha256:c93387970a3010800fd5a67e29322c163d199caf6cc12c954325a6022c161536`. The bare judge URL now opens a 30-second Mission Theater before the detailed evidence ledger. It presents one real handoff at a time, keeps the production/candidate authority boundary visible throughout, and ends at the deterministic refusal. Every displayed metric and artifact hash is derived from the allowlisted self-service journal; the walkthrough starts no compute and exposes no operator capability.
+
+The zero-traffic candidate passed the full refusal-to-evidence path at desktop and 390-pixel widths with 16-pixel desktop body copy, 15-pixel mobile body copy, no horizontal overflow, and clean browser consoles. Health remained `public_redacted` with `operator_enabled: false`; the self-service journal returned all six entries and exact terminal head `a738d0dafde538062d63dfbe6b5fd1540a261b303af5a74155397fa9e6d4bd0b`; the public operator route returned 404; and the revision produced no ERROR-level logs. Production traffic was routed to the release, rolled back to known-good revision `nightwatch-public-header-logo-ec0d5aa`, health-checked, and restored. The service remains capped at one instance with 512 MiB memory, uses the dedicated `nightwatch-public` service account, and grants only `roles/run.invoker` to `allUsers`.
+
 ## Enable the private Mission Control launch
 
 The implemented self-service release exposes four operator APIs only on the authenticated `nightwatch-evidence` service and only when `NIGHTWATCH_OPERATOR_MODE=1`:
