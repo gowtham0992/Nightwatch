@@ -79,6 +79,12 @@ Public revision `nightwatch-public-mission-theater-0afb0e2` runs immutable image
 
 The zero-traffic candidate passed the full refusal-to-evidence path at desktop and 390-pixel widths with 16-pixel desktop body copy, 15-pixel mobile body copy, no horizontal overflow, and clean browser consoles. Health remained `public_redacted` with `operator_enabled: false`; the self-service journal returned all six entries and exact terminal head `a738d0dafde538062d63dfbe6b5fd1540a261b303af5a74155397fa9e6d4bd0b`; the public operator route returned 404; and the revision produced no ERROR-level logs. Production traffic was routed to the release, rolled back to known-good revision `nightwatch-public-header-logo-ec0d5aa`, health-checked, and restored. The service remains capped at one instance with 512 MiB memory, uses the dedicated `nightwatch-public` service account, and grants only `roles/run.invoker` to `allUsers`.
 
+## Unified judge experience release — August 20, 2026
+
+Commit `bb46fba` runs on public revision `nightwatch-public-unified-bb46fba` from immutable image digest `sha256:09a2789b657f54efad02957b1fff8c2d96449c247919c633588ad5b8a5cc4898`. The canonical judge URL now presents one evidence-derived experience: a nine-node execution graph that replays the six immutable handoffs, activates the three Gemini repair specialists in parallel, reveals the hidden routine-recall regression, and leaves the production boundary unchanged. The qualified retained case uses the same graph as counter-proof that the deterministic gate can also pass a candidate without deploying it.
+
+The zero-traffic candidate passed the live refusal playback, qualified comparison, node inspection, public health, immutable journal, security-header, and operator-route-denial checks with a clean browser console. Its release health reports `bb46fba`; the service continues to run as `nightwatch-public@nightwatch-agentic-0992.iam.gserviceaccount.com`, is capped at one instance with 512 MiB memory, and exposes only `roles/run.invoker` to `allUsers`. No ERROR-level logs were present before or after promotion. Rollback was exercised by routing 100% traffic to `nightwatch-public-mission-theater-0afb0e2`, confirming healthy public mode, and restoring `nightwatch-public-unified-bb46fba`. The Mission Theater revision is the immediate rollback target.
+
 ## Enable the private Mission Control launch
 
 The implemented self-service release exposes four operator APIs only on the authenticated `nightwatch-evidence` service and only when `NIGHTWATCH_OPERATOR_MODE=1`:
