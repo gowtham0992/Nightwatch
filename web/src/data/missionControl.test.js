@@ -9,9 +9,15 @@ import {
   missionMetrics,
   missionFromJournal,
   SELF_SERVICE_MISSION_ID,
+  storySelectionChanges,
 } from './missionControl.js';
 
 const hash = (character) => character.repeat(64);
+
+test('selecting the active case is a no-op instead of clearing its loaded mission', () => {
+  assert.equal(storySelectionChanges(SELF_SERVICE_MISSION_ID, SELF_SERVICE_MISSION_ID), false);
+  assert.equal(storySelectionChanges(SELF_SERVICE_MISSION_ID, 'qualified'), true);
+});
 
 const journal = {
   cycle_id: 'nightwatch-live-abc123',

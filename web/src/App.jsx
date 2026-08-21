@@ -8,6 +8,7 @@ import {
   missionMetrics,
   retainedMission,
   SELF_SERVICE_MISSION_ID,
+  storySelectionChanges,
 } from './data/missionControl.js';
 import { shortHash } from './data/scamMission.js';
 import { fetchVerificationReceipt, requestVerification } from './data/missionAdapter.js';
@@ -423,6 +424,7 @@ export default function App() {
   const graph = useMemo(() => displayMission ? buildAgentGraph(displayMission) : [], [displayMission]);
   const selected = graph.find((node) => node.id === selectedId) || graph.find((node) => node.status === 'active') || graph[0];
   const handleStory = (nextStory) => {
+    if (!storySelectionChanges(story, nextStory)) return;
     const url = new URL(globalThis.location.href);
     url.searchParams.delete('mission'); url.searchParams.delete('story'); url.searchParams.delete('demo'); url.searchParams.delete('replay');
     if (nextStory === 'qualified') url.searchParams.set('story', 'qualified');

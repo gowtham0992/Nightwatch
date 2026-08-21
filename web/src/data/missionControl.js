@@ -5,6 +5,10 @@ const HASH = /^[a-f0-9]{64}$/;
 export const JUDGE_LIVE_MISSION_ID = 'nightwatch-live-89e73407c43d525c4bc19272';
 export const SELF_SERVICE_MISSION_ID = 'nightwatch-live-a786ae339253954371f524f8';
 
+export function storySelectionChanges(currentStory, nextStory) {
+  return currentStory !== nextStory;
+}
+
 export class MissionControlError extends Error {
   constructor(code, message, status = 0) {
     super(message);
