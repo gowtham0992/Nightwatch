@@ -109,6 +109,14 @@ The zero-traffic candidates passed public redacted health, authenticated private
 
 Production traffic was promoted to the new pair, routed back to known-good revisions `nightwatch-public-snowfield` and `nightwatch-evidence-snowfield`, health-checked with public mode still redacted and private operator mode still enabled, and restored to the new pair. Final canonical health reports release `judgeux-8e874be`; the primary public mission still resolves to six entries and terminal head `1d84c10b244a1261d3b1f16f0348f3d68d5c2bfeb4b1d35e4315c171b18379ee`. No verifier, mission-worker, IAM, queue, dataset, Gemini, or Modal changes were required.
 
+## Evidence-first judge dossier release — August 21, 2026
+
+UI commit `6f8aa6e` runs on public revision `nightwatch-public-dossier-6f8aa6e` from immutable service image digest `sha256:e002104d3cc278af1e4531fe9ca072f280f2f55880d28ac0fd3df01053b057f1`. The judge experience now presents the retained mission as an evidence-first product narrative: autonomous baseline discovery, Gemini diagnosis, three independently inspectable ADK specialist artifacts, one bounded Modal training attempt, deterministic four-invariant release adjudication, the six-entry hash chain, and a real qualified-but-not-deployed counter-case. The release-boundary interaction is a read-only replay and cannot start training or modify evidence.
+
+The zero-traffic candidate passed 22 frontend evidence tests, the production Vite build, public redacted health, exact six-entry mission-head validation, CSP/frame/no-sniff headers, public operator-route denial, dark and Snowfield themes, desktop/tablet/exact 390-pixel layouts, zero horizontal overflow, specialist selection, outcome switching, and the complete four-check refusal animation. The deployed revision retains the dedicated `nightwatch-public` service account, 512 MiB memory, one CPU, 20-request concurrency, 15-second timeout, scale-to-zero/max-one instance boundary, and the existing isolated public-verification configuration. It emitted no ERROR-level logs before or after promotion.
+
+Traffic was promoted to the new revision, routed back to known-good revision `nightwatch-public-judgeux-8e874be`, health-checked with `operator_enabled: false` and `visibility: public_redacted`, and restored to `nightwatch-public-dossier-6f8aa6e`. The previous judge-first revision remains the immediate rollback target. No private operator, verifier, mission worker, IAM, queue, Firestore, Gemini, Modal, dataset, or release-policy change was required.
+
 ## Enable the private Mission Control launch
 
 The implemented self-service release exposes four operator APIs only on the authenticated `nightwatch-evidence` service and only when `NIGHTWATCH_OPERATOR_MODE=1`:
