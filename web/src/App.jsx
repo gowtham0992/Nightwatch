@@ -11,7 +11,6 @@ import {
 } from './data/missionControl.js';
 import { shortHash } from './data/scamMission.js';
 import MissionBuilder from './MissionBuilder.jsx';
-import PublicMissionWalkthrough from './PublicMissionWalkthrough.jsx';
 
 function Mark() { return <span className="mark" aria-hidden="true"><i /><i /><i /></span>; }
 function TinyIcon({ kind }) {
@@ -20,11 +19,11 @@ function TinyIcon({ kind }) {
   if (kind === 'blocked') return <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8m0-8-8 8" /></svg>;
   return <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5" /></svg>;
 }
-function Header({ health, onNewMission, onWalkthrough, onEvidence, guided = false }) {
+function Header({ health, onNewMission }) {
   return <header className="topbar">
-    <a className="wordmark" href="#top" aria-label="Nightwatch home"><img src="/nightwatch-logo.png" alt="Nightwatch" /></a>
-    <div className="environment"><span className={health?.status === 'ok' ? 'signal online' : 'signal'} /><span>{health?.visibility === 'private' ? 'Operator cloud' : 'Public evidence'}</span><b>GCP</b></div>
-    {guided ? <nav aria-label="Judge experience"><span className="nav-current">Mission demo</span><button type="button" onClick={onEvidence}>Full evidence</button><a href="https://github.com/gowtham0992/Nightwatch" target="_blank" rel="noreferrer">Source ↗</a></nav> : <nav aria-label="Mission sections">{health?.operator_enabled ? <button type="button" onClick={onNewMission}>New mission</button> : <button type="button" onClick={onWalkthrough}>Guided demo</button>}<a href="#mission">Mission</a><a href="#proof">Proof</a><a href="https://github.com/gowtham0992/Nightwatch" target="_blank" rel="noreferrer">Source ↗</a></nav>}
+    <a className="wordmark" href="#top" aria-label="Nightwatch home"><Mark /><strong>NIGHTWATCH</strong></a>
+    <div className="environment"><span className={health?.status === 'ok' ? 'signal online' : 'signal'} /><span>{health?.visibility === 'private' ? 'OPERATOR CLOUD' : 'REAL RUN'}</span><b>CLOUD RUN</b>{!health?.operator_enabled && <b>READ ONLY</b>}</div>
+    <nav aria-label="Mission sections">{health?.operator_enabled && <button type="button" onClick={onNewMission}>New mission</button>}<a href="#mission">Mission</a><a href="#proof">Proof</a><a href="https://github.com/gowtham0992/Nightwatch" target="_blank" rel="noreferrer">Source ↗</a></nav>
   </header>;
 }
 
@@ -37,10 +36,9 @@ function storyFromLocation() {
 function viewFromLocation(operatorEnabled = null) {
   const params = new URLSearchParams(globalThis.location?.search || '');
   if (params.get('new') === '1') return 'builder';
-  if (params.get('demo') === '1') return 'walkthrough';
-  if (params.has('mission') || params.has('story') || params.has('replay')) return 'mission';
+  if (params.has('mission') || params.has('story') || params.has('replay') || params.get('demo') === '1') return 'mission';
   if (operatorEnabled == null) return 'auto';
-  return operatorEnabled ? 'mission' : 'walkthrough';
+  return 'mission';
 }
 
 function StorySwitch({ story, onSelect }) {
@@ -81,7 +79,7 @@ function MissionContract({ mission }) {
     <dl>
       <div><dt>Model</dt><dd>{mission.model}</dd><small>revision pinned privately</small></div>
       <div><dt>Evidence</dt><dd>{created.evidence_case_count} cases</dd><small>target · safety · regression</small></div>
-      <div><dt>Repair fleet</dt><dd>{curriculum.parallel_agents} Gemini agents</dd><small>{curriculum.curriculum_rows} validated rows</small></div>
+      <div><dt>Repair fleet</dt><dd>{curriculum.parallel_agents} Gemini specialists</dd><small>{curriculum.curriculum_rows} validated rows</small></div>
       <div><dt>Compute bound</dt><dd>{created.limits?.maximum_training_attempts} attempt</dd><small>{created.limits?.maximum_gpu_minutes} GPU-minute ceiling</small></div>
       <div><dt>Execution</dt><dd>{title(training.executor)}</dd><small>credentials server-side</small></div>
       <div><dt>Deployment</dt><dd>Not authorized</dd><small>deterministic gate only</small></div>
@@ -93,7 +91,7 @@ function RunStrip({ mission, graph }) {
   const completed = graph.filter((node) => node.status === 'complete').length;
   const progress = Math.round((completed / graph.length) * 100);
   return <div className="run-strip">
-    <div><span className="strip-label">MODEL</span><strong>{mission.model}</strong></div><div><span className="strip-label">WORKFLOW</span><strong>{mission.subject}</strong></div><div><span className="strip-label">PROGRESS</span><strong>{completed}/{graph.length} agents</strong></div>
+    <div><span className="strip-label">MODEL</span><strong>{mission.model}</strong></div><div><span className="strip-label">WORKFLOW</span><strong>{mission.subject}</strong></div><div><span className="strip-label">PROGRESS</span><strong>{completed}/{graph.length} execution nodes</strong></div>
     <div className="run-progress" aria-label={`${progress}% complete`}><span style={{ width: `${progress}%` }} /></div><div><span className="strip-label">HEAD</span><code>{shortHash(mission.headHash)}</code></div>
   </div>;
 }
@@ -118,6 +116,75 @@ function AgentTopology({ graph, selectedId, onSelect }) {
     <div className="fleet"><div className="fleet-head"><span>PARALLEL REPAIR FLEET</span><b>{authors.length} specialists</b></div><div className="fleet-cards">{authors.map((node) => <AgentCard key={node.id} node={node} compact selected={selectedId === node.id} onSelect={onSelect} />)}</div></div>
     {rest.map((node, index) => <div className="topology-tail" key={node.id}><Connector active={(index === 0 ? authors : [rest[index - 1]]).every((item) => item.status === 'complete')} /><AgentCard node={node} selected={selectedId === node.id} onSelect={onSelect} /></div>)}
   </div>;
+}
+
+function graphForPlayback(fullGraph, partialGraph, idle) {
+  const visible = new Map(partialGraph.map((node) => [node.id, node]));
+  return fullGraph.map((node) => {
+    if (idle) return { ...node, status: 'waiting', decision: null, evidence: { payload: {} } };
+    const current = visible.get(node.id);
+    if (!current) return { ...node, status: 'waiting', decision: null, evidence: { payload: {} } };
+    const specialistRunning = [...visible.values()].some((item) => item.lane === 'parallel' && item.status === 'active');
+    if (node.id === 'validator' && current.status === 'active' && specialistRunning) {
+      return { ...current, status: 'waiting' };
+    }
+    return current;
+  });
+}
+
+function BoundaryRail({ mission, replayCursor }) {
+  const complete = mission.outcome !== 'running' && replayCursor >= mission.entries.length;
+  const evaluated = replayCursor >= Math.max(1, mission.entries.length - 1);
+  const candidateState = complete ? mission.outcome : evaluated ? 'evaluated' : replayCursor > 0 ? 'isolated' : 'waiting';
+  return <aside className={`boundary-rail ${complete ? mission.outcome : ''}`} aria-label="Locked model boundary">
+    <div className="boundary-rail-head"><span>MODEL BOUNDARY</span><b>LOCKED</b></div>
+    <div className="boundary-model production"><span>PRODUCTION</span><strong>Gemma scam detector</strong><small>UNCHANGED</small></div>
+    <div className="boundary-divider"><span>No agent can cross this line</span></div>
+    <div className="boundary-model candidate"><span>CANDIDATE</span><strong>{title(candidateState)}</strong><small>{complete ? 'NOT DEPLOYED' : 'ISOLATED'}</small></div>
+    <p>No execution node has deployment authority.</p>
+  </aside>;
+}
+
+function JudgeHero({ mission, replayCursor, onRun, replaying, story, onBack }) {
+  const created = mission.entries?.[0]?.payload || {};
+  const evaluatedScores = mission.entries?.find((entry) => entry.stage === 'evaluated')?.payload?.candidate?.scores || {};
+  const evaluatedCaseCount = Object.values(evaluatedScores).reduce((total, suite) => total + (suite?.total || 0), 0);
+  const caseCount = created.evidence_case_count ?? mission.retained?.evidence?.cases ?? evaluatedCaseCount;
+  const qualified = mission.outcome === 'qualified';
+  return <section className="judge-hero" id="top">
+    <div className="judge-copy">
+      <div className="judge-eyebrow">GEMMA SCAM DETECTOR · {caseCount} FROZEN CASES</div>
+      <h1>{qualified ? <>This repair passed.<br /><em>We still didn’t deploy it.</em></> : <>It hit 100%.<br /><em>We still refused it.</em></>}</h1>
+      <p>{qualified ? 'The same bounded fleet repaired the model and passed every frozen invariant. The deterministic gate qualified the candidate—but still had no authority to deploy it.' : 'Nightwatch measured a failing Gemma model, assembled three Gemini 3.6 Flash repair specialists through ADK, trained one bounded candidate, and let deterministic code—not an agent—decide release.'}</p>
+      <div className="judge-actions">
+        {story === 'qualified' ? <button className="launch-button" type="button" onClick={onBack}><span>←</span>Return to the live refusal</button> : <button className="launch-button judge-run" type="button" onClick={onRun} disabled={replaying}><span>{replaying ? '●' : '▶'}</span>{replaying ? 'Mission running' : replayCursor == null ? 'Run the mission' : 'Replay the mission'}</button>}
+        <a className="secondary-action" href="#proof">Inspect proof ↓</a>
+      </div>
+      <small className="honesty-line">Replays a verified Cloud Run mission · starts no compute · invents no outcome</small>
+    </div>
+    <BoundaryRail mission={mission} replayCursor={replayCursor ?? 0} />
+  </section>;
+}
+
+function JudgeExperience({ mission, story, replayCursor, setReplayCursor, selectedId, setSelectedId, onSelectStory }) {
+  const qualified = story === 'qualified';
+  const partialMission = !qualified ? missionAtEntry(mission, replayCursor ?? 1) : mission;
+  const fullGraph = useMemo(() => buildAgentGraph(mission), [mission]);
+  const partialGraph = useMemo(() => buildAgentGraph(partialMission), [partialMission]);
+  const graph = useMemo(() => qualified ? fullGraph : graphForPlayback(fullGraph, partialGraph, replayCursor == null), [fullGraph, partialGraph, qualified, replayCursor]);
+  const selected = graph.find((node) => node.id === selectedId) || graph.find((node) => node.status === 'active') || graph[0];
+  const replaying = !qualified && replayCursor != null && replayCursor < mission.entries.length;
+  const runMission = () => { setSelectedId('watcher'); setReplayCursor(1); };
+  const completed = graph.filter((node) => node.status === 'complete').length;
+  return <main className="judge-experience">
+    <JudgeHero mission={mission} replayCursor={qualified ? 0 : replayCursor} onRun={runMission} replaying={replaying} story={story} onBack={() => onSelectStory(JUDGE_LIVE_MISSION_ID)} />
+    <section className="judge-mission" id="mission">
+      <div className="judge-mission-head"><div><span>AUTONOMOUS EXECUTION</span><h2>One mission. Accountable handoffs.</h2></div><div className="fleet-proof"><b>{completed}/9 execution nodes</b><span>3 Gemini repair specialists · 6 immutable handoffs · 1 deterministic release gate</span></div></div>
+      <div className="workspace-body judge-workspace"><div className="topology-wrap"><AgentTopology graph={graph} selectedId={selected.id} onSelect={setSelectedId} /></div><EvidencePanel node={selected} /></div>
+    </section>
+    <OutcomeBar mission={partialMission} onSelectStory={onSelectStory} replaying={replaying} />
+    {!qualified && replayCursor >= mission.entries.length && <section className="counter-proof"><div><span>COUNTER-PROOF</span><h2>The gate can say yes.</h2><p>Run the same governed fleet against a verified repair that passed every invariant. It qualified—and still was not deployed.</p></div><button type="button" onClick={() => onSelectStory('qualified')}>See the repair that qualified <b>→</b></button></section>}
+  </main>;
 }
 
 function title(value) { return String(value).split('_').map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' '); }
@@ -215,8 +282,8 @@ function MissionCompletion({ mission, replaying }) {
   </section>;
 }
 
-function MissionLoading({ failed, onRetry, story, onSelectStory }) {
-  return <main><section className="mission-loading" id="top"><StorySwitch story={story} onSelect={onSelectStory} /><span>{failed ? 'EVIDENCE UNAVAILABLE' : 'VERIFYING HASH CHAIN'}</span><h1>{failed ? 'The public record could not be loaded.' : 'Loading the live mission record…'}</h1><p>{failed ? 'Nightwatch will not substitute fixture data when public evidence is unavailable.' : 'Reading the redacted six-entry journal bound to its exact Firestore head.'}</p>{failed && <button type="button" className="launch-button" onClick={onRetry}>Retry evidence</button>}</section></main>;
+function MissionLoading({ failed, onRetry }) {
+  return <main><section className="mission-loading" id="top"><span>{failed ? 'EVIDENCE UNAVAILABLE' : 'VERIFYING HASH CHAIN'}</span><h1>{failed ? 'The public record could not be loaded.' : 'Loading the live mission record…'}</h1><p>{failed ? 'Nightwatch will not substitute fixture data when public evidence is unavailable.' : 'Reading the redacted six-entry journal bound to its exact Firestore head.'}</p>{failed && <button type="button" className="launch-button" onClick={onRetry}>Retry evidence</button>}</section></main>;
 }
 
 export default function App() {
@@ -231,7 +298,7 @@ export default function App() {
   const [retryNonce, setRetryNonce] = useState(0);
   const [view, setView] = useState(() => viewFromLocation());
   const [replayCursor, setReplayCursor] = useState(null);
-  useEffect(() => { let ignore = false; getHealth().then((result) => { if (!ignore) { setHealth(result); setView((current) => current === 'auto' ? viewFromLocation(result.operator_enabled) : current); } }).catch(() => { if (!ignore) { setHealth({ status: 'offline', visibility: 'public_redacted', operator_enabled: false }); setView((current) => current === 'auto' ? 'walkthrough' : current); } }); return () => { ignore = true; }; }, []);
+  useEffect(() => { let ignore = false; getHealth().then((result) => { if (!ignore) { setHealth(result); setView((current) => current === 'auto' ? viewFromLocation(result.operator_enabled) : current); } }).catch(() => { if (!ignore) { setHealth({ status: 'offline', visibility: 'public_redacted', operator_enabled: false }); setView((current) => current === 'auto' ? 'mission' : current); } }); return () => { ignore = true; }; }, []);
   useEffect(() => {
     const onPopState = () => { setStory(storyFromLocation()); setView(viewFromLocation(health?.operator_enabled ?? false)); setReplayCursor(null); };
     globalThis.addEventListener?.('popstate', onPopState);
@@ -256,7 +323,7 @@ export default function App() {
     const timer = globalThis.setTimeout(() => {
       if (reducedMotion) setReplayCursor(mission.entries.length);
       else setReplayCursor((value) => Math.min(mission.entries.length, value + 1));
-    }, reducedMotion ? 100 : 900);
+    }, reducedMotion ? 100 : 1400);
     return () => globalThis.clearTimeout(timer);
   }, [mission, replayCursor]);
   useEffect(() => {
@@ -264,6 +331,13 @@ export default function App() {
       setLaunchState('complete');
       setNotice('Replay complete. The deterministic gate refused the candidate and production stayed locked.');
     }
+  }, [mission, replayCursor]);
+  useEffect(() => {
+    if (replayCursor == null || !mission?.entries?.length) return;
+    const full = buildAgentGraph(mission);
+    const firstAuthor = full.find((node) => node.lane === 'parallel')?.id;
+    const focusByEntry = ['watcher', 'diagnostician', firstAuthor, 'trainer', 'evaluator', 'gate'];
+    setSelectedId(focusByEntry[Math.min(focusByEntry.length - 1, replayCursor - 1)] || 'watcher');
   }, [mission, replayCursor]);
   const displayMission = useMemo(() => mission && replayCursor != null ? missionAtEntry(mission, replayCursor) : mission, [mission, replayCursor]);
   const graph = useMemo(() => displayMission ? buildAgentGraph(displayMission) : [], [displayMission]);
@@ -280,16 +354,13 @@ export default function App() {
   };
   const openBuilder = () => { const url = new URL(globalThis.location.href); url.searchParams.set('new', '1'); globalThis.history.pushState({}, '', url); setView('builder'); };
   const closeBuilder = () => { const url = new URL(globalThis.location.href); url.searchParams.delete('new'); globalThis.history.pushState({}, '', url); setView('mission'); };
-  const openWalkthrough = () => { const url = new URL(globalThis.location.href); url.searchParams.delete('new'); url.searchParams.set('demo', '1'); globalThis.history.pushState({}, '', url); setView('walkthrough'); };
-  const closeWalkthrough = () => { const url = new URL(globalThis.location.href); url.searchParams.delete('demo'); if (!url.searchParams.has('mission') && !url.searchParams.has('story')) url.searchParams.set('mission', story === 'qualified' ? JUDGE_LIVE_MISSION_ID : story); globalThis.history.pushState({}, '', url); setView('mission'); };
-  const handleInspectMission = (verifiedMission) => { const url = new URL(globalThis.location.href); url.searchParams.delete('demo'); url.searchParams.delete('story'); url.searchParams.delete('replay'); url.searchParams.set('mission', SELF_SERVICE_MISSION_ID); globalThis.history.pushState({}, '', url); setMission(verifiedMission); setStory(SELF_SERVICE_MISSION_ID); setView('mission'); setSelectedId('gate'); setReplayCursor(null); setLaunchState('complete'); setNotice('Verified public projection · six immutable Cloud Run handoffs.'); };
   const handleLaunched = (result) => { const url = new URL(globalThis.location.href); url.searchParams.delete('new'); url.searchParams.set('mission', result.cycle_id); globalThis.history.pushState({}, '', url); setMission(null); setStory(result.cycle_id); setView('mission'); setLaunchState('running'); setNotice('Cloud Task accepted. Baseline scan is starting on Modal…'); };
-  if (view === 'builder') return <div className="app-shell"><Header health={health} onNewMission={openBuilder} onWalkthrough={openWalkthrough} /><MissionBuilder onCancel={closeBuilder} onLaunched={handleLaunched} /></div>;
-  if (view === 'auto') return <div className="app-shell"><Header health={health} onNewMission={openBuilder} onWalkthrough={openWalkthrough} /><main className="theater-loading"><span>OPENING NIGHTWATCH</span><h1>Preparing the verified mission…</h1></main></div>;
-  if (view === 'walkthrough') return <div className="app-shell"><Header health={health} onNewMission={openBuilder} onWalkthrough={openWalkthrough} onEvidence={closeWalkthrough} guided /><PublicMissionWalkthrough onCancel={closeWalkthrough} onInspect={handleInspectMission} onCompare={() => handleStory('qualified')} /></div>;
-  if (!displayMission) return <div className="app-shell"><Header health={health} onNewMission={openBuilder} onWalkthrough={openWalkthrough} /><MissionLoading failed={loadFailed} onRetry={() => { setLoadFailed(false); setRetryNonce((value) => value + 1); }} story={story} onSelectStory={handleStory} /></div>;
+  if (view === 'builder') return <div className="app-shell"><Header health={health} onNewMission={openBuilder} /><MissionBuilder onCancel={closeBuilder} onLaunched={handleLaunched} /></div>;
+  if (view === 'auto') return <div className="app-shell"><Header health={health} onNewMission={openBuilder} /><main className="theater-loading"><span>OPENING NIGHTWATCH</span><h1>Preparing the verified mission…</h1></main></div>;
+  if (!mission) return <div className="app-shell"><Header health={health} onNewMission={openBuilder} /><MissionLoading failed={loadFailed} onRetry={() => { setLoadFailed(false); setRetryNonce((value) => value + 1); }} /></div>;
+  if (!health?.operator_enabled) return <div className="app-shell"><Header health={health} onNewMission={openBuilder} /><JudgeExperience mission={mission} story={story} replayCursor={replayCursor} setReplayCursor={setReplayCursor} selectedId={selectedId} setSelectedId={setSelectedId} onSelectStory={handleStory} /><footer><span><Mark /><strong>Nightwatch</strong></span><p>Gemini proposes. Evidence persists. Code decides.</p><code>{shortHash(mission.headHash)}</code></footer></div>;
   const replaying = replayCursor != null && mission && replayCursor < mission.entries.length;
-  return <div className="app-shell"><Header health={health} onNewMission={openBuilder} onWalkthrough={openWalkthrough} /><main><MissionHeader mission={displayMission} health={health} launchState={launchState} onNewMission={openBuilder} onWalkthrough={openWalkthrough} story={story} onSelectStory={handleStory} />{notice && <div className="notice"><span className="signal online" />{notice}</div>}<RunStrip mission={displayMission} graph={graph} /><MissionContract mission={displayMission} />
+  return <div className="app-shell"><Header health={health} onNewMission={openBuilder} /><main><MissionHeader mission={displayMission} health={health} launchState={launchState} onNewMission={openBuilder} story={story} onSelectStory={handleStory} />{notice && <div className="notice"><span className="signal online" />{notice}</div>}<RunStrip mission={displayMission} graph={graph} /><MissionContract mission={displayMission} />
     <section className="mission-workspace" id="mission"><div className="workspace-heading"><div><span>AUTONOMOUS EXECUTION</span><h2>One mission. Accountable handoffs.</h2></div><p>Select any agent to inspect the evidence it handed downstream.</p></div><div className="workspace-body"><div className="topology-wrap"><AgentTopology graph={graph} selectedId={selected.id} onSelect={setSelectedId} /></div><EvidencePanel node={selected} /></div></section><OutcomeBar mission={displayMission} onSelectStory={handleStory} replaying={replaying} /><MissionCompletion mission={displayMission} replaying={replaying} /></main>
     <footer><span><Mark /><strong>Nightwatch</strong></span><p>Gemini proposes. Evidence persists. Code decides.</p><code>{shortHash(displayMission.headHash)}</code></footer></div>;
 }
