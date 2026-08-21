@@ -22,7 +22,7 @@ Nightwatch is an autonomous repair line for specialized AI models. One authentic
 **Track:** The Taskmaster<br>
 **Core stack:** Gemini 3.6 Flash · Google ADK · Cloud Run · Cloud Tasks · Firestore · Cloud Storage · Vertex AI · Gemma 3 · Modal<br>
 **Submission pack:** [Hosted project](https://nightwatch-public-w3a6oefsma-uc.a.run.app/) · [3:13 demo](https://youtu.be/XNeef08JqI4) · [Source code](https://github.com/gowtham0992/Nightwatch) · [Spin-up instructions](#run-the-public-product-locally) · [Architecture](docs/architecture.md) · [Google Cloud proof](cloud/DEPLOYMENT.md)<br>
-**Bonus integration:** Gemma 3 is the pinned student model repaired and evaluated by Nightwatch.
+**Bonus:** Gemma 3 is the pinned student model repaired and evaluated by Nightwatch · [Public X launch post](https://x.com/GothamSarves/status/2090937163215147229) with `#AllThingsAgenticHackathon`
 
 ## Watch Nightwatch run the complete repair mission
 
