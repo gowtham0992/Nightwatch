@@ -12,6 +12,7 @@ import {
 import { shortHash } from './data/scamMission.js';
 import { fetchVerificationReceipt, requestVerification } from './data/missionAdapter.js';
 import MissionBuilder from './MissionBuilder.jsx';
+import JudgeDossier from './JudgeDossier.jsx';
 
 const REPLAY_FRAMES = [1, 2, 3, 3.1, 3.2, 3.3, 3.4, 4, 5, 6];
 const REPLAY_DELAYS = [1800, 2500, 1500, 1500, 1500, 1500, 1700, 3100, 2500];
@@ -35,10 +36,11 @@ function TinyIcon({ kind }) {
   return <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5" /></svg>;
 }
 function Header({ health, onNewMission, theme, onToggleTheme }) {
+  const operator = health?.operator_enabled;
   return <header className="topbar">
     <a className="wordmark" href="#top"><img src="/nightwatch-logo.png" alt="Nightwatch" /></a>
     <div className="environment"><span className={health?.status === 'ok' ? 'signal online' : 'signal'} /><span>{health?.visibility === 'private' ? 'OPERATOR CLOUD' : 'REAL RUN'}</span><b>CLOUD RUN</b>{!health?.operator_enabled && <b>READ ONLY</b>}</div>
-    <nav aria-label="Mission sections">{health?.operator_enabled && <button type="button" onClick={onNewMission}>New mission</button>}<button className="theme-toggle" type="button" onClick={onToggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} title={`Switch to ${theme === 'dark' ? 'Snowfield' : 'Night'} mode`}><span aria-hidden="true">{theme === 'dark' ? '☼' : '◐'}</span><b>{theme === 'dark' ? 'Snowfield' : 'Night'}</b></button><a href="#mission">Mission</a><a href="#proof">Proof</a><a href="https://github.com/gowtham0992/Nightwatch" target="_blank" rel="noreferrer">Source ↗</a></nav>
+    <nav aria-label="Mission sections">{operator && <button type="button" onClick={onNewMission}>New mission</button>}<button className="theme-toggle" type="button" onClick={onToggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} title={`Switch to ${theme === 'dark' ? 'Snowfield' : 'Night'} mode`}><span aria-hidden="true">{theme === 'dark' ? '☼' : '◐'}</span><b>{theme === 'dark' ? 'Snowfield' : 'Night'}</b></button><a href="#mission">Mission</a>{!operator && <a href="#boundary">Boundary</a>}<a href="#proof">Proof</a><a href="https://github.com/gowtham0992/Nightwatch" target="_blank" rel="noreferrer">Source ↗</a></nav>
   </header>;
 }
 
@@ -437,7 +439,7 @@ export default function App() {
   if (view === 'builder') return <div className="app-shell">{header}<MissionBuilder onCancel={closeBuilder} onLaunched={handleLaunched} /></div>;
   if (view === 'auto') return <div className="app-shell">{header}<main className="theater-loading"><span>OPENING NIGHTWATCH</span><h1>Preparing the verified mission…</h1></main></div>;
   if (!mission) return <div className="app-shell">{header}<MissionLoading failed={loadFailed} onRetry={() => { setLoadFailed(false); setRetryNonce((value) => value + 1); }} /></div>;
-  if (!health?.operator_enabled) return <div className="app-shell">{header}<JudgeExperience mission={mission} story={story} replayCursor={replayCursor} setReplayCursor={setReplayCursor} selectedId={selectedId} setSelectedId={setSelectedId} onSelectStory={handleStory} /><footer><span><Mark /><strong>Nightwatch</strong></span><p>Gemini proposes. Evidence persists. Code decides.</p><code>{shortHash(mission.headHash)}</code></footer></div>;
+  if (!health?.operator_enabled) return <div className="app-shell">{header}<JudgeDossier mission={mission} story={story} onSelectStory={handleStory} /></div>;
   const replaying = replayCursor != null && mission && replayCursor < mission.entries.length;
   return <div className="app-shell">{header}<main><MissionHeader mission={displayMission} health={health} launchState={launchState} onNewMission={openBuilder} story={story} onSelectStory={handleStory} />{notice && <div className="notice"><span className="signal online" />{notice}</div>}<RunStrip mission={displayMission} graph={graph} /><MissionContract mission={displayMission} />
     <section className="mission-workspace" id="mission"><div className="workspace-heading"><div><span>AUTONOMOUS EXECUTION</span><h2>One mission. Accountable handoffs.</h2></div><p>Select any agent to inspect the evidence it handed downstream.</p></div><div className="workspace-body"><div className="topology-wrap"><AgentTopology graph={graph} selectedId={selected.id} onSelect={setSelectedId} /></div><EvidencePanel node={selected} /></div></section><OutcomeBar mission={displayMission} onSelectStory={handleStory} replaying={replaying} /><MissionCompletion mission={displayMission} replaying={replaying} /></main>
