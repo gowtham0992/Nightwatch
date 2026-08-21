@@ -117,6 +117,14 @@ The zero-traffic candidate passed 22 frontend evidence tests, the production Vit
 
 Traffic was promoted to the new revision, routed back to known-good revision `nightwatch-public-judgeux-8e874be`, health-checked with `operator_enabled: false` and `visibility: public_redacted`, and restored to `nightwatch-public-dossier-6f8aa6e`. The previous judge-first revision remains the immediate rollback target. No private operator, verifier, mission worker, IAM, queue, Firestore, Gemini, Modal, dataset, or release-policy change was required.
 
+## Agent-proof judge refinement — August 21, 2026
+
+UI commit `9d2e768` runs on public revision `nightwatch-public-judgeproof-9d2e768` from immutable service image digest `sha256:3c94f181708a6dad62517838a61ca474b56e32e1cda27d5796192b568d711649`. The opening viewport now names the exact Google stack, every specialist card exposes its real sealed row count and shortened immutable artifact hash, and the deterministic release boundary runs once when it enters the viewport. The manual replay remains available; reduced-motion clients resolve the checks without timed choreography.
+
+The zero-traffic candidate passed all 22 frontend evidence tests, the production Vite build, public-redacted health, the exact six-entry refusal projection and terminal head, required security headers, operator-route denial, desktop and 390-pixel layouts, both refused and qualified viewport-triggered gates, specialist receipt rendering, and a clean browser console. The revision preserves the dedicated public service account, one CPU, 512 MiB memory, 20-request concurrency, 15-second timeout, scale-to-zero/max-one boundary, existing queue settings, and zero ERROR-level release logs.
+
+Canonical traffic was promoted to the new revision, routed back to healthy known-good revision `nightwatch-public-dossier-6f8aa6e`, and restored to `nightwatch-public-judgeproof-9d2e768`. The dossier revision is the immediate rollback target. No private operator, verifier, mission worker, IAM, queue, Firestore, Gemini, Modal, dataset, evidence, or release-policy change was required.
+
 ## Enable the private Mission Control launch
 
 The implemented self-service release exposes four operator APIs only on the authenticated `nightwatch-evidence` service and only when `NIGHTWATCH_OPERATOR_MODE=1`:
