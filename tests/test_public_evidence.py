@@ -8,6 +8,7 @@ import pytest
 from nightwatch.contracts import Stage
 from nightwatch.journal import GENESIS_HASH, JournalEntry, JournalError
 from nightwatch.public_evidence import (
+    AGENT_PROOF_PUBLIC_MISSION_ID,
     JUDGE_LIVE_MISSION_ID,
     LIVE_PUBLIC_MISSION_ID,
     PUBLIC_MISSION_ID,
@@ -357,5 +358,28 @@ def test_self_service_snapshot_is_redacted_and_bound_to_real_terminal_head() -> 
     for forbidden in [
         "artifact_uri", "artifact_name", "dataset_id", "evidence_case_ids",
         "modal_call_id", "model_revision", "selected_artifact", "seed",
+    ]:
+        assert forbidden not in serialized
+
+
+def test_agent_proof_snapshot_exposes_distinct_specialist_receipts_without_private_evidence() -> None:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "artifacts"
+        / "public-mission-live-a786ae339253954371f524f8.json"
+    )
+
+    snapshot = load_public_snapshot(path, expected_cycle_id=AGENT_PROOF_PUBLIC_MISSION_ID)
+    serialized = json.dumps(snapshot, sort_keys=True)
+    outputs = snapshot["entries"][2]["payload"]["specialist_outputs"]
+
+    assert snapshot["head_hash"] == "1d84c10b244a1261d3b1f16f0348f3d68d5c2bfeb4b1d35e4315c171b18379ee"
+    assert [output["row_count"] for output in outputs] == [10, 12, 9]
+    assert len({output["artifact_sha256"] for output in outputs}) == 3
+    assert snapshot["entries"][4]["payload"]["candidate"]["critical_miss_count"] == 7
+    for forbidden in [
+        "artifact_uri", "artifact_name", "dataset_id", "evidence_case_ids",
+        "modal_call_id", "model_revision", "selected_artifact", "safety-023",
+        "repair-target-unsolicited_link_caution_boundary-002",
     ]:
         assert forbidden not in serialized

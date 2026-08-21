@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -14,6 +15,7 @@ from nightwatch.mission_orchestrator import validate_manifest_id
 
 GCS_TIMEOUT_SECONDS = 10.0
 MAX_STAGE_ARTIFACT_BYTES = 4 * 1024 * 1024
+_SPECIALIST_ID = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 
 
 def _canonical_json(value: object) -> bytes:
@@ -110,6 +112,20 @@ class GCSStageArtifactStore:
         object_name = f"missions/{cycle_id}/stages/{stage.value}.json"
         return object_name, f"gs://{self._bucket.name}/{object_name}"
 
+    def _specialist_identity(
+        self,
+        cycle_id: str,
+        stage: Stage,
+        manifest_id: str,
+        specialist: str,
+    ) -> tuple[str, str]:
+        validate_cycle_id(cycle_id)
+        validate_manifest_id(manifest_id)
+        if stage is not Stage.CURRICULUM_READY or not _SPECIALIST_ID.fullmatch(specialist):
+            raise JournalError("specialist artifact identity is invalid")
+        object_name = f"missions/{cycle_id}/stages/{stage.value}/specialists/{specialist}.json"
+        return object_name, f"gs://{self._bucket.name}/{object_name}"
+
     def read(
         self,
         cycle_id: str,
@@ -160,5 +176,61 @@ class GCSStageArtifactStore:
             existing = self.read(cycle_id, stage, manifest_id)
             if existing is None or existing.sha256 != hashlib.sha256(raw).hexdigest():
                 raise JournalError("stage artifact already exists with different evidence")
+            return existing
+        return _artifact_from_bytes(raw, uri=uri)
+
+    def read_specialist(
+        self,
+        cycle_id: str,
+        stage: Stage,
+        manifest_id: str,
+        specialist: str,
+    ) -> StageArtifact | None:
+        object_name, uri = self._specialist_identity(cycle_id, stage, manifest_id, specialist)
+        try:
+            raw = self._bucket.blob(object_name).download_as_bytes(timeout=GCS_TIMEOUT_SECONDS)
+        except NotFound:
+            return None
+        artifact = _artifact_from_bytes(raw, uri=uri)
+        if (
+            artifact.cycle_id != cycle_id
+            or artifact.stage is not stage
+            or artifact.manifest_id != manifest_id
+            or artifact.payload.get("specialist") != specialist
+        ):
+            raise JournalError("stored specialist artifact identity does not match its object path")
+        return artifact
+
+    def create_specialist(
+        self,
+        cycle_id: str,
+        stage: Stage,
+        manifest_id: str,
+        specialist: str,
+        payload: dict[str, Any],
+    ) -> StageArtifact:
+        object_name, uri = self._specialist_identity(cycle_id, stage, manifest_id, specialist)
+        if payload.get("specialist") != specialist:
+            raise JournalError("specialist artifact payload identity is invalid")
+        raw = _canonical_json(
+            {
+                "cycle_id": cycle_id,
+                "manifest_id": manifest_id,
+                "payload": payload,
+                "stage": stage.value,
+            }
+        )
+        blob = self._bucket.blob(object_name)
+        try:
+            blob.upload_from_string(
+                raw,
+                content_type="application/json",
+                if_generation_match=0,
+                timeout=GCS_TIMEOUT_SECONDS,
+            )
+        except (Conflict, PreconditionFailed):
+            existing = self.read_specialist(cycle_id, stage, manifest_id, specialist)
+            if existing is None or existing.sha256 != hashlib.sha256(raw).hexdigest():
+                raise JournalError("specialist artifact already exists with different evidence")
             return existing
         return _artifact_from_bytes(raw, uri=uri)

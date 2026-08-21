@@ -15,12 +15,14 @@ PUBLIC_MISSION_ID = "nightwatch-v2-qualification"
 LIVE_PUBLIC_MISSION_ID = "nightwatch-cloud-20260811-001"
 JUDGE_LIVE_MISSION_ID = "nightwatch-live-89e73407c43d525c4bc19272"
 SELF_SERVICE_PUBLIC_MISSION_ID = "nightwatch-live-fe8a4e9d756508004f9214de"
+AGENT_PROOF_PUBLIC_MISSION_ID = "nightwatch-live-a786ae339253954371f524f8"
 PUBLIC_MISSION_IDS = frozenset(
     {
         PUBLIC_MISSION_ID,
         LIVE_PUBLIC_MISSION_ID,
         JUDGE_LIVE_MISSION_ID,
         SELF_SERVICE_PUBLIC_MISSION_ID,
+        AGENT_PROOF_PUBLIC_MISSION_ID,
     }
 )
 PUBLIC_IDEMPOTENCY_KEY = "public:nightwatch-v2-proof:isolated-v1"
@@ -54,6 +56,7 @@ _ALLOWED_KEYS = {
     "actor",
     "adjudicated_disagreements",
     "architect",
+    "assignment",
     "artifact_sha256",
     "attempts",
     "attempt",
@@ -122,6 +125,7 @@ _ALLOWED_KEYS = {
     "regression_drop",
     "regression_label_recall",
     "repair_families",
+    "row_count",
     "require_zero_critical_misses",
     "reason_count",
     "reasons",
@@ -132,6 +136,8 @@ _ALLOWED_KEYS = {
     "safety_accuracy",
     "scores",
     "selection_policy",
+    "specialist",
+    "specialist_outputs",
     "stage",
     "subject",
     "target",
@@ -461,20 +467,23 @@ def _public_generic_payload(entry: JournalEntry) -> dict[str, Any]:
             "deployment_authorized": _required(payload, "deployment_authorized"),
         }
     if entry.stage is Stage.DIAGNOSED:
+        observed_error_count = _required(payload, "observed_error_count")
+        if not isinstance(observed_error_count, int) or observed_error_count < 1:
+            raise JournalError("public generic diagnosis count is malformed")
         return {
             **common,
             "actor": _required(payload, "actor"),
             "model": _required(payload, "model"),
             "headline": _required(payload, "headline"),
-            "finding": _required(payload, "failure_pattern"),
-            "observed_error_count": _required(payload, "observed_error_count"),
+            "finding": f"{observed_error_count} frozen cases failed across the bounded repair families.",
+            "observed_error_count": observed_error_count,
             "repair_families": _required(payload, "repair_families"),
             "authorized_action": _required(payload, "authorized_action"),
             "forbidden_action": _required(payload, "forbidden_action"),
             "artifact_sha256": _required(payload, "artifact_sha256"),
         }
     if entry.stage is Stage.CURRICULUM_READY:
-        return {
+        result = {
             **common,
             "architect": _required(payload, "architect"),
             "repair_families": _required(payload, "repair_families"),
@@ -483,6 +492,28 @@ def _public_generic_payload(entry: JournalEntry) -> dict[str, Any]:
             "leakage_check": _required(payload, "leakage_check"),
             "artifact_sha256": _required(payload, "artifact_sha256"),
         }
+        outputs = payload.get("specialist_outputs")
+        if outputs is not None:
+            if not isinstance(outputs, list) or not 1 <= len(outputs) <= 6:
+                raise JournalError("public generic specialist evidence is malformed")
+            projected_outputs = []
+            for output in outputs:
+                if not isinstance(output, dict):
+                    raise JournalError("public generic specialist evidence is malformed")
+                artifact_sha256 = _required(output, "artifact_sha256")
+                row_count = _required(output, "row_count")
+                if not isinstance(artifact_sha256, str) or not _HASH.fullmatch(artifact_sha256):
+                    raise JournalError("public generic specialist hash is malformed")
+                if not isinstance(row_count, int) or not 1 <= row_count <= 16:
+                    raise JournalError("public generic specialist row count is malformed")
+                projected_outputs.append({
+                    "specialist": _required(output, "specialist"),
+                    "assignment": _required(output, "assignment"),
+                    "row_count": row_count,
+                    "artifact_sha256": artifact_sha256,
+                })
+            result["specialist_outputs"] = projected_outputs
+        return result
     if entry.stage is Stage.TRAINED:
         attempts = _required(payload, "attempts")
         if not isinstance(attempts, list) or not all(isinstance(attempt, dict) for attempt in attempts):
@@ -531,7 +562,7 @@ def _public_generic_payload(entry: JournalEntry) -> dict[str, Any]:
 
 
 def _public_payload(entry: JournalEntry) -> dict[str, Any]:
-    if entry.cycle_id == SELF_SERVICE_PUBLIC_MISSION_ID:
+    if entry.cycle_id in {SELF_SERVICE_PUBLIC_MISSION_ID, AGENT_PROOF_PUBLIC_MISSION_ID}:
         return _public_generic_payload(entry)
     if entry.cycle_id == JUDGE_LIVE_MISSION_ID:
         return _public_scam_payload(entry)

@@ -28,6 +28,12 @@ class Artifacts:
         existing = self.values.setdefault((cycle_id, stage, manifest_id), artifact)
         assert existing.payload == payload
         return existing
+    def create_specialist(self, cycle_id, stage, manifest_id, specialist, payload):
+        raw = json.dumps(payload, sort_keys=True).encode()
+        artifact = StageArtifact(cycle_id, stage, manifest_id, payload, hashlib.sha256(raw).hexdigest(), f"memory://{cycle_id}/{stage.value}/specialists/{specialist}")
+        existing = self.values.setdefault((cycle_id, stage, manifest_id, specialist), artifact)
+        assert existing.payload == payload
+        return existing
 
 
 class Runtime:
@@ -60,7 +66,15 @@ def test_dynamic_mission_discovers_failure_and_reaches_deterministic_gate(tmp_pa
 
     async def curriculum(_diagnosis, _packet, _contract):
         rows = [{"text": f"Original authored example {index}", "label": contract.labels[index % len(contract.labels)], "specialist": "fleet"} for index in range(24)]
-        return {"specialists": ["target_repair", "safety_boundary", "regression_guard"], "batches": [], "rows": rows}
+        batches = []
+        for batch_index, specialist in enumerate(("target_repair", "safety_boundary", "regression_guard")):
+            start = batch_index * 8
+            batches.append({
+                "specialist": specialist,
+                "rationale": f"Bounded rationale for {specialist}",
+                "examples": [{"text": row["text"], "label": row["label"]} for row in rows[start:start + 8]],
+            })
+        return {"specialists": ["target_repair", "safety_boundary", "regression_guard"], "batches": batches, "rows": rows}
 
     monkeypatch.setattr("nightwatch.generic_mission_stages.diagnose_failures", diagnosis)
     monkeypatch.setattr("nightwatch.generic_mission_stages.author_parallel_curriculum", curriculum)
@@ -74,4 +88,8 @@ def test_dynamic_mission_discovers_failure_and_reaches_deterministic_gate(tmp_pa
     assert entries[0].payload["trigger"]["type"] == "discovered_baseline_failure"
     assert entries[-2].payload["decision"]["authority"] == "deterministic_code_only"
     assert entries[-1].payload["deployment_status"] == "qualified_not_deployed"
+    outputs = entries[2].payload["specialist_outputs"]
+    assert [output["specialist"] for output in outputs] == ["target_repair", "safety_boundary", "regression_guard"]
+    assert [output["row_count"] for output in outputs] == [8, 8, 8]
+    assert len({output["artifact_sha256"] for output in outputs}) == 3
     assert runtime.calls == ["baseline", "candidate"]

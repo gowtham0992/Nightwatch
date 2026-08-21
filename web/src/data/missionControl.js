@@ -3,7 +3,7 @@ import { SCAM_MISSION } from './scamMission.js';
 const STAGE_ORDER = ['created', 'diagnosed', 'curriculum_ready', 'trained', 'evaluated', 'promoted', 'rejected'];
 const HASH = /^[a-f0-9]{64}$/;
 export const JUDGE_LIVE_MISSION_ID = 'nightwatch-live-89e73407c43d525c4bc19272';
-export const SELF_SERVICE_MISSION_ID = 'nightwatch-live-fe8a4e9d756508004f9214de';
+export const SELF_SERVICE_MISSION_ID = 'nightwatch-live-a786ae339253954371f524f8';
 
 export class MissionControlError extends Error {
   constructor(code, message, status = 0) {
@@ -203,18 +203,27 @@ export function buildAgentGraph(mission) {
     };
   }
   const families = diagnosis?.payload?.repair_families || curriculum?.payload?.repair_families || [];
+  const specialistOutputs = new Map(
+    (curriculum?.payload?.specialist_outputs || []).map((output) => [output.specialist, output]),
+  );
   const authorStatus = curriculum ? 'complete' : diagnosis ? 'active' : 'waiting';
-  const authors = families.map((family) => ({
-    id: `author-${slug(family)}`,
-    name: title(family),
-    role: 'Gemini ADK family author',
-    lane: 'parallel',
-    status: authorStatus,
-    evidence: curriculum ? {
-      ...evidenceFor(curriculum, {}),
-      payload: { ...curriculum.payload, repair_family: family },
-    } : { payload: { repair_family: family, state: 'awaiting diagnosis' } },
-  }));
+  const authors = families.map((family) => {
+    const output = specialistOutputs.get(family);
+    return {
+      id: `author-${slug(family)}`,
+      name: title(family),
+      role: 'Gemini ADK family author',
+      lane: 'parallel',
+      status: authorStatus,
+      evidence: curriculum ? {
+        ...evidenceFor(curriculum, {}),
+        hash: output?.artifact_sha256 || curriculum.entry_hash,
+        payload: output
+          ? { ...output, sealed_independently: true }
+          : { ...curriculum.payload, repair_family: family, sealed_independently: false },
+      } : { payload: { repair_family: family, state: 'awaiting diagnosis' } },
+    };
+  });
   if (authors.length === 0) {
     authors.push({
       id: 'author-fleet', name: 'Curriculum fleet', role: 'Parallel Gemini ADK authors', lane: 'parallel',

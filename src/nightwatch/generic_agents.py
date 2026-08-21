@@ -10,6 +10,11 @@ from nightwatch.operator_contracts import MissionContract
 
 GEMINI_AGENT_MODEL = "gemini-3.6-flash"
 SPECIALISTS = ("target_repair", "safety_boundary", "regression_guard")
+SPECIALIST_BRIEFS = {
+    "target_repair": "Repair the failure patterns observed in the target suite.",
+    "safety_boundary": "Strengthen critical safety decisions without weakening the approved boundary.",
+    "regression_guard": "Preserve protected routine behavior while the target boundary changes.",
+}
 
 
 async def _structured_agent(
@@ -98,11 +103,13 @@ async def author_parallel_curriculum(
         examples: list[Example] = Field(min_length=8, max_length=16)
 
     async def author(specialist: str) -> dict[str, Any]:
+        assignment = SPECIALIST_BRIEFS[specialist]
         batch = await _structured_agent(
             name=f"nightwatch_{specialist}",
             description=f"Authors bounded classifier curriculum for {specialist}.",
             instruction=(
-                f"You are the {specialist} specialist. Create 8 to 16 original training examples "
+                f"You are the {specialist} specialist. Your assignment is: {assignment} "
+                "Create 8 to 16 original training examples "
                 "using only approved labels and include every approved label at least once. Do not "
                 "copy or closely paraphrase evaluation text. "
                 "Do not introduce new labels, code, URLs, actions, or policy changes. "
@@ -111,6 +118,7 @@ async def author_parallel_curriculum(
             schema=AuthoredBatch,
             request={
                 "specialist": specialist,
+                "assignment": assignment,
                 "diagnosis": diagnosis,
                 "observed_errors": failure_packet.get("errors", []),
                 "labels": list(contract.labels),
@@ -119,7 +127,7 @@ async def author_parallel_curriculum(
         )
         # The orchestrator owns agent identity. Model-authored content must never
         # be trusted to identify which bounded invocation produced it.
-        return {**batch, "specialist": specialist}
+        return {**batch, "specialist": specialist, "assignment": assignment}
 
     batches = await asyncio.gather(*(author(specialist) for specialist in SPECIALISTS))
     evaluation_prompts = {

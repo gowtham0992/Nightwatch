@@ -145,3 +145,45 @@ def test_untrusted_artifact_identity_is_rejected(cycle_id, stage, manifest_id) -
 
     with pytest.raises(JournalError):
         store.read(cycle_id, stage, manifest_id)
+
+
+def test_specialist_artifacts_are_independently_sealed_and_retry_safe() -> None:
+    store = GCSStageArtifactStore(FakeBucket())
+    payload = {
+        "specialist": "target_repair",
+        "assignment": "Repair observed target failures.",
+        "rationale": "Add bounded contrasts around the observed error family.",
+        "examples": [{"text": "Example message", "label": "block"}] * 8,
+    }
+
+    first = store.create_specialist(
+        "mission-live-006", Stage.CURRICULUM_READY, SAFETY_270M_V1.manifest_id,
+        "target_repair", payload,
+    )
+    replay = store.create_specialist(
+        "mission-live-006", Stage.CURRICULUM_READY, SAFETY_270M_V1.manifest_id,
+        "target_repair", payload,
+    )
+
+    assert replay == first
+    assert first.uri.endswith("/curriculum_ready/specialists/target_repair.json")
+    assert store.read_specialist(
+        "mission-live-006", Stage.CURRICULUM_READY, SAFETY_270M_V1.manifest_id,
+        "target_repair",
+    ) == first
+
+
+def test_specialist_artifact_rejects_path_or_payload_identity_changes() -> None:
+    store = GCSStageArtifactStore(FakeBucket())
+
+    with pytest.raises(JournalError, match="payload identity"):
+        store.create_specialist(
+            "mission-live-007", Stage.CURRICULUM_READY, SAFETY_270M_V1.manifest_id,
+            "target_repair", {"specialist": "regression_guard"},
+        )
+
+    with pytest.raises(JournalError, match="identity"):
+        store.read_specialist(
+            "mission-live-007", Stage.TRAINED, SAFETY_270M_V1.manifest_id,
+            "../escape",
+        )

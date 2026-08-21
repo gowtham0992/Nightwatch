@@ -46,6 +46,10 @@ const journal = {
         architect: { framework: 'google_adk', model: 'gemini-3.6-flash' },
         repair_families: ['official_route_safe_contrast', 'ordinary_message_routine_boundary'],
         curriculum_rows: 128, leakage_check: 'passed',
+        specialist_outputs: [
+          { specialist: 'official_route_safe_contrast', assignment: 'Repair observed target failures.', row_count: 12, artifact_sha256: hash('d') },
+          { specialist: 'ordinary_message_routine_boundary', assignment: 'Preserve protected routine behavior.', row_count: 10, artifact_sha256: hash('e') },
+        ],
       },
     },
   ],
@@ -62,6 +66,10 @@ test('journal projection exposes real parallel authors and pending downstream wo
   ]);
   assert.equal(graph.find((node) => node.id === 'diagnostician').status, 'complete');
   assert.equal(graph.find((node) => node.id === 'validator').status, 'complete');
+  assert.equal(graph[2].evidence.hash, hash('d'));
+  assert.equal(graph[3].evidence.hash, hash('e'));
+  assert.equal(graph[2].evidence.payload.row_count, 12);
+  assert.equal(graph[2].evidence.payload.sealed_independently, true);
   assert.equal(graph.find((node) => node.id === 'trainer').status, 'active');
   assert.equal(graph.find((node) => node.id === 'gate').status, 'waiting');
 });
@@ -141,7 +149,7 @@ test('live refusal metrics explain why a perfect target and safety result stayed
 });
 
 test('self-service public case exposes the real contract-to-gate mission', () => {
-  const path = new URL('../../../artifacts/public-mission-live-fe8a4e9d756508004f9214de.json', import.meta.url);
+  const path = new URL('../../../artifacts/public-mission-live-a786ae339253954371f524f8.json', import.meta.url);
   const mission = missionFromJournal(JSON.parse(readFileSync(path, 'utf8')));
   const metrics = missionMetrics(mission);
   const graph = buildAgentGraph(mission);
@@ -155,14 +163,16 @@ test('self-service public case exposes the real contract-to-gate mission', () =>
     'minimum_safety_accuracy',
     'require_zero_critical_misses',
   ]);
-  assert.deepEqual(metrics.regression, { before: 25 / 32, after: 21 / 32 });
+  assert.deepEqual(metrics.regression, { before: 25 / 32, after: 18 / 32 });
   assert.equal(metrics.criticalMisses, 7);
   assert.equal(graph.filter((node) => node.lane === 'parallel').length, 3);
+  assert.deepEqual(graph.filter((node) => node.lane === 'parallel').map((node) => node.evidence.payload.row_count), [10, 12, 9]);
+  assert.equal(new Set(graph.filter((node) => node.lane === 'parallel').map((node) => node.evidence.hash)).size, 3);
   assert.equal(graph.at(-1).decision, 'refused');
 });
 
 test('verified mission replay reveals the real journal without changing its evidence', () => {
-  const path = new URL('../../../artifacts/public-mission-live-fe8a4e9d756508004f9214de.json', import.meta.url);
+  const path = new URL('../../../artifacts/public-mission-live-a786ae339253954371f524f8.json', import.meta.url);
   const mission = missionFromJournal(JSON.parse(readFileSync(path, 'utf8')));
   const first = missionAtEntry(mission, 1);
   const evaluated = missionAtEntry(mission, 5);

@@ -11,19 +11,25 @@
   · <a href="cloud/DEPLOYMENT.md">Deployment evidence</a>
 </p>
 
-> **It hit 100%. We still refused it.** Nightwatch autonomously diagnosed and repaired a failing Gemma scam-message classifier, then blocked its own candidate because one protected behavior regressed.
+> **Three agents designed the repair. The gate found seven dangerous misses.** Nightwatch delegated three bounded repair briefs, sealed each specialist output independently, trained once, and refused the unsafe candidate.
 
 Nightwatch is an autonomous repair line for specialized AI models. One authenticated request starts a bounded mission that detects a failure, diagnoses it with Gemini, asks Google ADK specialists to design a repair, trains a pinned Gemma candidate, evaluates frozen evidence, and records a deterministic release decision. The model can propose an upgrade; it cannot approve one.
 
-> **Build status:** the public case study and authenticated self-service product are deployed and verified on Google Cloud. A real model + dataset mission completed all six stages on August 20, 2026 and correctly ended `refused_not_deployed`; its strictly redacted projection remains bundled as reproducible evidence, while the judge service remains isolated from operator authority.
+> **Build status:** the public case study and authenticated self-service product are deployed and verified on Google Cloud. The latest real model + dataset mission completed all six stages on August 20, 2026 and correctly ended `refused_not_deployed`; its three specialist artifacts have distinct immutable hashes, while the judge service remains isolated from operator authority.
 
 **Hackathon:** [All Things Agentic Hackathon](https://allthingsagentichackathon.devpost.com/)<br>
 **Track:** The Taskmaster<br>
 **Core stack:** Gemini 3.6 Flash · Google ADK · Cloud Run · Cloud Tasks · Firestore · Cloud Storage · Vertex AI · Gemma 3 · Modal
 
-## The proof is a refusal, not a victory lap
+## The proof shows what every agent actually produced
 
-The default public case is a real unattended Google Cloud mission: `nightwatch-live-89e73407c43d525c4bc19272`.
+The default public case is real mission `nightwatch-live-a786ae339253954371f524f8`. Nightwatch discovered 14 baseline errors across 92 cases, assigned three different briefs through Google ADK, and independently sealed 10 target-repair rows, 12 safety-boundary rows, and 9 regression-guard rows. The specialist artifacts have three different SHA-256 identities. One Modal call trained the only permitted candidate in 3.3019 measured training seconds.
+
+Deterministic code then refused the candidate. Target accuracy fell from 83.3% to 75.0%, safety accuracy fell from 95.8% to 45.8%, regression accuracy fell from 78.1% to 56.3%, and seven critical cases were missed. Four fixed release invariants failed; production remained untouched. The bundled public projection contains the assignments, row counts, and hashes but excludes raw examples, case identities, dataset identity, model revision, Modal call IDs, and credentials.
+
+## The gate also catches success-shaped failures
+
+The second public case is real unattended Google Cloud mission `nightwatch-live-89e73407c43d525c4bc19272`.
 
 | Protected measure | Baseline | Candidate | Gate result |
 |---|---:|---:|---|
@@ -35,11 +41,9 @@ The default public case is a real unattended Google Cloud mission: `nightwatch-l
 
 The candidate looked excellent if judged only by its headline scores. Nightwatch caught the hidden regression and kept the release boundary locked. A second real case in the UI shows the opposite branch: a candidate that passed every fixed invariant was **qualified, not deployed**. Qualification never mutates a production model pointer.
 
-The authenticated product has also completed its first real self-service run: `nightwatch-live-fe8a4e9d756508004f9214de`. Nightwatch evaluated the selected Gemma adapter on a content-addressed 92-row dataset, discovered 14 errors, diagnosed the failure with Gemini, accepted 32 rows from three parallel ADK specialists after deterministic validation, trained exactly one Modal candidate, and refused it. Target accuracy fell from 83.3% to 72.2%, regression accuracy fell from 78.1% to 65.6%, safety accuracy fell from 95.8% to 45.8%, and seven critical cases were missed. Its terminal hash is `a738d0dafde538062d63dfbe6b5fd1540a261b303af5a74155397fa9e6d4bd0b`; production remained untouched. Its allowlisted projection remains in the repository with raw examples, model revision, dataset identity, Modal call IDs, and every control credential removed.
-
 The refusal baseline is historical evidence from an earlier live worker input on the expanded 92-case suite; its coverage record contains 24 mismatched case identities. The candidate has complete coverage, and the gate refused it for the independently measured routine-recall regression—not for baseline coverage. A later full-coverage reproduction scored the same retained baseline at 30/36 target cases before qualifying a separate cycle-bound candidate. These baselines are different evidence versions and are not presented as interchangeable measurements. The exact provenance is documented in [the scam-safety evidence archive](artifacts/scam-safety/README.md).
 
-Open the [live judge experience](https://nightwatch-public-w3a6oefsma-uc.a.run.app/). One click replays the verified Cloud Run journal directly on the nine-node execution graph: the watcher and diagnostician hand off to three parallel Gemini specialists, the bounded candidate is trained and evaluated, and deterministic code reveals the hidden recall regression that blocked release. Every node is inspectable, the opposite qualified branch is available as counter-proof, and the public experience starts no compute or operator action.
+Open the [live judge experience](https://nightwatch-public-w3a6oefsma-uc.a.run.app/). One click replays the verified Cloud Run journal directly on the nine-node execution graph. Each Gemini specialist exposes its own assignment, row count, and immutable artifact hash before the validator, trainer, evaluator, and deterministic gate advance. The hidden-regression refusal and qualified branch remain separate case files; replay starts no compute or operator action.
 
 ## This is a Taskmaster, not a chatbot
 
@@ -51,7 +55,7 @@ Nightwatch owns that workflow from trigger to decision:
 |---|---|---|---|
 | 1. Watch | Watcher | Evaluates the selected baseline on the uploaded evidence and proves a repairable failure exists | Immutable baseline predictions and Firestore `created` entry |
 | 2. Diagnose | Gemini/ADK diagnostician | Sees bounded failure evidence and isolates repair families | Create-only diagnosis artifact |
-| 3. Design | Three ADK curriculum specialists | Author parallel, targeted repair examples | Validated curriculum and leakage report |
+| 3. Design | Three ADK curriculum specialists | Author parallel, targeted repair examples | Three independently sealed specialist artifacts plus aggregate validation and leakage report |
 | 4. Train | Trainer | Launches one pinned Gemma LoRA training call on Modal | Call claim, adapter, predictions, training report |
 | 5. Evaluate | Deterministic evaluator | Scores target, safety, regression, recall, coverage, and critical misses | Immutable evaluation report |
 | 6. Decide | Release gate | Applies versioned code-only invariants | `qualified_not_deployed` or `refused_not_deployed` |
@@ -190,7 +194,7 @@ The second fixture is intentionally high-scoring but unsafe; the gate must refus
 A live mission has external effects and can spend Gemini and Modal credits. Do not place tokens in the repository.
 
 1. Accept the Gemma model terms and provide `HF_TOKEN` to the named Modal secret `nightwatch-huggingface`.
-2. Authenticate Google Cloud with Application Default Credentials and enable Vertex AI, Cloud Run, Cloud Tasks, Firestore, Cloud Storage, Artifact Registry, Cloud Build, and IAM.
+2. Authenticate Google Cloud with Application Default Credentials and enable Vertex AI, Cloud Run, Cloud Tasks, Firestore, Cloud Storage, Artifact Registry, Cloud Build, and IAM. Configure the private ADK worker with `GOOGLE_GENAI_USE_VERTEXAI=TRUE`, `GOOGLE_CLOUD_PROJECT=YOUR_PROJECT_ID`, and an approved `GOOGLE_CLOUD_LOCATION`; its service account requires Vertex AI invocation permission. The deployed Nightwatch worker uses `global`.
 3. Install the live dependencies with `uv sync --extra agent --extra experiment --extra service --extra dev`.
 4. Create the separate runtime and OIDC invoker service accounts described in [cloud/DEPLOYMENT.md](cloud/DEPLOYMENT.md).
 5. Build with [cloud/service-build.yaml](cloud/service-build.yaml) and [cloud/mission-build.yaml](cloud/mission-build.yaml), deploy immutable image digests, then enable only the private operator route.

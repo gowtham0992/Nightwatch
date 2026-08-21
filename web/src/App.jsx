@@ -10,7 +10,11 @@ import {
   SELF_SERVICE_MISSION_ID,
 } from './data/missionControl.js';
 import { shortHash } from './data/scamMission.js';
+import { fetchVerificationReceipt, requestVerification } from './data/missionAdapter.js';
 import MissionBuilder from './MissionBuilder.jsx';
+
+const REPLAY_FRAMES = [1, 2, 3, 3.1, 3.2, 3.3, 3.4, 4, 5, 6];
+const REPLAY_DELAYS = [1800, 2500, 1500, 1500, 1500, 1500, 1700, 3100, 2500];
 
 function Mark() { return <span className="mark" aria-hidden="true"><i /><i /><i /></span>; }
 function TinyIcon({ kind }) {
@@ -30,7 +34,7 @@ function Header({ health, onNewMission }) {
 function storyFromLocation() {
   const params = new URLSearchParams(globalThis.location?.search || '');
   if (params.get('story') === 'qualified') return 'qualified';
-  return params.get('mission') || JUDGE_LIVE_MISSION_ID;
+  return params.get('mission') || SELF_SERVICE_MISSION_ID;
 }
 
 function viewFromLocation(operatorEnabled = null) {
@@ -44,8 +48,8 @@ function viewFromLocation(operatorEnabled = null) {
 function StorySwitch({ story, onSelect }) {
   return <div className="story-switch" aria-label="Choose a verified mission outcome">
     <span>CASE FILE</span>
-    <button type="button" className={story === JUDGE_LIVE_MISSION_ID ? 'active refused' : ''} onClick={() => onSelect(JUDGE_LIVE_MISSION_ID)}><i />Live refusal</button>
-    <button type="button" className={story === SELF_SERVICE_MISSION_ID ? 'active refused' : ''} onClick={() => onSelect(SELF_SERVICE_MISSION_ID)}><i />Self-service run</button>
+    <button type="button" className={story === SELF_SERVICE_MISSION_ID ? 'active refused' : ''} onClick={() => onSelect(SELF_SERVICE_MISSION_ID)}><i />Agent proof</button>
+    <button type="button" className={story === JUDGE_LIVE_MISSION_ID ? 'active refused' : ''} onClick={() => onSelect(JUDGE_LIVE_MISSION_ID)}><i />Hidden regression</button>
     <button type="button" className={story === 'qualified' ? 'active' : ''} onClick={() => onSelect('qualified')}><i />Qualified repair</button>
   </div>;
 }
@@ -118,17 +122,20 @@ function AgentTopology({ graph, selectedId, onSelect }) {
   </div>;
 }
 
-function graphForPlayback(fullGraph, partialGraph, idle) {
-  const visible = new Map(partialGraph.map((node) => [node.id, node]));
+function graphForPlayback(fullGraph, idle, phase) {
   return fullGraph.map((node) => {
     if (idle) return { ...node, status: 'waiting', decision: null, evidence: { payload: {} } };
-    const current = visible.get(node.id);
-    if (!current) return { ...node, status: 'waiting', decision: null, evidence: { payload: {} } };
-    const specialistRunning = [...visible.values()].some((item) => item.lane === 'parallel' && item.status === 'active');
-    if (node.id === 'validator' && current.status === 'active' && specialistRunning) {
-      return { ...current, status: 'waiting' };
-    }
-    return current;
+    let status = 'waiting';
+    if (node.id === 'watcher') status = phase === 1 ? 'active' : phase > 1 ? 'complete' : 'waiting';
+    else if (node.id === 'diagnostician') status = phase === 2 ? 'active' : phase > 2 ? 'complete' : 'waiting';
+    else if (node.lane === 'parallel') status = phase === 3 ? 'active' : phase > 3 ? 'complete' : 'waiting';
+    else if (node.id === 'validator') status = phase === 3.4 ? 'active' : phase > 3.4 ? 'complete' : 'waiting';
+    else if (node.id === 'trainer') status = phase === 4 ? 'active' : phase > 4 ? 'complete' : 'waiting';
+    else if (node.id === 'evaluator') status = phase === 5 ? 'active' : phase > 5 ? 'complete' : 'waiting';
+    else if (node.id === 'gate') status = phase >= 6 ? 'complete' : 'waiting';
+    return status === 'waiting'
+      ? { ...node, status, decision: null, evidence: { payload: {} } }
+      : { ...node, status, decision: node.id === 'gate' && phase < 6 ? null : node.decision };
   });
 }
 
@@ -150,12 +157,19 @@ function JudgeHero({ mission, replayCursor, onRun, replaying, story, onBack }) {
   const evaluatedScores = mission.entries?.find((entry) => entry.stage === 'evaluated')?.payload?.candidate?.scores || {};
   const evaluatedCaseCount = Object.values(evaluatedScores).reduce((total, suite) => total + (suite?.total || 0), 0);
   const caseCount = created.evidence_case_count ?? mission.retained?.evidence?.cases ?? evaluatedCaseCount;
+  const baselineTarget = mission.entries?.find((entry) => entry.stage === 'evaluated')?.payload?.baseline?.scores?.target;
+  const targetMisses = Number.isInteger(baselineTarget?.total) && Number.isInteger(baselineTarget?.correct)
+    ? baselineTarget.total - baselineTarget.correct
+    : null;
   const qualified = mission.outcome === 'qualified';
+  const isAgentProof = mission.id === SELF_SERVICE_MISSION_ID;
+  const criticalMisses = missionMetrics(mission)?.criticalMisses;
   return <section className="judge-hero" id="top">
     <div className="judge-copy">
-      <div className="judge-eyebrow">GEMMA SCAM DETECTOR · {caseCount} FROZEN CASES</div>
-      <h1>{qualified ? <>This repair passed.<br /><em>We still didn’t deploy it.</em></> : <>It hit 100%.<br /><em>We still refused it.</em></>}</h1>
-      <p>{qualified ? 'The same bounded fleet repaired the model and passed every frozen invariant. The deterministic gate qualified the candidate—but still had no authority to deploy it.' : 'Nightwatch measured a failing Gemma model, assembled three Gemini 3.6 Flash repair specialists through ADK, trained one bounded candidate, and let deterministic code—not an agent—decide release.'}</p>
+      <div className="judge-eyebrow">{qualified ? `GEMMA SCAM DETECTOR · ${caseCount} FROZEN CASES` : isAgentProof ? `LIVE SELF-SERVICE MISSION · ${created.trigger?.observed_error_count ?? 14} BASELINE ERRORS` : `PRODUCTION SCAM FILTER · ${targetMisses ?? 'OBSERVED'} TARGET CASES MISSED`}</div>
+      <h1>{qualified ? <>This repair passed.<br /><em>We still didn’t deploy it.</em></> : isAgentProof ? <>Three agents designed the repair.<br /><em>The gate found {criticalMisses} dangerous misses.</em></> : <>It hit 100%.<br /><em>We still refused it.</em></>}</h1>
+      <p>{qualified ? 'The same bounded fleet repaired the model and passed every frozen invariant. The deterministic gate qualified the candidate—but still had no authority to deploy it.' : isAgentProof ? 'An operator froze a real Gemma model, dataset, evidence suites, and compute ceiling. Nightwatch discovered the failure, delegated three distinct repair briefs through ADK, trained once, and refused the unsafe result.' : 'Nightwatch measured a failing Gemma model, assembled three Gemini 3.6 Flash repair specialists through ADK, trained one bounded candidate, and let deterministic code—not an agent—decide release.'}</p>
+      <p className="judge-value"><b>For ML platform teams:</b> one autonomous repair loop replaces manual failure triage, curriculum design, bounded retraining, regression testing, and release paperwork—without giving an agent deployment authority.</p>
       <div className="judge-actions">
         {story === 'qualified' ? <button className="launch-button" type="button" onClick={onBack}><span>←</span>Return to the live refusal</button> : <button className="launch-button judge-run" type="button" onClick={onRun} disabled={replaying}><span>{replaying ? '●' : '▶'}</span>{replaying ? 'Mission running' : replayCursor == null ? 'Run the mission' : 'Replay the mission'}</button>}
         <a className="secondary-action" href="#proof">Inspect proof ↓</a>
@@ -168,21 +182,21 @@ function JudgeHero({ mission, replayCursor, onRun, replaying, story, onBack }) {
 
 function JudgeExperience({ mission, story, replayCursor, setReplayCursor, selectedId, setSelectedId, onSelectStory }) {
   const qualified = story === 'qualified';
-  const partialMission = !qualified ? missionAtEntry(mission, replayCursor ?? 1) : mission;
+  const partialMission = !qualified ? missionAtEntry(mission, Math.trunc(replayCursor ?? 1)) : mission;
   const fullGraph = useMemo(() => buildAgentGraph(mission), [mission]);
-  const partialGraph = useMemo(() => buildAgentGraph(partialMission), [partialMission]);
-  const graph = useMemo(() => qualified ? fullGraph : graphForPlayback(fullGraph, partialGraph, replayCursor == null), [fullGraph, partialGraph, qualified, replayCursor]);
+  const graph = useMemo(() => qualified ? fullGraph : graphForPlayback(fullGraph, replayCursor == null, replayCursor), [fullGraph, qualified, replayCursor]);
   const selected = graph.find((node) => node.id === selectedId) || graph.find((node) => node.status === 'active') || graph[0];
   const replaying = !qualified && replayCursor != null && replayCursor < mission.entries.length;
   const runMission = () => { setSelectedId('watcher'); setReplayCursor(1); };
   const completed = graph.filter((node) => node.status === 'complete').length;
   return <main className="judge-experience">
-    <JudgeHero mission={mission} replayCursor={qualified ? 0 : replayCursor} onRun={runMission} replaying={replaying} story={story} onBack={() => onSelectStory(JUDGE_LIVE_MISSION_ID)} />
+    <JudgeHero mission={mission} replayCursor={qualified ? 0 : replayCursor} onRun={runMission} replaying={replaying} story={story} onBack={() => onSelectStory(SELF_SERVICE_MISSION_ID)} />
     <section className="judge-mission" id="mission">
       <div className="judge-mission-head"><div><span>AUTONOMOUS EXECUTION</span><h2>One mission. Accountable handoffs.</h2></div><div className="fleet-proof"><b>{completed}/9 execution nodes</b><span>3 Gemini repair specialists · 6 immutable handoffs · 1 deterministic release gate</span></div></div>
       <div className="workspace-body judge-workspace"><div className="topology-wrap"><AgentTopology graph={graph} selectedId={selected.id} onSelect={setSelectedId} /></div><EvidencePanel node={selected} /></div>
     </section>
     <OutcomeBar mission={partialMission} onSelectStory={onSelectStory} replaying={replaying} />
+    {!qualified && replayCursor >= mission.entries.length && <CloudProof mission={mission} />}
     {!qualified && replayCursor >= mission.entries.length && <section className="counter-proof"><div><span>COUNTER-PROOF</span><h2>The gate can say yes.</h2><p>Run the same governed fleet against a verified repair that passed every invariant. It qualified—and still was not deployed.</p></div><button type="button" onClick={() => onSelectStory('qualified')}>See the repair that qualified <b>→</b></button></section>}
   </main>;
 }
@@ -198,6 +212,14 @@ function renderValue(value) {
 }
 function transition(before, after) { return `${percent(before)} → ${percent(after)}`; }
 function evidenceRows(payload) {
+  if (payload.specialist && Number.isInteger(payload.row_count)) {
+    return [
+      ['assignment', payload.assignment],
+      ['sealed rows', payload.row_count],
+      ['specialist', payload.specialist],
+      ['independent artifact', payload.sealed_independently],
+    ];
+  }
   if (payload.baseline?.scores && payload.candidate?.scores) {
     const routineBefore = payload.baseline.label_recall?.regression?.routine?.accuracy;
     const routineAfter = payload.candidate.label_recall?.regression?.routine?.accuracy;
@@ -239,6 +261,42 @@ function evidenceRows(payload) {
   const preferred = ['headline', 'summary', 'observed_error_count', 'repair_family', 'repair_families', 'curriculum_rows', 'leakage_check', 'accepted', 'outcome', 'deployment_status'];
   const keys = [...preferred.filter((key) => key in payload), ...Object.keys(payload).filter((key) => !preferred.includes(key) && !['manifest_id', 'artifact_uri', 'public_summary'].includes(key))].slice(0, 7);
   return keys.map((key) => [key, payload[key]]);
+}
+
+function CloudProof({ mission }) {
+  const [verification, setVerification] = useState({ status: 'idle' });
+  useEffect(() => { setVerification({ status: 'idle' }); }, [mission.id, mission.headHash]);
+  useEffect(() => {
+    if (verification.status !== 'pending') return undefined;
+    let cancelled = false; let timer; let attempts = 0;
+    const poll = async () => {
+      try {
+        const receipt = await fetchVerificationReceipt(mission.id, verification.verificationId);
+        if (cancelled) return;
+        if (receipt.status === 'verified') setVerification({ status: 'verified', receipt });
+        else if (attempts++ < 20) timer = globalThis.setTimeout(poll, 750);
+        else setVerification({ status: 'error', message: 'Cloud verification timed out. Try again.' });
+      } catch (error) {
+        if (!cancelled) setVerification({ status: 'error', message: error.message || 'Cloud verification failed.' });
+      }
+    };
+    poll();
+    return () => { cancelled = true; globalThis.clearTimeout(timer); };
+  }, [mission.id, verification.status, verification.verificationId]);
+  const verify = async () => {
+    setVerification({ status: 'queueing' });
+    try {
+      const accepted = await requestVerification(mission.id, mission.headHash, 'judge-cloud-proof');
+      setVerification({ status: 'pending', verificationId: accepted.verification_id });
+    } catch (error) {
+      setVerification({ status: 'error', message: error.message || 'Cloud verification failed.' });
+    }
+  };
+  const busy = verification.status === 'queueing' || verification.status === 'pending';
+  return <section className="cloud-proof" aria-live="polite">
+    <div><span>LIVE GOOGLE CLOUD PROOF</span><h2>Don’t trust the animation. Re-read the record.</h2><p>This action queues a bounded Cloud Task, re-reads the Firestore hash chain, and seals a verification receipt in Cloud Storage.</p></div>
+    {verification.status === 'verified' ? <div className="cloud-receipt"><span>VERIFIED ON GOOGLE CLOUD</span><strong>{verification.receipt.entry_count} journal entries</strong><code>{shortHash(verification.receipt.head_hash)}</code><small>{new Date(verification.receipt.sealed_at).toISOString()}</small></div> : <div className="cloud-action"><button type="button" onClick={verify} disabled={busy}>{busy ? 'Verifying on Cloud…' : verification.status === 'error' ? 'Retry Cloud verification' : 'Verify on Google Cloud'}</button>{verification.status === 'error' && <small>{verification.message}</small>}</div>}
+  </section>;
 }
 function EvidencePanel({ node }) {
   const payload = node?.evidence?.payload || {};
@@ -320,10 +378,11 @@ export default function App() {
   useEffect(() => {
     if (replayCursor == null || !mission || replayCursor >= mission.entries.length) return undefined;
     const reducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const frameIndex = REPLAY_FRAMES.indexOf(replayCursor);
     const timer = globalThis.setTimeout(() => {
       if (reducedMotion) setReplayCursor(mission.entries.length);
-      else setReplayCursor((value) => Math.min(mission.entries.length, value + 1));
-    }, reducedMotion ? 100 : 1400);
+      else setReplayCursor(REPLAY_FRAMES[Math.min(REPLAY_FRAMES.length - 1, frameIndex + 1)]);
+    }, reducedMotion ? 100 : REPLAY_DELAYS[Math.max(0, frameIndex)]);
     return () => globalThis.clearTimeout(timer);
   }, [mission, replayCursor]);
   useEffect(() => {
@@ -335,9 +394,9 @@ export default function App() {
   useEffect(() => {
     if (replayCursor == null || !mission?.entries?.length) return;
     const full = buildAgentGraph(mission);
-    const firstAuthor = full.find((node) => node.lane === 'parallel')?.id;
-    const focusByEntry = ['watcher', 'diagnostician', firstAuthor, 'trainer', 'evaluator', 'gate'];
-    setSelectedId(focusByEntry[Math.min(focusByEntry.length - 1, replayCursor - 1)] || 'watcher');
+    const authors = full.filter((node) => node.lane === 'parallel').map((node) => node.id);
+    const focusByFrame = ['watcher', 'diagnostician', authors[0], authors[0], authors[1], authors[2], 'validator', 'trainer', 'evaluator', 'gate'];
+    setSelectedId(focusByFrame[Math.max(0, REPLAY_FRAMES.indexOf(replayCursor))] || 'watcher');
   }, [mission, replayCursor]);
   const displayMission = useMemo(() => mission && replayCursor != null ? missionAtEntry(mission, replayCursor) : mission, [mission, replayCursor]);
   const graph = useMemo(() => displayMission ? buildAgentGraph(displayMission) : [], [displayMission]);

@@ -4,7 +4,7 @@ import asyncio
 from typing import Any, Protocol
 
 from nightwatch.contracts import Stage
-from nightwatch.generic_agents import GEMINI_AGENT_MODEL, SPECIALISTS, author_parallel_curriculum, diagnose_failures
+from nightwatch.generic_agents import GEMINI_AGENT_MODEL, SPECIALISTS, SPECIALIST_BRIEFS, author_parallel_curriculum, diagnose_failures
 from nightwatch.generic_evaluation import decide_release, evaluate_predictions, validate_predictions
 from nightwatch.journal import JournalEntry, JournalError
 from nightwatch.mission_orchestrator import MissionManifest
@@ -15,6 +15,7 @@ from nightwatch.stage_artifacts import StageArtifact
 class ArtifactStore(Protocol):
     def read(self, cycle_id: str, stage: Stage, manifest_id: str) -> StageArtifact | None: ...
     def create(self, cycle_id: str, stage: Stage, manifest_id: str, payload: dict[str, Any]) -> StageArtifact: ...
+    def create_specialist(self, cycle_id: str, stage: Stage, manifest_id: str, specialist: str, payload: dict[str, Any]) -> StageArtifact: ...
 
 
 class ClassifierRuntime(Protocol):
@@ -133,8 +134,39 @@ class GenericTextClassificationStageExecutor:
             curriculum = asyncio.run(author_parallel_curriculum(diagnosis, agent_packet, contract))
         except (RuntimeError, ValueError) as exc:
             raise JournalError("parallel Gemini curriculum fleet failed its bounded contract") from exc
-        projection = {"architect": {"framework": "google_adk", "model": GEMINI_AGENT_MODEL}, "repair_families": curriculum["specialists"], "curriculum_rows": len(curriculum["rows"]), "parallel_agents": len(curriculum["specialists"]), "leakage_check": "passed"}
-        return self._create(cycle_id, Stage.CURRICULUM_READY, manifest, {"journal_payload": projection, "curriculum": curriculum})
+        batches = curriculum.get("batches")
+        if not isinstance(batches, list) or len(batches) != len(SPECIALISTS):
+            raise JournalError("parallel Gemini curriculum fleet returned incomplete specialist evidence")
+        specialist_outputs = []
+        for specialist, batch in zip(SPECIALISTS, batches, strict=True):
+            if not isinstance(batch, dict) or batch.get("specialist") != specialist:
+                raise JournalError("parallel Gemini curriculum specialist identity is invalid")
+            examples = batch.get("examples")
+            if not isinstance(examples, list) or not 8 <= len(examples) <= 16:
+                raise JournalError("parallel Gemini curriculum specialist row count is invalid")
+            assignment = SPECIALIST_BRIEFS[specialist]
+            artifact = self._artifacts.create_specialist(
+                cycle_id,
+                Stage.CURRICULUM_READY,
+                manifest.manifest_id,
+                specialist,
+                {
+                    "specialist": specialist,
+                    "assignment": assignment,
+                    "rationale": batch.get("rationale"),
+                    "examples": examples,
+                },
+            )
+            specialist_outputs.append(
+                {
+                    "specialist": specialist,
+                    "assignment": assignment,
+                    "row_count": len(examples),
+                    "artifact_sha256": artifact.sha256,
+                }
+            )
+        projection = {"architect": {"framework": "google_adk", "model": GEMINI_AGENT_MODEL}, "repair_families": curriculum["specialists"], "curriculum_rows": len(curriculum["rows"]), "parallel_agents": len(curriculum["specialists"]), "specialist_outputs": specialist_outputs, "leakage_check": "passed"}
+        return self._create(cycle_id, Stage.CURRICULUM_READY, manifest, {"journal_payload": projection, "curriculum": curriculum, "specialist_artifacts": specialist_outputs})
 
     def _train(self, cycle_id: str, manifest: MissionManifest) -> dict[str, Any]:
         contract, dataset = self._inputs(manifest)
