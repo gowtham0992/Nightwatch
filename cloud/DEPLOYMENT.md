@@ -125,6 +125,10 @@ The zero-traffic candidate passed all 22 frontend evidence tests, the production
 
 Canonical traffic was promoted to the new revision, routed back to healthy known-good revision `nightwatch-public-dossier-6f8aa6e`, and restored to `nightwatch-public-judgeproof-9d2e768`. The dossier revision is the immediate rollback target. No private operator, verifier, mission worker, IAM, queue, Firestore, Gemini, Modal, dataset, evidence, or release-policy change was required.
 
+UI fix `a7aef07` runs on public revision `nightwatch-public-activecase-a7aef07` from immutable service image digest `sha256:b00d0a67f283aefb0415e1e9df99bcc1d3c8e90d0f919ab0629e886186cbd700`. Selecting the already-active refused case is now a no-op instead of clearing the loaded mission without changing the fetch key, which previously left the judge surface on its loading state.
+
+The zero-traffic candidate passed all 23 frontend evidence tests, the production Vite build, public-redacted health, security headers, operator-route denial, the complete refusal animation, and the exact selected-case reproduction with a clean browser console. Canonical production passed the same reproduction after promotion. Traffic was routed back to healthy revision `nightwatch-public-judgeproof-9d2e768` and restored to the fixed revision; the judgeproof revision remains the immediate rollback target. The fixed revision has no ERROR-level logs, and no private operator, verifier, mission worker, IAM, queue, Firestore, Gemini, Modal, dataset, evidence, or release-policy change was required.
+
 ## Enable the private Mission Control launch
 
 The implemented self-service release exposes four operator APIs only on the authenticated `nightwatch-evidence` service and only when `NIGHTWATCH_OPERATOR_MODE=1`:
