@@ -1,4 +1,6 @@
 .venv/
+.DS_Store
+**/.DS_Store
 .env
 .env.*
 !.env.example
@@ -61,3 +63,10 @@ artifacts/scam-safety/*
 web/node_modules/
 web/dist/
 web/coverage/
+
+# Local submission-production workspace. The published demo lives on YouTube.
+/UI mockups pending.zip
+/demo/
+/docs/demo-script.md
+/scripts/build_demo_visual_cut.sh
+/scripts/finalize_demo_audio.sh

@@ -1,8 +1,8 @@
-# Gemma feasibility experiment
+# Gemma model-evaluation record
 
-This experiment decides whether Nightwatch remains a model-repair product or is rescoped around governed release decisions. It must run before the event-driven cloud spine is built.
+This record preserves the model evaluations that determined Nightwatch's product scope. Predeclared thresholds and decision rules remain in their original form so the retained results can be audited without hindsight tuning.
 
-## Deployable v0 prerequisite
+## Why the evaluation required a deployable v0
 
 The untuned Gemma model is not the repair baseline: it misses every frozen safety-critical case and would not be credible as a deployed model. Before the targeted repair, train one v0 adapter on 240 general-triage examples with the silent-downstream-stall behavior explicitly withheld.
 
@@ -64,7 +64,7 @@ Use 64–128 examples per cycle, including negative examples adjacent to the tar
 
 The checked-in 11-case fixture is only a gate test and must never appear as scientific evidence in the submission.
 
-## Development-set status
+## Development-set results
 
 These are model-selection results on the independent development set, not frozen-test claims. The frozen set remains unopened for model selection.
 

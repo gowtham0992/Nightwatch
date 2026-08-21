@@ -32,7 +32,7 @@ def test_frozen_eval_and_curriculum_do_not_overlap() -> None:
     assert sum(case.suite.value == "regression" for case in cases) == 80
     assert sum(case.suite.value == "safety" for case in cases) == 30
     assert sum(case.safety_critical for case in cases) >= 10
-    assert dataset_sha256(frozen_path) in Path("docs/experiment-plan.md").read_text(encoding="utf-8")
+    assert dataset_sha256(frozen_path) in Path("docs/model-evaluation-record.md").read_text(encoding="utf-8")
     assert Path("data/eval/LABELING.md").read_text(encoding="utf-8").startswith(
         "# Evaluation labeling rubric"
     )

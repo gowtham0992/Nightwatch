@@ -6,6 +6,7 @@
 
 <p align="center">
   <a href="https://nightwatch-public-w3a6oefsma-uc.a.run.app/">Live judge experience</a>
+  · <a href="https://youtu.be/XNeef08JqI4">Demo video</a>
   · <a href="docs/architecture.md">Architecture</a>
   · <a href="docs/threat-model.md">Threat model</a>
   · <a href="cloud/DEPLOYMENT.md">Deployment evidence</a>
@@ -20,6 +21,18 @@ Nightwatch is an autonomous repair line for specialized AI models. One authentic
 **Hackathon:** [All Things Agentic Hackathon](https://allthingsagentichackathon.devpost.com/)<br>
 **Track:** The Taskmaster<br>
 **Core stack:** Gemini 3.6 Flash · Google ADK · Cloud Run · Cloud Tasks · Firestore · Cloud Storage · Vertex AI · Gemma 3 · Modal
+
+## Watch Nightwatch run the complete repair mission
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=XNeef08JqI4">
+    <img src="https://img.youtube.com/vi/XNeef08JqI4/maxresdefault.jpg" alt="Watch the Nightwatch autonomous model-repair demo" width="720">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=XNeef08JqI4"><strong>Watch the 3:13 demo</strong></a> · Real agents · Real Google Cloud execution · Deterministic release decision
+</p>
 
 ## The proof shows what every agent actually produced
 
