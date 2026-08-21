@@ -47,19 +47,87 @@ export function dossierFacts(mission) {
   const evaluatedCaseCount = Object.values(evaluation.candidate?.scores || {})
     .reduce((total, suite) => total + (suite?.total || 0), 0);
   const retainedCases = mission.retained?.evidence?.cases;
+  const retainedErrors = mission.retained
+    ? ['target', 'safety', 'regression'].reduce((total, suite) => {
+      const suiteCases = mission.retained.evidence?.[`${suite}Cases`];
+      const accuracy = mission.retained.baseline?.[suite];
+      return total + (Number.isInteger(suiteCases) && Number.isFinite(accuracy)
+        ? suiteCases - Math.round(suiteCases * accuracy)
+        : 0);
+    }, 0)
+    : null;
 
   return {
     caseCount: created.evidence_case_count ?? retainedCases ?? evaluatedCaseCount,
-    baselineErrors: created.trigger?.observed_error_count ?? diagnosis.observed_error_count ?? null,
-    curriculumRows: curriculum.curriculum_rows ?? mission.retained?.curriculum?.rows ?? null,
+    baselineErrors: created.trigger?.observed_error_count ?? diagnosis.observed_error_count ?? retainedErrors,
+    curriculumRows: curriculum.curriculum_rows ?? mission.retained?.evidence?.curriculumRows ?? null,
     trainingSeconds: training.attempts?.[0]?.runtime_seconds
       ?? training.attempts?.[0]?.training_runtime_seconds
+      ?? mission.retained?.cloudRun?.trainingRuntimeSeconds
       ?? null,
     trainingAttempts: training.attempts?.length ?? 1,
     gpuMinutes: created.limits?.maximum_gpu_minutes ?? mission.limits?.maximum_gpu_minutes ?? null,
     durationSeconds: elapsedSeconds(entries),
     specialists,
     graph,
+  };
+}
+
+function retainedSuite(mission, suite, source = 'baseline') {
+  const total = mission.retained?.evidence?.[`${suite}Cases`];
+  const accuracy = mission.retained?.[source]?.[suite];
+  if (!Number.isInteger(total) || !Number.isFinite(accuracy)) return null;
+  return { accuracy, correct: Math.round(total * accuracy), total };
+}
+
+export function discoveryEvidence(mission) {
+  if (mission?.mode === 'retained') {
+    const diagnosis = mission.retained.stages?.find((stage) => stage.id === 'diagnose');
+    return {
+      scores: {
+        target: retainedSuite(mission, 'target'),
+        safety: retainedSuite(mission, 'safety'),
+        regression: retainedSuite(mission, 'regression'),
+      },
+      diagnosis: diagnosis?.headline || 'Bounded failure diagnosis',
+    };
+  }
+  const created = mission?.entries?.[0]?.payload || {};
+  return {
+    scores: created.trigger?.scores || {},
+    diagnosis: mission?.entries?.find((entry) => entry.stage === 'diagnosed')?.payload?.headline
+      || 'Bounded failure diagnosis',
+  };
+}
+
+export function evaluationEvidence(mission) {
+  if (mission?.mode === 'retained') {
+    return {
+      rows: ['target', 'safety', 'regression'].map((suite) => ({
+        suite,
+        baseline: retainedSuite(mission, suite),
+        candidate: retainedSuite(mission, suite, 'candidate'),
+      })),
+      runtimeSeconds: mission.retained.cloudRun?.trainingRuntimeSeconds,
+      examples: mission.retained.evidence?.curriculumRows,
+      executor: mission.retained.executor,
+      attempts: '1 / 1',
+    };
+  }
+  const evaluation = mission?.entries?.find((entry) => entry.stage === 'evaluated')?.payload;
+  const training = mission?.entries?.find((entry) => entry.stage === 'trained')?.payload;
+  if (!evaluation) return null;
+  return {
+    rows: ['target', 'safety', 'regression'].map((suite) => ({
+      suite,
+      baseline: evaluation.baseline?.scores?.[suite],
+      candidate: evaluation.candidate?.scores?.[suite],
+    })),
+    runtimeSeconds: training?.attempts?.[0]?.runtime_seconds
+      ?? training?.attempts?.[0]?.training_runtime_seconds,
+    examples: training?.attempts?.[0]?.examples,
+    executor: training?.executor || 'Modal',
+    attempts: `1 / ${training?.maximum_training_attempts || 1}`,
   };
 }
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fetchVerificationReceipt, requestVerification } from './data/missionAdapter.js';
-import { dossierFacts, missionRecord, releaseChecks } from './data/judgeDossier.js';
+import { discoveryEvidence, dossierFacts, evaluationEvidence, missionRecord, releaseChecks } from './data/judgeDossier.js';
 import { SELF_SERVICE_MISSION_ID } from './data/missionControl.js';
 import { shortHash } from './data/scamMission.js';
 import './judgeDossier.css';
@@ -71,7 +71,7 @@ function Hero({ mission, facts, qualified, story, onSelectStory, onStartGate }) 
     <BoundaryPreview qualified={qualified} />
     <dl className="nw-hero-proof">
       <div><dt>Execution</dt><dd>{facts.graph.length} accountable nodes</dd></div>
-      <div><dt>Agent fleet</dt><dd>{facts.specialists.length} Gemini specialists</dd></div>
+      <div><dt>{qualified ? 'Repair design' : 'Agent fleet'}</dt><dd>{qualified ? `${mission.retained?.evidence?.repairBatches} Gemini-authored batches` : `${facts.specialists.length} Gemini specialists`}</dd></div>
       <div><dt>Evidence</dt><dd>{facts.caseCount} frozen cases</dd></div>
       <div><dt>Release</dt><dd>{qualified ? '4 / 4 passed' : '4 / 4 failed'}</dd></div>
     </dl>
@@ -91,8 +91,8 @@ function ContractStrip({ mission, facts }) {
 }
 
 function Discovery({ mission, facts }) {
-  const created = mission.entries?.[0]?.payload || {};
-  const scores = created.trigger?.scores || {};
+  const evidence = discoveryEvidence(mission);
+  const scores = evidence.scores;
   return <div className="nw-discovery-grid">
     <div className="nw-discovery-statement"><strong>{facts.baselineErrors ?? '—'}</strong><p>wrong decisions discovered by Nightwatch before any repair agent was summoned.</p></div>
     <dl className="nw-score-grid">
@@ -100,7 +100,21 @@ function Discovery({ mission, facts }) {
       <div><dt>Safety suite</dt><dd>{score(scores.safety?.accuracy)}</dd><small>{scores.safety?.correct ?? '—'} / {scores.safety?.total ?? '—'} correct</small></div>
       <div><dt>Regression suite</dt><dd>{score(scores.regression?.accuracy)}</dd><small>{scores.regression?.correct ?? '—'} / {scores.regression?.total ?? '—'} correct</small></div>
     </dl>
-    <div className="nw-authority-note"><span>Gemini 3.6 Flash · Google ADK</span><blockquote>“{mission.entries?.find((entry) => entry.stage === 'diagnosed')?.payload?.headline || 'Bounded failure diagnosis'}”</blockquote><p>Allowed: author additive curriculum. Forbidden: change evidence, policy, compute, or deployment.</p></div>
+    <div className="nw-authority-note"><span>Gemini 3.6 Flash · Google ADK</span><blockquote>“{evidence.diagnosis}”</blockquote><p>Allowed: author additive curriculum. Forbidden: change evidence, policy, compute, or deployment.</p></div>
+  </div>;
+}
+
+function RetainedCurriculum({ mission }) {
+  const retained = mission.retained;
+  const design = retained.stages.find((stage) => stage.id === 'design');
+  return <div className="nw-retained-curriculum">
+    <div><span>Gemini 3.6 Flash · Google ADK</span><h3>{design.headline}</h3><p>{design.summary}</p></div>
+    <dl>
+      <div><dt>Validated rows</dt><dd>{retained.evidence.curriculumRows}</dd></div>
+      <div><dt>Repair batches</dt><dd>{retained.evidence.repairBatches}</dd></div>
+      <div><dt>Maximum similarity</dt><dd>{retained.evidence.maximumSimilarity.toFixed(3)}</dd></div>
+      <div><dt>Curriculum SHA</dt><dd><code>{shortHash(retained.hashes.curriculum)}</code></dd></div>
+    </dl>
   </div>;
 }
 
@@ -121,16 +135,11 @@ function SpecialistFleet({ facts }) {
 }
 
 function Evaluation({ mission, facts }) {
-  const evaluation = mission.entries?.find((entry) => entry.stage === 'evaluated')?.payload;
-  const training = mission.entries?.find((entry) => entry.stage === 'trained')?.payload;
-  if (!evaluation) return <div className="nw-empty-evidence">This retained qualification is summarized in the release gate below.</div>;
-  const rows = ['target', 'safety', 'regression'].map((suite) => ({
-    suite,
-    baseline: evaluation.baseline?.scores?.[suite],
-    candidate: evaluation.candidate?.scores?.[suite],
-  }));
-  return <div className="nw-evaluation">
-    <aside><span>One bounded attempt</span><strong>{facts.trainingSeconds}s</strong><p>Modal trained candidate-01 from {training?.attempts?.[0]?.examples ?? facts.curriculumRows} validated examples. The frozen contract allowed no second try.</p><dl><div><dt>Executor</dt><dd>Modal</dd></div><div><dt>Attempts</dt><dd>1 / 1</dd></div><div><dt>Production</dt><dd>isolated</dd></div></dl></aside>
+  const evidence = evaluationEvidence(mission);
+  if (!evidence) return <div className="nw-empty-evidence">Evaluation evidence is not available.</div>;
+  const { rows } = evidence;
+  return <div className={`nw-evaluation ${mission.outcome === 'qualified' ? 'qualified' : ''}`}>
+    <aside><span>One bounded attempt</span><strong>{evidence.runtimeSeconds}s</strong><p>{evidence.executor} trained candidate-01 from {evidence.examples ?? facts.curriculumRows} validated examples. The frozen contract allowed no second try.</p><dl><div><dt>Executor</dt><dd>{evidence.executor}</dd></div><div><dt>Attempts</dt><dd>{evidence.attempts}</dd></div><div><dt>Production</dt><dd>isolated</dd></div></dl></aside>
     <div className="nw-eval-table"><div className="nw-eval-row header"><span>Frozen suite</span><span>Baseline</span><span>Candidate</span><span>Change</span></div>{rows.map(({ suite, baseline, candidate }) => <div className="nw-eval-row" key={suite}><strong>{suite}</strong><span>{baseline?.correct} / {baseline?.total}<b>{score(baseline?.accuracy)}</b></span><span>{candidate?.correct} / {candidate?.total}<b>{score(candidate?.accuracy)}</b></span><em>{Number.isFinite(candidate?.accuracy - baseline?.accuracy) ? `${((candidate.accuracy - baseline.accuracy) * 100).toFixed(1)} pp` : '—'}</em></div>)}</div>
   </div>;
 }
@@ -238,7 +247,7 @@ export default function JudgeDossier({ mission, story, onSelectStory }) {
     <Hero mission={mission} facts={facts} qualified={qualified} story={story} onSelectStory={onSelectStory} onStartGate={startGate} />
     <ContractStrip mission={mission} facts={facts} />
     <Chapter number={1} kicker="Autonomous discovery" title="Nightwatch found the failure itself." copy="The repair did not begin from a score typed into a demo. The pinned Gemma model was measured against the frozen contract first." id="mission"><Discovery mission={mission} facts={facts} /></Chapter>
-    <Chapter number={2} kicker="Agent orchestration" title="One diagnosis became three accountable jobs." copy="Each Gemini specialist received a different boundary, authored a different artifact, and sealed it before the validator merged anything."><SpecialistFleet facts={facts} /></Chapter>
+    <Chapter number={2} kicker="Agent orchestration" title={qualified ? 'Gemini designed a bounded curriculum.' : 'One diagnosis became three accountable jobs.'} copy={qualified ? 'The retained passing case preserves its real five-batch repair design, validation totals, and content-addressed curriculum.' : 'Each Gemini specialist received a different boundary, authored a different artifact, and sealed it before the validator merged anything.'}>{qualified ? <RetainedCurriculum mission={mission} /> : <SpecialistFleet facts={facts} />}</Chapter>
     <Chapter number={3} kicker="Bounded repair" title="One candidate. No hidden retries." copy="Nightwatch spent the single training attempt the operator authorised, then evaluated the result against exactly the same evidence."><Evaluation mission={mission} facts={facts} /></Chapter>
     <Chapter number={4} kicker="The release boundary" title="The agents finish. The evidence takes over." copy="This is the separation Nightwatch exists to enforce: Gemini can design a repair, but it cannot relax a threshold or approve its own work." id="boundary"><ReleaseBoundary key={mission.id} mission={mission} qualified={qualified} runToken={runToken} /></Chapter>
     <Chapter number={5} kicker="Verifiable record" title={qualified ? 'The gate can say yes.' : 'Six handoffs. One tamper-evident chain.'} copy={qualified ? 'Passing the boundary qualifies a candidate for human review; it does not deploy it.' : `The completed mission ran in ${facts.durationSeconds} seconds. Every entry carries the hash of the one before it, ending at the exact head below.`} id="proof"><EvidenceRecord mission={mission} facts={facts} qualified={qualified} /></Chapter>
