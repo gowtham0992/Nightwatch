@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fetchVerificationReceipt, requestVerification } from './data/missionAdapter.js';
 import { dossierFacts, missionRecord, releaseChecks } from './data/judgeDossier.js';
 import { SELF_SERVICE_MISSION_ID } from './data/missionControl.js';
@@ -63,6 +63,10 @@ function Hero({ mission, facts, qualified, story, onSelectStory, onStartGate }) 
         <a href="#mission">Follow the mission</a>
       </div>
       <small>Read-only evidence replay · no training spend · no deployment authority</small>
+      <div className="nw-stack-line" aria-label="Google technology stack">
+        <span>Google stack</span>
+        <p>Gemini 3.6 Flash via Vertex AI · Google ADK · Cloud Run · Tasks · Firestore · Cloud Storage</p>
+      </div>
     </div>
     <BoundaryPreview qualified={qualified} />
     <dl className="nw-hero-proof">
@@ -109,7 +113,7 @@ function SpecialistFleet({ facts }) {
     <div className="nw-fleet-connector" aria-hidden="true"><span /></div>
     <div className="nw-specialists" aria-label="Independent Gemini specialist agents">
       {facts.specialists.map((specialist, index) => <button type="button" key={specialist.id} className={selected?.id === specialist.id ? 'active' : ''} aria-pressed={selected?.id === specialist.id} onClick={() => setSelectedId(specialist.id)}>
-        <span>0{index + 2}</span><small>Gemini specialist</small><strong>{specialist.name}</strong><p>{specialist.assignment}</p><b>{specialist.rows} sealed rows</b>
+        <span>0{index + 2}</span><small>Gemini specialist</small><strong>{specialist.name}</strong><p>{specialist.assignment}</p><div className="nw-specialist-receipt"><b>{specialist.rows} sealed rows</b><code>SHA {shortHash(specialist.hash)}</code></div>
       </button>)}
     </div>
     {selected && <div className="nw-selected-artifact" aria-live="polite"><div><span>Selected sealed artifact</span><code>{selected.hash}</code></div><p>{selected.rows} independently authored rows survived schema, uniqueness, and leakage validation before the curriculum was merged.</p></div>}
@@ -135,10 +139,30 @@ function ReleaseBoundary({ mission, qualified, runToken }) {
   const checks = useMemo(() => releaseChecks(mission), [mission]);
   const [step, setStep] = useState(0);
   const [running, setRunning] = useState(false);
+  const releaseRef = useRef(null);
+  const playedRef = useRef(false);
+  const handledRunTokenRef = useRef(runToken);
   const resolved = Math.min(step, checks.length);
   const complete = resolved === checks.length;
-  const run = () => { setStep(0); setRunning(true); };
-  useEffect(() => { if (runToken > 0) run(); }, [runToken]);
+  const run = useCallback(() => { setStep(0); setRunning(true); }, []);
+  useEffect(() => {
+    if (handledRunTokenRef.current === runToken) return;
+    handledRunTokenRef.current = runToken;
+    playedRef.current = true;
+    run();
+  }, [run, runToken]);
+  useEffect(() => {
+    const node = releaseRef.current;
+    if (!node || playedRef.current || !globalThis.IntersectionObserver) return undefined;
+    const observer = new globalThis.IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting) || playedRef.current) return;
+      playedRef.current = true;
+      run();
+      observer.disconnect();
+    }, { threshold: 0.38 });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [run]);
   useEffect(() => {
     if (!running) return undefined;
     const reduced = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -148,7 +172,7 @@ function ReleaseBoundary({ mission, qualified, runToken }) {
     return () => globalThis.clearTimeout(timer);
   }, [checks.length, running, step]);
   const progress = qualified ? 10 + resolved * 20.5 : 10 + resolved * 15.5;
-  return <div className={`nw-release ${qualified ? 'qualified' : 'refused'} ${complete ? 'complete' : ''}`}>
+  return <div ref={releaseRef} className={`nw-release ${qualified ? 'qualified' : 'refused'} ${complete ? 'complete' : ''}`}>
     <div className="nw-release-summary"><div><span>Deterministic code only</span><h3>{complete ? qualified ? 'Four of four passed. The line can open.' : 'Four of four failed. The line stays shut.' : running ? `Checking invariant ${resolved + 1} of ${checks.length}.` : 'The candidate reaches the line no agent can cross.'}</h3></div><b>{complete ? qualified ? 'QUALIFIED · NOT DEPLOYED' : 'REFUSED · PRODUCTION PRESERVED' : 'RELEASE PENDING'}</b></div>
     <div className="nw-release-track" aria-hidden="true"><span className="nw-candidate" style={{ '--candidate-progress': progress }}>candidate-01</span><i /><div><strong>Release line</strong><small>{complete ? qualified ? 'open for human review' : 'closed by evidence' : 'awaiting invariants'}</small></div></div>
     <ol className="nw-checks">{checks.map((check, index) => {
@@ -216,7 +240,7 @@ export default function JudgeDossier({ mission, story, onSelectStory }) {
     <Chapter number={1} kicker="Autonomous discovery" title="Nightwatch found the failure itself." copy="The repair did not begin from a score typed into a demo. The pinned Gemma model was measured against the frozen contract first." id="mission"><Discovery mission={mission} facts={facts} /></Chapter>
     <Chapter number={2} kicker="Agent orchestration" title="One diagnosis became three accountable jobs." copy="Each Gemini specialist received a different boundary, authored a different artifact, and sealed it before the validator merged anything."><SpecialistFleet facts={facts} /></Chapter>
     <Chapter number={3} kicker="Bounded repair" title="One candidate. No hidden retries." copy="Nightwatch spent the single training attempt the operator authorised, then evaluated the result against exactly the same evidence."><Evaluation mission={mission} facts={facts} /></Chapter>
-    <Chapter number={4} kicker="The release boundary" title="The agents finish. The evidence takes over." copy="This is the separation Nightwatch exists to enforce: Gemini can design a repair, but it cannot relax a threshold or approve its own work." id="boundary"><ReleaseBoundary mission={mission} qualified={qualified} runToken={runToken} /></Chapter>
+    <Chapter number={4} kicker="The release boundary" title="The agents finish. The evidence takes over." copy="This is the separation Nightwatch exists to enforce: Gemini can design a repair, but it cannot relax a threshold or approve its own work." id="boundary"><ReleaseBoundary key={mission.id} mission={mission} qualified={qualified} runToken={runToken} /></Chapter>
     <Chapter number={5} kicker="Verifiable record" title={qualified ? 'The gate can say yes.' : 'Six handoffs. One tamper-evident chain.'} copy={qualified ? 'Passing the boundary qualifies a candidate for human review; it does not deploy it.' : `The completed mission ran in ${facts.durationSeconds} seconds. Every entry carries the hash of the one before it, ending at the exact head below.`} id="proof"><EvidenceRecord mission={mission} facts={facts} qualified={qualified} /></Chapter>
     {!qualified && <section className="nw-counterproof"><div><span>Counter-proof</span><h2>A safety gate that only says “no” is theatre.</h2><p>Nightwatch has also qualified a real repair against the same four deterministic invariants. It still did not deploy it.</p></div><button type="button" onClick={() => onSelectStory('qualified')}>Inspect the qualified repair <span>→</span></button></section>}
     {qualified && <section className="nw-counterproof return"><div><span>Primary case</span><h2>Now inspect the repair Nightwatch refused.</h2><p>The refusal proves the agents cannot grade their own work or push a candidate through a broken boundary.</p></div><button type="button" onClick={() => onSelectStory(SELF_SERVICE_MISSION_ID)}>Return to the refusal <span>→</span></button></section>}
