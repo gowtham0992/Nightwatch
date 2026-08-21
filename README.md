@@ -20,7 +20,9 @@ Nightwatch is an autonomous repair line for specialized AI models. One authentic
 
 **Hackathon:** [All Things Agentic Hackathon](https://allthingsagentichackathon.devpost.com/)<br>
 **Track:** The Taskmaster<br>
-**Core stack:** Gemini 3.6 Flash · Google ADK · Cloud Run · Cloud Tasks · Firestore · Cloud Storage · Vertex AI · Gemma 3 · Modal
+**Core stack:** Gemini 3.6 Flash · Google ADK · Cloud Run · Cloud Tasks · Firestore · Cloud Storage · Vertex AI · Gemma 3 · Modal<br>
+**Submission pack:** [Hosted project](https://nightwatch-public-w3a6oefsma-uc.a.run.app/) · [3:13 demo](https://youtu.be/XNeef08JqI4) · [Source code](https://github.com/gowtham0992/Nightwatch) · [Spin-up instructions](#run-the-public-product-locally) · [Architecture](docs/architecture.md) · [Google Cloud proof](cloud/DEPLOYMENT.md)<br>
+**Bonus integration:** Gemma 3 is the pinned student model repaired and evaluated by Nightwatch.
 
 ## Watch Nightwatch run the complete repair mission
 
@@ -107,9 +109,12 @@ Every interaction has a failure policy. Stage task IDs are deterministic, Firest
 | **Google Cloud service** | **Cloud Run** hosts the public, private, worker, and verifier services; **Cloud Tasks** provides durable orchestration; **Firestore** stores the journal; **Cloud Storage** stores immutable artifacts and receipts; **Vertex AI** serves Gemini. |
 | **Autonomous action beyond chat** | One request advances detection → diagnosis → repair design → training → evaluation → release decision without hand-holding. There is no chat interface. |
 | **Hosted project** | The [public Cloud Run experience](https://nightwatch-public-w3a6oefsma-uc.a.run.app/) is available without credentials and exposes no operator capability. |
+| **Demo video** | The public [3:13 product demo](https://youtu.be/XNeef08JqI4) explains the problem and value, shows the autonomous mission and release gate, and includes visible Google Cloud deployment proof. |
+| **Source repository** | This repository contains the application, tests, deployment configuration, retained public evidence, and MIT license. |
 | **Additional Google AI model** | The student is the pinned `google/gemma-3-1b-it` model, trained as a LoRA candidate. This satisfies the optional Gemma integration bonus. |
 | **Reproducibility** | Local product, test, container, and Google Cloud deployment instructions are below and in the [deployment runbook](cloud/DEPLOYMENT.md). |
 | **Architecture and proof** | This repository includes the architecture diagram, immutable public evidence, exact release revisions, rollback results, and a fresh verification receipt. |
+| **Data and learnings** | The [data provenance](#evidence-and-data-provenance) and [experiment findings](#what-the-experiments-taught-us) are documented with the retained evidence versions that support them. |
 
 Nightwatch demonstrates autonomous operational utility, explicit failure discipline, and deployed Google Cloud execution. It is entered only in **The Taskmaster** track.
 
