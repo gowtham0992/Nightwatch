@@ -34,30 +34,6 @@ Nightwatch is an autonomous repair line for specialized AI models. One authentic
   <a href="https://www.youtube.com/watch?v=XNeef08JqI4"><strong>Watch the 3:13 demo</strong></a> · Real agents · Real Google Cloud execution · Deterministic release decision
 </p>
 
-## The proof shows what every agent actually produced
-
-The default public case is real mission `nightwatch-live-a786ae339253954371f524f8`. Nightwatch discovered 14 baseline errors across 92 cases, assigned three different briefs through Google ADK, and independently sealed 10 target-repair rows, 12 safety-boundary rows, and 9 regression-guard rows. The specialist artifacts have three different SHA-256 identities. One Modal call trained the only permitted candidate in 3.3019 measured training seconds.
-
-Deterministic code then refused the candidate. Target accuracy fell from 83.3% to 75.0%, safety accuracy fell from 95.8% to 45.8%, regression accuracy fell from 78.1% to 56.3%, and seven critical cases were missed. Four fixed release invariants failed; production remained untouched. The bundled public projection contains the assignments, row counts, and hashes but excludes raw examples, case identities, dataset identity, model revision, Modal call IDs, and credentials.
-
-## The gate also catches success-shaped failures
-
-The second public case is real unattended Google Cloud mission `nightwatch-live-89e73407c43d525c4bc19272`.
-
-| Protected measure | Baseline | Candidate | Gate result |
-|---|---:|---:|---|
-| Target accuracy | 63.9% | **100.0%** | Passed |
-| Safety accuracy | 95.8% | **100.0%** | Passed |
-| Routine-message recall | **87.5%** | 75.0% | **Failed** |
-| Critical misses | 0 | 0 | Passed |
-| Final release state | — | — | **Refused, not deployed** |
-
-The candidate looked excellent if judged only by its headline scores. Nightwatch caught the hidden regression and kept the release boundary locked. A second real case in the UI shows the opposite branch: a candidate that passed every fixed invariant was **qualified, not deployed**. Qualification never mutates a production model pointer.
-
-The refusal baseline is historical evidence from an earlier live worker input on the expanded 92-case suite; its coverage record contains 24 mismatched case identities. The candidate has complete coverage, and the gate refused it for the independently measured routine-recall regression—not for baseline coverage. A later full-coverage reproduction scored the same retained baseline at 30/36 target cases before qualifying a separate cycle-bound candidate. These baselines are different evidence versions and are not presented as interchangeable measurements. The exact provenance is documented in [the scam-safety evidence archive](artifacts/scam-safety/README.md).
-
-Open the [live judge experience](https://nightwatch-public-w3a6oefsma-uc.a.run.app/). One click replays the verified Cloud Run journal directly on the nine-node execution graph. Each Gemini specialist exposes its own assignment, row count, and immutable artifact hash before the validator, trainer, evaluator, and deterministic gate advance. The hidden-regression refusal and qualified branch remain separate case files; replay starts no compute or operator action.
-
 ## This is a Taskmaster, not a chatbot
 
 The friction is operational: when a specialized model fails, a team must reproduce the failure, understand it, prepare corrective data, spend compute on a candidate, protect old behavior, decide whether to release, and preserve an audit trail. Those steps are slow, easy to bias after seeing results, and dangerous to compress into one prompt.
@@ -74,6 +50,36 @@ Nightwatch owns that workflow from trigger to decision:
 | 6. Decide | Release gate | Applies versioned code-only invariants | `qualified_not_deployed` or `refused_not_deployed` |
 
 Cloud Tasks advances exactly one durable stage per request. A retry resumes from immutable evidence instead of repeating completed Gemini or training work. No human selects the favorable candidate, edits a threshold, or presses “approve” midway through the run.
+
+## Three real outcomes, one fixed release boundary
+
+The public experience presents three separate, evidence-backed cases. Replaying them starts no compute or operator action.
+
+### Case 1 — Unsafe repair refused
+
+Mission `nightwatch-live-a786ae339253954371f524f8` began with 14 baseline errors across 92 cases. Three Google ADK specialists independently sealed 10 target-repair rows, 12 safety-boundary rows, and 9 regression-guard rows with distinct SHA-256 identities. One Modal call trained the only permitted candidate in 3.3019 measured training seconds.
+
+The candidate then regressed: target accuracy fell from 83.3% to 75.0%, safety accuracy from 95.8% to 45.8%, and regression accuracy from 78.1% to 56.3%. It missed seven critical cases and failed four fixed invariants. Deterministic code refused it; production remained untouched.
+
+### Case 2 — Headline success, hidden regression
+
+Unattended Google Cloud mission `nightwatch-live-89e73407c43d525c4bc19272` looked excellent until Nightwatch checked protected behavior:
+
+| Protected measure | Baseline | Candidate | Gate result |
+|---|---:|---:|---|
+| Target accuracy | 63.9% | **100.0%** | Passed |
+| Safety accuracy | 95.8% | **100.0%** | Passed |
+| Routine-message recall | **87.5%** | 75.0% | **Failed** |
+| Critical misses | 0 | 0 | Passed |
+| Final release state | — | — | **Refused, not deployed** |
+
+The gate caught the hidden routine-message regression and kept the release boundary locked. The retained baseline and later full-coverage reproduction are distinct evidence versions; their exact coverage and provenance are documented in [the scam-safety evidence archive](artifacts/scam-safety/README.md).
+
+### Case 3 — Qualified, never automatically deployed
+
+The comparison case passed every fixed invariant and ended `qualified_not_deployed`. Qualification records that the candidate crossed the evidence boundary; it never mutates a production model pointer.
+
+Open the [live judge experience](https://nightwatch-public-w3a6oefsma-uc.a.run.app/) to inspect all three. The verified Cloud Run journal replays on a nine-node execution graph, exposing every specialist assignment, row count, immutable artifact hash, and downstream handoff. The bundled public projection excludes raw examples, case identities, dataset identity, model revision, Modal call IDs, and credentials.
 
 ## Architecture
 
@@ -105,7 +111,7 @@ Every interaction has a failure policy. Stage task IDs are deterministic, Firest
 | **Reproducibility** | Local product, test, container, and Google Cloud deployment instructions are below and in the [deployment runbook](cloud/DEPLOYMENT.md). |
 | **Architecture and proof** | This repository includes the architecture diagram, immutable public evidence, exact release revisions, rollback results, and a fresh verification receipt. |
 
-The design aligns directly with the judging weights: autonomous operational utility, architecture and failure discipline, and undeniable production proof. It is entered only in **The Taskmaster** track.
+Nightwatch demonstrates autonomous operational utility, explicit failure discipline, and deployed Google Cloud execution. It is entered only in **The Taskmaster** track.
 
 ## The execution graph is inspectable
 
@@ -245,7 +251,7 @@ data/scam_safety/     Mission contract and separated scam-message evidence
 artifacts/            Retained public proofs and reproducible evaluation records
 containers/           Digest-pinned service and worker images
 cloud/                Build configs, lifecycle policies, and deployment runbook
-docs/                 Architecture, threat model, mission design, experiment audit
+docs/                 Architecture, threat model, mission design, evaluation record
 tests/                Python behavior, security, persistence, and orchestration tests
 ```
 
