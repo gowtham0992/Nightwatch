@@ -67,3 +67,33 @@ body:before{content:'';position:fixed;inset:0;pointer-events:none;opacity:.34;ba
 :root[data-theme="light"] .story-switch button:hover,:root[data-theme="light"] .compare-outcome:hover{background:rgba(30,40,34,.045)}:root[data-theme="light"] .story-switch button.active{color:#f7faef}:root[data-theme="light"] .story-switch button.active.refused{color:#fff}
 :root[data-theme="light"] .launch-button,:root[data-theme="light"] .primary,:root[data-theme="light"] .seal-button,:root[data-theme="light"] .run-button,:root[data-theme="light"] .theater-primary,:root[data-theme="light"] .walkthrough-replay-button{color:#142008}
 @media(max-width:640px){.topbar{height:58px;grid-template-columns:auto 1fr}.wordmark{grid-column:1;grid-row:1;justify-self:start;height:57px}.wordmark img{width:148px}.topbar nav{grid-column:2;grid-row:1;gap:18px}.theme-toggle b{display:none}}
+
+/* Cold-judge clarity: the verified result is the default; replay is optional evidence choreography. */
+.judge-workspace .fleet{width:236px;flex-basis:236px;padding:9px}
+.judge-workspace .fleet-cards{gap:7px}
+.judge-workspace .agent-card.compact{min-height:82px;padding:10px 8px 9px 34px}
+.judge-workspace .agent-card.compact .agent-copy{gap:5px}
+.judge-workspace .agent-card.compact .agent-copy strong{font-size:11px}
+.judge-workspace .agent-card.compact .agent-copy small{display:-webkit-box;overflow:hidden;color:var(--muted);font:8px/1.42 var(--mono);-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.judge-workspace .agent-card.compact .agent-copy em{color:var(--acid);font:normal 7px var(--mono);letter-spacing:.03em;text-transform:uppercase}
+.judge-workspace .topology{min-width:980px}
+.cloud-proof{scroll-margin-top:82px}
+
+@media(max-width:640px){
+  .judge-workspace{height:auto;min-height:0;display:block}
+  .judge-workspace .topology-wrap{overflow:visible;padding:18px}
+  .judge-workspace .topology{min-width:0;min-height:0;height:auto;display:flex;flex-direction:column;align-items:stretch}
+  .judge-workspace .topology-start,.judge-workspace .topology-tail{width:100%;display:flex;flex-direction:column;align-items:stretch}
+  .judge-workspace .agent-card:not(.compact),.judge-workspace .fleet{width:100%;flex-basis:auto;min-height:88px}
+  .judge-workspace .agent-card:not(.compact){padding:13px 14px 12px 46px;justify-content:center}
+  .judge-workspace .agent-card:not(.compact) .agent-state{position:absolute;left:14px;top:14px}
+  .judge-workspace .agent-card:not(.compact) .agent-copy{margin:0;gap:5px}
+  .judge-workspace .agent-card:not(.compact) .agent-copy strong{font-size:12px}
+  .judge-workspace .agent-card:not(.compact) .agent-copy small{font-size:8px}
+  .judge-workspace .connector{align-self:center;width:20px;height:24px;flex:0 0 24px;transform:rotate(90deg)}
+  .judge-workspace .fleet{padding:10px}
+  .judge-workspace .fleet-head{font-size:7px;margin:2px 2px 10px}
+  .judge-workspace .fleet-cards{grid-template-columns:1fr;max-height:none}
+  .judge-workspace .agent-card.compact{min-height:88px}
+  .judge-workspace .inspector{border-left:0;border-top:1px solid var(--line)}
+}

@@ -115,8 +115,10 @@ function AgentCard({ node, selected, onSelect, compact = false }) {
   const decisionClass = node.decision ? `decision-${node.decision}` : '';
   const statusLabel = node.decision || node.status;
   const icon = node.decision === 'refused' ? 'blocked' : 'check';
+  const specialist = compact ? node.evidence?.payload : null;
+  const detail = specialist?.assignment || node.role;
   return <button type="button" className={`agent-card ${node.status} ${decisionClass} ${selected ? 'selected' : ''} ${compact ? 'compact' : ''}`} onClick={() => onSelect(node.id)} aria-label={`${node.name}: ${statusLabel}`}>
-    <span className="agent-state">{node.status === 'complete' ? <TinyIcon kind={icon} /> : <span />}</span><span className="agent-copy"><strong>{node.name}</strong><small>{node.role}</small></span><span className="agent-status">{statusLabel}</span>
+    <span className="agent-state">{node.status === 'complete' ? <TinyIcon kind={icon} /> : <span />}</span><span className="agent-copy"><strong>{node.name}</strong><small>{detail}</small>{Number.isInteger(specialist?.row_count) && <em>{specialist.row_count} sealed rows</em>}</span><span className="agent-status">{statusLabel}</span>
   </button>;
 }
 function Connector({ active = false }) { return <div className={`connector ${active ? 'active' : ''}`}><span /><TinyIcon kind="arrow" /></div>; }
@@ -133,9 +135,8 @@ function AgentTopology({ graph, selectedId, onSelect }) {
   </div>;
 }
 
-function graphForPlayback(fullGraph, idle, phase) {
+function graphForPlayback(fullGraph, phase) {
   return fullGraph.map((node) => {
-    if (idle) return { ...node, status: 'waiting', decision: null, evidence: { payload: {} } };
     let status = 'waiting';
     if (node.id === 'watcher') status = phase === 1 ? 'active' : phase > 1 ? 'complete' : 'waiting';
     else if (node.id === 'diagnostician') status = phase === 2 ? 'active' : phase > 2 ? 'complete' : 'waiting';
@@ -178,24 +179,24 @@ function JudgeHero({ mission, replayCursor, onRun, replaying, story, onBack }) {
   return <section className="judge-hero" id="top">
     <div className="judge-copy">
       <div className="judge-eyebrow">{qualified ? `GEMMA SCAM DETECTOR · ${caseCount} FROZEN CASES` : isAgentProof ? `LIVE SELF-SERVICE MISSION · ${created.trigger?.observed_error_count ?? 14} BASELINE ERRORS` : `PRODUCTION SCAM FILTER · ${targetMisses ?? 'OBSERVED'} TARGET CASES MISSED`}</div>
-      <h1>{qualified ? <>This repair passed.<br /><em>We still didn’t deploy it.</em></> : isAgentProof ? <>Three agents designed the repair.<br /><em>The gate found {criticalMisses} dangerous misses.</em></> : <>It hit 100%.<br /><em>We still refused it.</em></>}</h1>
-      <p>{qualified ? 'The same bounded fleet repaired the model and passed every frozen invariant. The deterministic gate qualified the candidate—but still had no authority to deploy it.' : isAgentProof ? 'An operator froze a real Gemma model, dataset, evidence suites, and compute ceiling. Nightwatch discovered the failure, delegated three distinct repair briefs through ADK, trained once, and refused the unsafe result.' : 'Nightwatch measured a failing Gemma model, assembled three Gemini 3.6 Flash repair specialists through ADK, trained one bounded candidate, and let deterministic code—not an agent—decide release.'}</p>
+      <h1>{qualified ? <>This repair passed.<br /><em>We still didn’t deploy it.</em></> : isAgentProof ? <>Nightwatch stopped a dangerous AI repair.<br /><em>Production never saw it.</em></> : <>It hit 100%.<br /><em>We still refused it.</em></>}</h1>
+      <p>{qualified ? 'The same bounded fleet repaired the model and passed every frozen invariant. The deterministic gate qualified the candidate—but still had no authority to deploy it.' : isAgentProof ? `Three Gemini agents designed a repair for a failing Gemma detector. Nightwatch trained it once, found ${criticalMisses} dangerous misses, and deterministically refused the candidate before it could reach production.` : 'Nightwatch measured a failing Gemma model, assembled three Gemini 3.6 Flash repair specialists through ADK, trained one bounded candidate, and let deterministic code—not an agent—decide release.'}</p>
       <p className="judge-value"><b>For ML platform teams:</b> one autonomous repair loop replaces manual failure triage, curriculum design, bounded retraining, regression testing, and release paperwork—without giving an agent deployment authority.</p>
       <div className="judge-actions">
-        {story === 'qualified' ? <button className="launch-button" type="button" onClick={onBack}><span>←</span>Return to the live refusal</button> : <button className="launch-button judge-run" type="button" onClick={onRun} disabled={replaying}><span>{replaying ? '●' : '▶'}</span>{replaying ? 'Mission running' : replayCursor == null ? 'Run the mission' : 'Replay the mission'}</button>}
+        {story === 'qualified' ? <button className="launch-button" type="button" onClick={onBack}><span>←</span>Return to the live refusal</button> : <button className="launch-button judge-run" type="button" onClick={onRun} disabled={replaying}><span>{replaying ? '●' : '▶'}</span>{replaying ? 'Replaying handoffs' : 'Replay verified mission'}</button>}
         <a className="secondary-action" href="#proof">Inspect proof ↓</a>
       </div>
       <small className="honesty-line">Replays a verified Cloud Run mission · starts no compute · invents no outcome</small>
     </div>
-    <BoundaryRail mission={mission} replayCursor={replayCursor ?? 0} />
+    <BoundaryRail mission={mission} replayCursor={replayCursor ?? mission.entries.length} />
   </section>;
 }
 
 function JudgeExperience({ mission, story, replayCursor, setReplayCursor, selectedId, setSelectedId, onSelectStory }) {
   const qualified = story === 'qualified';
-  const partialMission = !qualified ? missionAtEntry(mission, Math.trunc(replayCursor ?? 1)) : mission;
+  const partialMission = !qualified && replayCursor != null ? missionAtEntry(mission, Math.trunc(replayCursor)) : mission;
   const fullGraph = useMemo(() => buildAgentGraph(mission), [mission]);
-  const graph = useMemo(() => qualified ? fullGraph : graphForPlayback(fullGraph, replayCursor == null, replayCursor), [fullGraph, qualified, replayCursor]);
+  const graph = useMemo(() => qualified || replayCursor == null ? fullGraph : graphForPlayback(fullGraph, replayCursor), [fullGraph, qualified, replayCursor]);
   const selected = graph.find((node) => node.id === selectedId) || graph.find((node) => node.status === 'active') || graph[0];
   const replaying = !qualified && replayCursor != null && replayCursor < mission.entries.length;
   const runMission = () => { setSelectedId('watcher'); setReplayCursor(1); };
@@ -203,12 +204,12 @@ function JudgeExperience({ mission, story, replayCursor, setReplayCursor, select
   return <main className="judge-experience">
     <JudgeHero mission={mission} replayCursor={qualified ? 0 : replayCursor} onRun={runMission} replaying={replaying} story={story} onBack={() => onSelectStory(SELF_SERVICE_MISSION_ID)} />
     <section className="judge-mission" id="mission">
-      <div className="judge-mission-head"><div><span>AUTONOMOUS EXECUTION</span><h2>One mission. Accountable handoffs.</h2></div><div className="fleet-proof"><b>{completed}/9 execution nodes</b><span>3 Gemini repair specialists · 6 immutable handoffs · 1 deterministic release gate</span></div></div>
+      <div className="judge-mission-head"><div><span>{replaying ? 'REPLAYING VERIFIED EXECUTION' : 'VERIFIED AUTONOMOUS EXECUTION'}</span><h2>One mission. Accountable handoffs.</h2></div><div className="fleet-proof"><b>{completed}/9 execution nodes {replaying ? 'replayed' : 'complete'}</b><span>3 Gemini repair specialists · 6 immutable handoffs · 1 deterministic release gate</span></div></div>
       <div className="workspace-body judge-workspace"><div className="topology-wrap"><AgentTopology graph={graph} selectedId={selected.id} onSelect={setSelectedId} /></div><EvidencePanel node={selected} /></div>
     </section>
     <OutcomeBar mission={partialMission} onSelectStory={onSelectStory} replaying={replaying} />
-    {!qualified && replayCursor >= mission.entries.length && <CloudProof mission={mission} />}
-    {!qualified && replayCursor >= mission.entries.length && <section className="counter-proof"><div><span>COUNTER-PROOF</span><h2>The gate can say yes.</h2><p>Run the same governed fleet against a verified repair that passed every invariant. It qualified—and still was not deployed.</p></div><button type="button" onClick={() => onSelectStory('qualified')}>See the repair that qualified <b>→</b></button></section>}
+    {!qualified && <CloudProof mission={mission} />}
+    {!qualified && <section className="counter-proof"><div><span>COUNTER-PROOF</span><h2>The gate can say yes.</h2><p>Run the same governed fleet against a verified repair that passed every invariant. It qualified—and still was not deployed.</p></div><button type="button" onClick={() => onSelectStory('qualified')}>See the repair that qualified <b>→</b></button></section>}
   </main>;
 }
 
@@ -304,8 +305,8 @@ function CloudProof({ mission }) {
     }
   };
   const busy = verification.status === 'queueing' || verification.status === 'pending';
-  return <section className="cloud-proof" aria-live="polite">
-    <div><span>LIVE GOOGLE CLOUD PROOF</span><h2>Don’t trust the animation. Re-read the record.</h2><p>This action queues a bounded Cloud Task, re-reads the Firestore hash chain, and seals a verification receipt in Cloud Storage.</p></div>
+  return <section className="cloud-proof" id="proof" aria-live="polite">
+    <div><span>LIVE GOOGLE CLOUD PROOF</span><h2>Don’t trust the replay. Re-read the record.</h2><p>This action queues a bounded Cloud Task, re-reads the Firestore hash chain, and seals a new verification receipt in Cloud Storage. Receipt lookup IDs are intentionally short-lived; sealed objects follow the documented retention policy.</p></div>
     {verification.status === 'verified' ? <div className="cloud-receipt"><span>VERIFIED ON GOOGLE CLOUD</span><strong>{verification.receipt.entry_count} journal entries</strong><code>{shortHash(verification.receipt.head_hash)}</code><small>{new Date(verification.receipt.sealed_at).toISOString()}</small></div> : <div className="cloud-action"><button type="button" onClick={verify} disabled={busy}>{busy ? 'Verifying on Cloud…' : verification.status === 'error' ? 'Retry Cloud verification' : 'Verify on Google Cloud'}</button>{verification.status === 'error' && <small>{verification.message}</small>}</div>}
   </section>;
 }
@@ -313,7 +314,7 @@ function EvidencePanel({ node }) {
   const payload = node?.evidence?.payload || {};
   const rows = evidenceRows(payload);
   const result = node?.decision || node?.status;
-  return <aside className="inspector" id="proof"><div className="inspector-head"><div><span>SELECTED HANDOFF</span><h3>{node?.name}</h3></div><b className={result}>{result}</b></div><p>{node?.role}{node?.decision ? ' · evaluation complete' : ''}</p>
+  return <aside className="inspector"><div className="inspector-head"><div><span>SELECTED HANDOFF</span><h3>{node?.name}</h3></div><b className={result}>{result}</b></div><p>{node?.role}{node?.decision ? ' · evaluation complete' : ''}</p>
     <div className="artifact-card"><div className="artifact-top"><span>IMMUTABLE OUTPUT</span><code>{node?.evidence?.hash ? shortHash(node.evidence.hash) : 'pending'}</code></div>{rows.length ? <dl>{rows.map(([label, value]) => <div key={label}><dt>{title(label)}</dt><dd>{renderValue(value)}</dd></div>)}</dl> : <div className="empty-artifact"><span /><p>This agent has not received its handoff yet.</p></div>}</div>
     <div className="trust-note"><TinyIcon kind="check" /><p><strong>Explainable, not performative.</strong> Every completed node points to a hash-chained journal entry or retained artifact. Internal reasoning is never exposed.</p></div>
   </aside>;
