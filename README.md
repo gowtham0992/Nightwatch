@@ -21,7 +21,7 @@ Nightwatch is an autonomous repair line for specialized AI models. One authentic
 **Hackathon:** [All Things Agentic Hackathon](https://allthingsagentichackathon.devpost.com/)<br>
 **Track:** The Taskmaster<br>
 **Core stack:** Gemini 3.6 Flash · Google ADK · Cloud Run · Cloud Tasks · Firestore · Cloud Storage · Vertex AI · Gemma 3 · Modal<br>
-**Submission pack:** [Hosted project](https://nightwatch-public-w3a6oefsma-uc.a.run.app/) · [3:13 demo](https://youtu.be/XNeef08JqI4) · [Source code](https://github.com/gowtham0992/Nightwatch) · [Spin-up instructions](#run-the-public-product-locally) · [Architecture](docs/architecture.md) · [Google Cloud proof](cloud/DEPLOYMENT.md)<br>
+**Submission pack:** [Hosted project](https://nightwatch-public-w3a6oefsma-uc.a.run.app/) · [3:13 demo](https://youtu.be/XNeef08JqI4) · [Source code](https://github.com/gowtham0992/Nightwatch) · [Judge quickstart](#judge-quickstart) · [Architecture](docs/architecture.md) · [Google Cloud proof](cloud/DEPLOYMENT.md)<br>
 **Bonus:** Gemma 3 is the pinned student model repaired and evaluated by Nightwatch · [Public X launch post](https://x.com/GothamSarves/status/2090937163215147229) with `#AllThingsAgenticHackathon`
 
 ## Watch Nightwatch run the complete repair mission
@@ -163,7 +163,20 @@ The public and private services do not share authority simply because they share
 
 The deployed configuration uses minimum instances of zero. The public service and workers are capped at one instance; the authenticated evidence service is capped at two. Detailed resource identities, immutable image digests, rollback targets, and queue limits are recorded in [cloud/DEPLOYMENT.md](cloud/DEPLOYMENT.md).
 
-## Run the public product locally
+## Judge quickstart
+
+Choose the level of verification that fits the time and credentials available:
+
+| Path | What to do | What it proves | Credentials or spend |
+|---|---|---|---|
+| **Hosted experience** | Open the [live judge experience](https://nightwatch-public-w3a6oefsma-uc.a.run.app/) | The deployed product, three retained real outcomes, agent handoffs, and deterministic release boundary | None |
+| **Local public product** | Build and run the container below | The checked-in application can independently render and validate the redacted evidence bundle | Docker only; no cloud credentials or model calls |
+| **Source verification** | Run the Python and frontend commands below | Gate behavior, journal integrity, orchestration, security boundaries, evidence adapters, and a production web build | Python, `uv`, Node.js, and npm; no cloud credentials or model calls |
+| **New live mission** | Follow the advanced deployment section and runbook | A fresh baseline scan, Gemini/ADK repair, Modal training attempt, Cloud Tasks progression, Firestore journal, and deterministic verdict | Your own Google Cloud, Vertex AI, Hugging Face, and Modal access; can incur charges |
+
+The first three paths are safe for evaluation and do not start training. The hosted and local product replay **redacted projections of completed real missions**, not invented UI fixtures. No shared operator account is provided because that would expose paid compute and private cloud authority.
+
+### Run the public product locally
 
 The fastest path needs Docker and no cloud credentials:
 
@@ -180,7 +193,16 @@ docker run --rm \
 
 Open [http://127.0.0.1:8080](http://127.0.0.1:8080). This starts the same fail-closed public mode used for judging, backed only by checked-in, integrity-validated evidence. Fresh private verification receipts require the deployed Google Cloud verifier and are not emulated locally.
 
-## Run the tests and build from source
+Expected behavior:
+
+- the judge experience loads at `/`;
+- all three retained outcomes are inspectable;
+- replay changes presentation only and starts no compute;
+- `GET /api/operator/capabilities` returns `404`, proving the local public surface has no mission-launch authority.
+
+Stop the container with `Ctrl-C`. Initial build time depends mostly on Docker image and package download speed.
+
+### Run the tests and build from source
 
 Prerequisites: Python 3.11+, [uv](https://docs.astral.sh/uv/), Node.js 22+, and npm.
 
@@ -188,7 +210,7 @@ Prerequisites: Python 3.11+, [uv](https://docs.astral.sh/uv/), Node.js 22+, and 
 git clone https://github.com/gowtham0992/Nightwatch.git
 cd Nightwatch
 
-uv sync --extra dev
+uv sync --extra agent --extra experiment --extra service --extra dev
 uv run pytest
 
 cd web
@@ -197,7 +219,9 @@ npm test
 npm run build
 ```
 
-The Python suite covers gates, journal integrity, task idempotency, storage preconditions, service boundaries, public redaction, verification, mission orchestration, and the real scam-safety evidence contract. The frontend suite verifies the mission adapter and fails closed when evidence is incomplete or inconsistent.
+Expected output ends with **254 Python tests passed**, **23 frontend tests passed**, and a successful Vite production build. These counts describe commit `HEAD`; later test additions may increase them.
+
+The Python suite covers gates, journal integrity, task idempotency, storage preconditions, service boundaries, public redaction, verification, mission orchestration, and the real scam-safety evidence contract. The frontend suite verifies the mission adapter and fails closed when evidence is incomplete or inconsistent. This exact sequence was re-run successfully from a clean clone on August 24, 2026.
 
 To exercise the small deterministic gate fixture without any model or cloud call:
 
@@ -213,9 +237,9 @@ uv run python -m nightwatch.cli gate-fixture \
 
 The second fixture is intentionally high-scoring but unsafe; the gate must refuse it.
 
-## Run a live agent or deploy to Google Cloud
+## Run a new live mission or deploy to Google Cloud
 
-A live mission has external effects and can spend Gemini and Modal credits. Do not place tokens in the repository.
+A live mission is an advanced evaluator path, not the credential-free judge quickstart. It has external effects and can spend Gemini and Modal credits. Use a disposable project, set budget alerts first, and do not place tokens in the repository.
 
 1. Accept the Gemma model terms and provide `HF_TOKEN` to the named Modal secret `nightwatch-huggingface`.
 2. Authenticate Google Cloud with Application Default Credentials and enable Vertex AI, Cloud Run, Cloud Tasks, Firestore, Cloud Storage, Artifact Registry, Cloud Build, and IAM. Configure the private ADK worker with `GOOGLE_GENAI_USE_VERTEXAI=TRUE`, `GOOGLE_CLOUD_PROJECT=YOUR_PROJECT_ID`, and an approved `GOOGLE_CLOUD_LOCATION`; its service account requires Vertex AI invocation permission. The deployed Nightwatch worker uses `global`.
@@ -227,6 +251,8 @@ A live mission has external effects and can spend Gemini and Modal credits. Do n
 7. From the authenticated UI, select a registered Gemma baseline, upload a real CSV/JSONL evaluation dataset, map its fields, freeze the contract, and run one mission. Record the Cloud Run URL, baseline scan, Cloud Tasks progression, Modal calls, terminal Firestore head, and verification receipt.
 
 The exact deployed topology, resource names, release digests, IAM boundaries, verification request, and rollback procedure live in the [deployment runbook](cloud/DEPLOYMENT.md). The public service must never receive the private service’s environment variables or IAM roles.
+
+The runbook is both a topology guide and the audit record for the deployment shown in the demo. Resource names, URLs, revisions, and hashes under `nightwatch-agentic-0992` describe that retained deployment; they are evidence, not credentials and not values another evaluator should reuse. A fresh deployment must substitute its own project, service accounts, buckets, queues, image repository, and private service URLs.
 
 ## Evidence and data provenance
 
