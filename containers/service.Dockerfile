@@ -15,6 +15,7 @@ FROM python:3.13-slim@sha256:ffb752e139c0a19692a43af8d8523b274222dd68eebad5d583b
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     NIGHTWATCH_PUBLIC_MISSIONS_DIR=/app/public-missions \
+    NIGHTWATCH_PUBLIC_FOLLOWUPS_DIR=/app/public-followups \
     NIGHTWATCH_WEB_ROOT=/app/web-dist \
     PORT=8080
 
@@ -30,6 +31,7 @@ COPY artifacts/public-mission-live-89e73407c43d525c4bc19272.json ./public-missio
 COPY artifacts/public-mission-live-fe8a4e9d756508004f9214de.json ./public-missions/nightwatch-live-fe8a4e9d756508004f9214de.json
 COPY artifacts/public-mission-live-a786ae339253954371f524f8.json ./public-missions/nightwatch-live-a786ae339253954371f524f8.json
 COPY artifacts/public-mission-live-ac7c9d317783b6af4e543b1d.json ./public-missions/nightwatch-live-ac7c9d317783b6af4e543b1d.json
+COPY artifacts/public-followups ./public-followups
 COPY containers/gunicorn.conf.py ./containers/gunicorn.conf.py
 
 USER nightwatch

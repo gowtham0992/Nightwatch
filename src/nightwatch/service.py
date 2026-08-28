@@ -14,6 +14,12 @@ from google.auth.exceptions import GoogleAuthError
 
 from nightwatch.agent_roster import AGENT_TAXONOMY_VERSION, MANDATORY_SPECIALISTS, MAX_SPECIALISTS, public_roster
 from nightwatch.firestore_journal import FirestoreJournal, validate_cycle_id
+from nightwatch.followup import (
+    FollowupError,
+    build_followup_approval,
+    build_followup_draft,
+    load_public_followup_summary,
+)
 from nightwatch.contracts import Stage
 from nightwatch.journal import ALLOWED_TRANSITIONS, JournalEntry, JournalError
 from nightwatch.public_evidence import (
@@ -37,6 +43,7 @@ from nightwatch.operator_contracts import (
     OperatorContractError,
     OperatorStore,
     REGISTERED_BASELINES,
+    build_followup_contract,
     build_mission_contract,
     parse_uploaded_dataset,
     require_contract,
@@ -278,6 +285,17 @@ def create_app(
                 redacted_snapshots[cycle_id] = snapshot
         return validate_public_snapshot(snapshot, expected_cycle_id=cycle_id)
 
+    def get_public_followup(cycle_id: str) -> dict[str, Any]:
+        if cycle_id not in PUBLIC_MISSION_IDS:
+            raise JournalError("public mission is not allowlisted")
+        directory = Path(
+            os.environ.get("NIGHTWATCH_PUBLIC_FOLLOWUPS_DIR", "/app/public-followups")
+        )
+        return load_public_followup_summary(
+            directory / f"{cycle_id}.json",
+            expected_cycle_id=cycle_id,
+        )
+
     @app.after_request
     def secure_response(response: Response) -> Response:
         response.headers["X-Content-Type-Options"] = "nosniff"
@@ -462,6 +480,141 @@ def create_app(
             {
                 "cycle_id": cycle_id,
                 "manifest_id": contract.contract_id,
+                "stage": Stage.CREATED.value,
+                "status": "already_accepted" if scheduled.duplicate else "queued",
+                "task_id": scheduled.task_id,
+            }
+        )
+        response.status_code = 202
+        return response
+
+    @app.route("/api/missions/<cycle_id>/follow-up", methods=["GET", "POST"])
+    def mission_followup(cycle_id: str) -> tuple[Response, int] | Response:
+        try:
+            validate_cycle_id(cycle_id)
+        except JournalError:
+            return _error("invalid_cycle_id", "The mission ID is invalid.", 400)
+        if public_mode:
+            if request.method != "GET" or cycle_id not in PUBLIC_MISSION_IDS:
+                return _error("not_found", "The API route does not exist.", 404)
+            try:
+                return jsonify(get_public_followup(cycle_id))
+            except JournalError:
+                return _error(
+                    "followup_not_found",
+                    "No governed follow-up is published for this mission.",
+                    404,
+                )
+        if not operator_enabled():
+            return _error("not_found", "The API route does not exist.", 404)
+        try:
+            entries = get_journal().read_cycle(cycle_id)
+            if not entries:
+                return _error("mission_not_found", "No mission exists with that ID.", 404)
+            manifest_id = entries[0].payload.get("manifest_id")
+            if not isinstance(manifest_id, str):
+                raise FollowupError("mission is missing its parent contract identity")
+            store = get_operator_store()
+            parent = require_contract(store, manifest_id)
+            proposal = build_followup_draft(cycle_id, entries, parent)
+            existing = store.read_followup(proposal.draft_id)
+            if request.method == "POST":
+                proposal = store.create_followup(proposal)
+            elif existing is None:
+                return _error(
+                    "followup_not_found",
+                    "No governed follow-up has been drafted for this mission.",
+                    404,
+                )
+            else:
+                proposal = existing
+            approval = store.read_followup_approval(proposal.draft_id)
+        except (FollowupError, OperatorContractError, JournalError) as exc:
+            return _error("followup_unavailable", str(exc), 409)
+        except (GoogleAPICallError, GoogleAuthError, RetryError, RuntimeError):
+            app.logger.exception("follow-up storage unavailable", extra={"cycle_id": cycle_id})
+            return _error(
+                "dependency_unavailable",
+                "Follow-up storage is temporarily unavailable.",
+                503,
+            )
+        response = jsonify(
+            {
+                "cycle_id": cycle_id,
+                "followup": proposal.public_summary(),
+                "approval": approval.public_summary() if approval else None,
+            }
+        )
+        response.status_code = 201 if request.method == "POST" and existing is None else 200
+        return response
+
+    @app.post("/api/operator/follow-ups/<draft_id>/approve")
+    def approve_followup(draft_id: str) -> tuple[Response, int] | Response:
+        if not operator_enabled():
+            return _error("not_found", "The API route does not exist.", 404)
+        body = request.get_json(silent=True)
+        idempotency_key = request.headers.get("Idempotency-Key", "")
+        if (
+            not isinstance(body, dict)
+            or set(body) != {"authorize_new_budget", "dataset_id", "maximum_gpu_minutes"}
+            or body.get("authorize_new_budget") is not True
+            or not isinstance(body.get("dataset_id"), str)
+            or isinstance(body.get("maximum_gpu_minutes"), bool)
+            or not isinstance(body.get("maximum_gpu_minutes"), int)
+            or _OPERATOR_KEY.fullmatch(idempotency_key) is None
+        ):
+            return _error(
+                "invalid_request",
+                "Provide fresh dataset_id, an approved GPU budget, and a valid Idempotency-Key.",
+                400,
+            )
+        try:
+            store = get_operator_store()
+            draft = store.read_followup(draft_id)
+            if draft is None:
+                return _error("followup_not_found", "No valid follow-up draft exists with that ID.", 404)
+            parent = require_contract(store, draft.parent_manifest_id)
+            dataset = store.read_dataset(body["dataset_id"])
+            if dataset is None:
+                return _error("dataset_not_found", "The fresh frozen dataset does not exist.", 404)
+            contract = build_followup_contract(
+                parent,
+                dataset,
+                draft,
+                maximum_gpu_minutes=body["maximum_gpu_minutes"],
+            )
+            contract = store.create_contract(contract)
+            child_cycle_id = _operator_cycle_id(contract.contract_id, idempotency_key)
+            approval = build_followup_approval(
+                draft,
+                child_contract_id=contract.contract_id,
+                child_cycle_id=child_cycle_id,
+                fresh_dataset_sha256=dataset.sha256,
+                maximum_gpu_minutes=body["maximum_gpu_minutes"],
+                idempotency_key=idempotency_key,
+            )
+            approval = store.create_followup_approval(approval)
+            scheduled = get_operator_queue().enqueue_stage(
+                child_cycle_id,
+                contract.contract_id,
+                Stage.CREATED,
+            )
+        except (FollowupError, OperatorContractError, JournalError) as exc:
+            return _error("followup_refused", str(exc), 409)
+        except (GoogleAPICallError, GoogleAuthError, RetryError, RuntimeError):
+            app.logger.exception("follow-up approval unavailable", extra={"draft_id": draft_id})
+            return _error(
+                "dependency_unavailable",
+                "The follow-up could not be authorized right now.",
+                503,
+            )
+        response = jsonify(
+            {
+                "cycle_id": child_cycle_id,
+                "manifest_id": contract.contract_id,
+                "parent_cycle_id": draft.parent_cycle_id,
+                "followup_draft_id": draft.draft_id,
+                "approval": approval.public_summary(),
                 "stage": Stage.CREATED.value,
                 "status": "already_accepted" if scheduled.duplicate else "queued",
                 "task_id": scheduled.task_id,

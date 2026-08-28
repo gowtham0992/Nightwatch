@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   buildAgentGraph,
+  fetchFollowup,
   fetchMission,
   getHealth,
   JUDGE_LIVE_MISSION_ID,
@@ -14,6 +15,7 @@ import { shortHash } from './data/scamMission.js';
 import { fetchVerificationReceipt, requestVerification } from './data/missionAdapter.js';
 import MissionBuilder from './MissionBuilder.jsx';
 import JudgeDossier from './JudgeDossier.jsx';
+import GovernedFollowup from './GovernedFollowup.jsx';
 
 const REPLAY_FRAMES = [1, 2, 3, 3.1, 3.2, 3.3, 3.4, 4, 5, 6];
 const REPLAY_DELAYS = [1800, 2500, 1500, 1500, 1500, 1500, 1700, 3100, 2500];
@@ -372,6 +374,7 @@ export default function App() {
   const [retryNonce, setRetryNonce] = useState(0);
   const [view, setView] = useState(() => viewFromLocation());
   const [replayCursor, setReplayCursor] = useState(null);
+  const [followupRecord, setFollowupRecord] = useState(null);
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;
@@ -397,6 +400,15 @@ export default function App() {
     };
     poll(); return () => { ignore = true; controller?.abort(); globalThis.clearTimeout(timer); };
   }, [story, retryNonce]);
+  useEffect(() => {
+    if (!mission?.terminal || mission.outcome !== 'refused') { setFollowupRecord(null); return undefined; }
+    let ignore = false;
+    const controller = new AbortController();
+    fetchFollowup(mission.id, { signal: controller.signal })
+      .then((result) => { if (!ignore) setFollowupRecord(result); })
+      .catch((error) => { if (!ignore && error.status !== 404) setNotice(error.message || 'Follow-up evidence is temporarily unavailable.'); });
+    return () => { ignore = true; controller.abort(); };
+  }, [mission?.id, mission?.terminal, mission?.outcome]);
   useEffect(() => {
     if (replayCursor == null || !mission || replayCursor >= mission.entries.length) return undefined;
     const reducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -441,9 +453,9 @@ export default function App() {
   if (view === 'builder') return <div className="app-shell">{header}<MissionBuilder onCancel={closeBuilder} onLaunched={handleLaunched} /></div>;
   if (view === 'auto') return <div className="app-shell">{header}<main className="theater-loading"><span>OPENING NIGHTWATCH</span><h1>Preparing the verified mission…</h1></main></div>;
   if (!mission) return <div className="app-shell">{header}<MissionLoading failed={loadFailed} onRetry={() => { setLoadFailed(false); setRetryNonce((value) => value + 1); }} /></div>;
-  if (!health?.operator_enabled) return <div className="app-shell">{header}<JudgeDossier mission={mission} story={story} onSelectStory={handleStory} /></div>;
+  if (!health?.operator_enabled) return <div className="app-shell">{header}<JudgeDossier mission={mission} story={story} onSelectStory={handleStory} followupRecord={followupRecord} /></div>;
   const replaying = replayCursor != null && mission && replayCursor < mission.entries.length;
   return <div className="app-shell">{header}<main><MissionHeader mission={displayMission} health={health} launchState={launchState} onNewMission={openBuilder} story={story} onSelectStory={handleStory} />{notice && <div className="notice"><span className="signal online" />{notice}</div>}<RunStrip mission={displayMission} graph={graph} /><MissionContract mission={displayMission} />
-    <section className="mission-workspace" id="mission"><div className="workspace-heading"><div><span>AUTONOMOUS EXECUTION</span><h2>One mission. Accountable handoffs.</h2></div><p>Select any agent to inspect the evidence it handed downstream.</p></div><div className="workspace-body"><div className="topology-wrap"><AgentTopology graph={graph} selectedId={selected.id} onSelect={setSelectedId} /></div><EvidencePanel node={selected} /></div></section><OutcomeBar mission={displayMission} onSelectStory={handleStory} replaying={replaying} /><MissionCompletion mission={displayMission} replaying={replaying} /></main>
+    <section className="mission-workspace" id="mission"><div className="workspace-heading"><div><span>AUTONOMOUS EXECUTION</span><h2>One mission. Accountable handoffs.</h2></div><p>Select any agent to inspect the evidence it handed downstream.</p></div><div className="workspace-body"><div className="topology-wrap"><AgentTopology graph={graph} selectedId={selected.id} onSelect={setSelectedId} /></div><EvidencePanel node={selected} /></div></section><OutcomeBar mission={displayMission} onSelectStory={handleStory} replaying={replaying} /><GovernedFollowup mission={displayMission} record={followupRecord} operator onRecord={setFollowupRecord} onLaunched={handleLaunched} /><MissionCompletion mission={displayMission} replaying={replaying} /></main>
     <footer><span><Mark /><strong>Nightwatch</strong></span><p>Gemini proposes. Evidence persists. Code decides.</p><code>{shortHash(displayMission.headHash)}</code></footer></div>;
 }

@@ -1,33 +1,33 @@
-# Cloud Run training job
+# Google Cloud deployment assets
 
-This is the first deployable cloud slice: an isolated GPU trainer that can read only a curriculum object and write only a new adapter prefix. Do not grant its service account access to the hidden-eval bucket or production pointer.
+Nightwatch’s production path uses Google Cloud for the control plane, durable orchestration, agent discovery, private A2A execution, evidence, and public proof. Model training is deliberately isolated on Modal behind a one-attempt, cycle-bound claim; no Cloud Run GPU job is part of the submitted deployment.
 
-Build and push the image to Artifact Registry, then deploy the job (substitute your project, region, repository, bucket, and service-account values):
+## Deployed topology
 
-```bash
-gcloud auth configure-docker us-central1-docker.pkg.dev
-docker build \
-  --file containers/trainer.Dockerfile \
-  --tag us-central1-docker.pkg.dev/PROJECT_ID/nightwatch/trainer:spike .
-docker push us-central1-docker.pkg.dev/PROJECT_ID/nightwatch/trainer:spike
+- **Cloud Run:** public judge surface, IAM-protected operator surface, OIDC-only mission worker, isolated verifier, and three private specialist services.
+- **Cloud Tasks:** one queue advances bounded mission stages; a separate queue performs public verification.
+- **Firestore:** append-only mission journals and terminal heads.
+- **Cloud Storage:** create-only artifacts, external-call claims, follow-up proposals and approvals, and isolated verification receipts.
+- **Vertex AI + Google ADK:** Gemini 3.6 Flash diagnosis and specialist work.
+- **Agent Registry + A2A:** read-only capability discovery followed by contract-pinned, OIDC-authenticated specialist calls.
 
-gcloud run jobs deploy nightwatch-trainer \
-  --image us-central1-docker.pkg.dev/PROJECT_ID/nightwatch/trainer:spike \
-  --region us-central1 \
-  --service-account nightwatch-trainer@PROJECT_ID.iam.gserviceaccount.com \
-  --cpu 4 \
-  --memory 16Gi \
-  --gpu 1 \
-  --gpu-type nvidia-l4 \
-  --no-gpu-zonal-redundancy \
-  --tasks 1 \
-  --parallelism 1 \
-  --max-retries 1 \
-  --task-timeout 3600s \
-  --set-secrets HF_TOKEN=nightwatch-hf-token:latest \
-  --args=--curriculum-uri=gs://CURRICULUM_BUCKET/cycles/001/train.jsonl,--adapter-uri=gs://ADAPTER_BUCKET/cycles/001/adapter
+The authoritative resource inventory, immutable revisions, IAM boundaries, rollout checks, and rollback targets are in [DEPLOYMENT.md](DEPLOYMENT.md).
 
-gcloud run jobs execute nightwatch-trainer --region us-central1 --wait
-```
+## Build definitions
 
-Cloud Run GPU jobs require non-zonal redundancy, at least 4 CPU and 16 GiB memory for an L4, and have a maximum one-hour task timeout. Capacity is not guaranteed, so the trainer writes the adapter only after training completes; the orchestrator must treat an absent adapter manifest as an incomplete attempt.
+| File | Purpose |
+|---|---|
+| `service-build.yaml` | Shared public and authenticated service image |
+| `mission-build.yaml` | Private mission-worker image |
+| `specialist-build.yaml` | Private A2A specialist image |
+| `agent-registry/` | Checked-in Agent Cards used to register the exact approved specialists |
+| `mission-artifacts-lifecycle.json` | Retention policy for private mission artifacts |
+| `public-receipts-lifecycle.json` | Retention policy for isolated public-proof receipts |
+
+## Safety requirements
+
+Use separate runtime identities. The public service must have no Firestore, Vertex AI, Agent Registry, specialist-invocation, Modal, or mission-launch permission. The mission worker may read Registry entries but cannot register agents. Each specialist may invoke Vertex AI and nothing else. No application identity receives deployment authority.
+
+Refused dynamic missions automatically seal a create-only follow-up proposal. Only the IAM-protected operator service can approve one child contract, and only after a different canonical evidence SHA and a new capped budget are supplied. The public image contains only the redacted proposal and exposes no approval route.
+
+Deploy with minimum instances set to zero, preserve the documented instance and queue caps, and use immutable image digests. Run the zero-traffic checks and rollback rehearsal in [DEPLOYMENT.md](DEPLOYMENT.md) before moving canonical traffic.

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fetchVerificationReceipt, requestVerification } from './data/missionAdapter.js';
-import { discoveryEvidence, dossierFacts, evaluationEvidence, missionRecord, releaseChecks } from './data/judgeDossier.js';
+import { discoveryEvidence, dossierFacts, evaluationEvidence, missionRecord, publishedCaseEvidence, releaseChecks } from './data/judgeDossier.js';
 import { SELF_SERVICE_MISSION_ID } from './data/missionControl.js';
 import { shortHash } from './data/scamMission.js';
 import { scrollToElementThen } from './utils/scrollGate.js';
+import GovernedFollowup from './GovernedFollowup.jsx';
 import './judgeDossier.css';
 
 const STAGE_LABELS = Object.freeze({
@@ -49,7 +50,7 @@ function BoundaryPreview({ qualified }) {
   </aside>;
 }
 
-function Hero({ mission, facts, qualified, story, onSelectStory, onStartGate }) {
+function Hero({ mission, facts, qualified, story, onSelectStory, onStartGate, hasCaseEvidence }) {
   const criticalMisses = releaseChecks(mission).find((check) => check.id === 'require_zero_critical_misses')?.measured;
   return <section className="nw-hero" id="top">
     <div className="nw-hero-copy">
@@ -61,7 +62,7 @@ function Hero({ mission, facts, qualified, story, onSelectStory, onStartGate }) 
         : `A Gemini diagnostician declared three capabilities. Agent Registry resolved the pinned specialists, private A2A carried their work, and the gate found ${criticalMisses} critical misses before refusing the repair.`}</p>
       <div className="nw-hero-actions">
         <button type="button" className="nw-primary" onClick={onStartGate}>{qualified ? 'Run the passing gate' : 'Run the refusal gate'} <span>→</span></button>
-        <a href="#mission">Follow the mission</a>
+        <a href={hasCaseEvidence ? '#case-evidence' : '#mission'}>{hasCaseEvidence ? 'Replay one critical miss' : 'Follow the mission'}</a>
       </div>
       <small>Read-only evidence replay · no training spend · no deployment authority</small>
       <div className="nw-stack-line" aria-label="Google technology stack">
@@ -78,6 +79,56 @@ function Hero({ mission, facts, qualified, story, onSelectStory, onStartGate }) 
       <div><dt>Evidence</dt><dd>{facts.caseCount} frozen cases</dd></div>
       <div><dt>Release</dt><dd>{qualified ? '4 / 4 passed' : '4 / 4 failed'}</dd></div>
     </dl>
+  </section>;
+}
+
+function CaseEvidence({ evidence }) {
+  const [step, setStep] = useState(0);
+  const [running, setRunning] = useState(false);
+  const [variant, setVariant] = useState('refused');
+  const qualified = variant === 'qualified';
+  const candidateLabel = qualified ? evidence.qualifiedCandidate.candidateLabel : evidence.candidateLabel;
+  const artifactSha256 = qualified ? evidence.qualifiedCandidate.artifactSha256 : evidence.artifactSha256;
+  useEffect(() => { setStep(0); setRunning(false); }, [artifactSha256]);
+  useEffect(() => {
+    if (!running) return undefined;
+    const reduced = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) { setStep(3); setRunning(false); return undefined; }
+    if (step >= 3) { setRunning(false); return undefined; }
+    const timer = globalThis.setTimeout(() => setStep((value) => value + 1), step === 0 ? 500 : 900);
+    return () => globalThis.clearTimeout(timer);
+  }, [running, step]);
+  const replay = () => { setStep(0); setRunning(true); };
+  const chooseVariant = (nextVariant) => { setVariant(nextVariant); setStep(0); setRunning(false); };
+  return <section className={`nw-case-evidence ${step >= 3 ? 'complete' : ''} ${qualified ? 'qualified' : 'refused'}`} id="case-evidence">
+    <div className="nw-case-heading">
+      <span>Published case evidence</span>
+      <div><h2>One score cannot tell this story.</h2><p>Replay the same newly authored, safety-critical message against a refused repair and a retained qualified control.</p></div>
+    </div>
+    <div className="nw-case-tabs" aria-label="Choose retained candidate evidence">
+      <span>Same frozen message</span>
+      <button type="button" className={!qualified ? 'active' : ''} aria-pressed={!qualified} onClick={() => chooseVariant('refused')}>Refused candidate</button>
+      <button type="button" className={qualified ? 'active' : ''} aria-pressed={qualified} onClick={() => chooseVariant('qualified')}>Qualified control</button>
+    </div>
+    <div className="nw-case-console">
+      <article className="nw-message-card">
+        <div><span>Frozen message</span><b>{evidence.threatFamily}</b></div>
+        <blockquote>“{evidence.message}”</blockquote>
+        <small>Deliberately published judge excerpt · no customer or personal data</small>
+      </article>
+      <div className="nw-case-replay" aria-live="polite">
+        <ol>
+          <li className={step >= 1 ? 'shown safe' : ''}><span>01</span><div><small>Required handling</small><strong>{step >= 1 ? evidence.requiredLabel : 'sealed'}</strong></div></li>
+          <li className={step >= 2 ? 'shown safe' : ''}><span>02</span><div><small>Baseline model</small><strong>{step >= 2 ? evidence.baselineLabel : 'waiting'}</strong></div></li>
+          <li className={step >= 3 ? `shown ${qualified ? 'safe' : 'miss'}` : ''}><span>03</span><div><small>{qualified ? 'Qualified candidate' : 'Repaired candidate'}</small><strong>{step >= 3 ? candidateLabel : 'waiting'}</strong></div></li>
+        </ol>
+        <div className="nw-case-decision">
+          <div><span>{step >= 3 ? qualified ? 'Protected behavior preserved' : 'Critical miss found' : running ? 'Replaying sealed decisions' : 'Evidence ready'}</span><strong>{step >= 3 ? qualified ? 'Candidate qualified. Deployment still requires a human.' : 'Candidate refused. Production preserved.' : 'No inference has started.'}</strong></div>
+          <button type="button" className="nw-primary" onClick={replay} disabled={running}>{running ? 'Replaying evidence…' : step >= 3 ? 'Replay again' : 'Replay this case'} <span>→</span></button>
+        </div>
+      </div>
+    </div>
+    <div className="nw-case-provenance"><span>{qualified ? 'Qualified prediction artifact' : 'Refused evaluation artifact'}</span><code>{artifactSha256}</code><p>This control replays sealed output. It accepts no text, starts no model inference, and grants no operator authority.</p></div>
   </section>;
 }
 
@@ -223,9 +274,10 @@ function EvidenceRecord({ mission, facts, qualified }) {
   return <div className="nw-record-grid"><ol className="nw-record">{record.map((entry, index) => <li key={entry.hash}><span>{String(index + 1).padStart(2, '0')}</span><div><strong>{STAGE_LABELS[entry.stage] || entry.stage}</strong><small>{entry.actor}</small><button type="button" onClick={() => setOpenHash((current) => current === entry.hash ? '' : entry.hash)} aria-expanded={openHash === entry.hash}>{openHash === entry.hash ? entry.hash : shortHash(entry.hash)}</button></div></li>)}</ol><CloudVerification mission={mission} /></div>;
 }
 
-export default function JudgeDossier({ mission, story, onSelectStory }) {
+export default function JudgeDossier({ mission, story, onSelectStory, followupRecord }) {
   const qualified = story === 'qualified' || mission.outcome === 'qualified';
   const facts = useMemo(() => dossierFacts(mission), [mission]);
+  const caseEvidence = useMemo(() => publishedCaseEvidence(mission), [mission]);
   const [runToken, setRunToken] = useState(0);
   const cancelGateScrollRef = useRef(() => {});
   useEffect(() => () => cancelGateScrollRef.current(), []);
@@ -239,12 +291,14 @@ export default function JudgeDossier({ mission, story, onSelectStory }) {
     }, { reducedMotion });
   };
   return <main className="nw-dossier">
-    <Hero mission={mission} facts={facts} qualified={qualified} story={story} onSelectStory={onSelectStory} onStartGate={startGate} />
+    <Hero mission={mission} facts={facts} qualified={qualified} story={story} onSelectStory={onSelectStory} onStartGate={startGate} hasCaseEvidence={Boolean(caseEvidence)} />
     <ContractStrip mission={mission} facts={facts} />
     <Chapter number={1} kicker="Autonomous discovery" title="Nightwatch found the failure itself." copy="The repair did not begin from a score typed into a demo. The pinned Gemma model was measured against the frozen contract first." id="mission"><Discovery mission={mission} facts={facts} /></Chapter>
     <Chapter number={2} kicker="Agent orchestration" title={qualified ? 'Gemini designed a bounded curriculum.' : 'Registry discovery became three private A2A jobs.'} copy={qualified ? 'The retained passing case preserves its real five-batch repair design, validation totals, and content-addressed curriculum.' : 'The diagnosis named capabilities, not endpoints. Agent Registry resolved the exact frozen identities; each specialist returned a separately hashed A2A receipt before anything was merged.'}>{qualified ? <RetainedCurriculum mission={mission} /> : <SpecialistFleet facts={facts} />}</Chapter>
     <Chapter number={3} kicker="Bounded repair" title="One candidate. No hidden retries." copy="Nightwatch spent the single training attempt the operator authorised, then evaluated the result against exactly the same evidence."><Evaluation mission={mission} facts={facts} /></Chapter>
+    {caseEvidence && <CaseEvidence evidence={caseEvidence} />}
     <Chapter number={4} kicker="The release boundary" title="The agents finish. The evidence takes over." copy="This is the separation Nightwatch exists to enforce: Gemini can design a repair, but it cannot relax a threshold or approve its own work." id="boundary"><ReleaseBoundary key={mission.id} mission={mission} qualified={qualified} runToken={runToken} /></Chapter>
+    {!qualified && <GovernedFollowup mission={mission} record={followupRecord} operator={false} />}
     <Chapter number={5} kicker="Verifiable record" title={qualified ? 'The gate can say yes.' : 'Six handoffs. One tamper-evident chain.'} copy={qualified ? 'Passing the boundary qualifies a candidate for human review; it does not deploy it.' : `The completed mission ran in ${facts.durationSeconds} seconds. Every entry carries the hash of the one before it, ending at the exact head below.`} id="proof"><EvidenceRecord mission={mission} facts={facts} qualified={qualified} /></Chapter>
     {!qualified && <section className="nw-counterproof"><div><span>Counter-proof</span><h2>A safety gate that only says “no” is theatre.</h2><p>Nightwatch has also qualified a real repair against the same four deterministic invariants. It still did not deploy it.</p></div><button type="button" onClick={() => onSelectStory('qualified')}>Inspect the qualified repair <span>→</span></button></section>}
     {qualified && <section className="nw-counterproof return"><div><span>Primary case</span><h2>Now inspect the repair Nightwatch refused.</h2><p>The refusal proves the agents cannot grade their own work or push a candidate through a broken boundary.</p></div><button type="button" onClick={() => onSelectStory(SELF_SERVICE_MISSION_ID)}>Return to the refusal <span>→</span></button></section>}

@@ -14,6 +14,8 @@ Both paths are deployed: the public proof remains a fixed, redacted case study, 
 - Gemini may diagnose and design curriculum. It cannot change the manifest, policy, budget, terminal verdict, or deployment state.
 - Deterministic policy selects `qualified` or `refused`. The historical journal enum remains `promoted` until a versioned evidence migration, but all judge-facing copy says `qualified`.
 - Qualification never mutates a production pointer.
+- Rejection remains terminal. Deterministic code may seal one non-executable follow-up proposal, but only an authenticated operator can create a child mission with a different evidence digest and a new capped budget.
+- Follow-up lineage depth is one. A child mission cannot recursively authorize another child.
 - The public service remains read-only and receives no Firestore, Gemini, Modal, or mission-start permissions.
 
 ## Stage contract
@@ -37,6 +39,7 @@ Both paths are deployed: the public proof remains a fixed, redacted case study, 
 - Modal timeout: persist the function-call ID, poll it from a later task, and never launch a replacement under the same cycle.
 - Budget or manifest mismatch: fail closed before any external call.
 - Terminal retry: return the existing terminal head without invoking another stage.
+- Reused follow-up evidence, an oversized budget, a conflicting approval, or an attempted grandchild: fail closed before queue dispatch.
 
 ## Adaptive-fleet deployed acceptance — August 28, 2026 UTC
 
@@ -82,4 +85,4 @@ Both paths are deployed: the public proof remains a fixed, redacted case study, 
 
 ## Non-goals
 
-No arbitrary models, arbitrary files, remote dataset URLs, user code, public mission trigger, multi-tenancy, scheduler, Cloud Run GPU migration, production deployment, rollback automation, or chat UI enter this slice. Uploads are data-only and become immutable before a mission can launch.
+No arbitrary models, arbitrary files, remote dataset URLs, user code, public mission trigger, multi-tenancy, scheduler, Cloud Run GPU migration, production deployment, rollback automation, open-ended optimization loop, or chat UI enter this slice. Uploads are data-only and become immutable before a mission can launch.

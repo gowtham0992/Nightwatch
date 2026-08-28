@@ -9,6 +9,7 @@ from google.api_core.exceptions import GoogleAPICallError, RetryError
 from google.auth.exceptions import GoogleAuthError
 
 from nightwatch.contracts import Stage
+from nightwatch.followup import FollowupError, build_followup_draft
 from nightwatch.firestore_journal import FirestoreJournal, validate_cycle_id
 from nightwatch.journal import JournalError
 from nightwatch.mission_orchestrator import (
@@ -19,6 +20,7 @@ from nightwatch.mission_orchestrator import (
     resolve_manifest,
 )
 from nightwatch.mission_tasks import mission_task_id
+from nightwatch.operator_contracts import OperatorContractError, OperatorStore, require_contract
 
 
 class MissionQueue(Protocol):
@@ -128,7 +130,7 @@ def create_control_app(*, task_queue: MissionQueue | None = None) -> Flask:
     return app
 
 
-def _configured_worker() -> tuple[MissionJournal, MissionStageExecutor, MissionQueue, Callable[[str], Any]]:
+def _configured_worker() -> tuple[MissionJournal, MissionStageExecutor, MissionQueue, Callable[[str], Any], OperatorStore]:
     from nightwatch.generic_mission_stages import GenericTextClassificationStageExecutor
     from nightwatch.generic_runtime import GCSRuntimeCallStore, GenericModalRuntime
     from nightwatch.modal_scam_training_stage import ModalScamTrainingCampaign
@@ -186,6 +188,7 @@ def _configured_worker() -> tuple[MissionJournal, MissionStageExecutor, MissionQ
         executor,
         _configured_queue(),
         resolve_worker_manifest,
+        operator_store,
     )
 
 
@@ -195,17 +198,18 @@ def create_worker_app(
     executor: MissionStageExecutor | None = None,
     task_queue: MissionQueue | None = None,
     manifest_resolver: Callable[[str], Any] | None = None,
+    followup_store: OperatorStore | None = None,
 ) -> Flask:
     app = Flask(__name__)
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024
     dependencies = (
-        (journal, executor, task_queue, manifest_resolver or resolve_manifest)
+        (journal, executor, task_queue, manifest_resolver or resolve_manifest, followup_store)
         if journal is not None and executor is not None and task_queue is not None
         else None
     )
     dependency_lock = threading.Lock()
 
-    def get_dependencies() -> tuple[MissionJournal, MissionStageExecutor, MissionQueue, Callable[[str], Any]]:
+    def get_dependencies() -> tuple[MissionJournal, MissionStageExecutor, MissionQueue, Callable[[str], Any], OperatorStore | None]:
         nonlocal dependencies
         if dependencies is None:
             with dependency_lock:
@@ -240,7 +244,7 @@ def create_worker_app(
             return _error("invalid_task", "The task envelope is invalid.", 400)
 
         try:
-            active_journal, active_executor, queue, resolve_worker_manifest = get_dependencies()
+            active_journal, active_executor, queue, resolve_worker_manifest, active_followup_store = get_dependencies()
             manifest = resolve_worker_manifest(body["manifest_id"])
             result = advance_mission(
                 body["cycle_id"],
@@ -259,7 +263,16 @@ def create_worker_app(
                 if following_stage is not None
                 else None
             )
-        except JournalError:
+            if (
+                result.terminal
+                and result.stage is Stage.REJECTED
+                and active_followup_store is not None
+                and body["manifest_id"].startswith("contract-")
+            ):
+                parent_contract = require_contract(active_followup_store, body["manifest_id"])
+                proposal = build_followup_draft(body["cycle_id"], entries, parent_contract)
+                active_followup_store.create_followup(proposal)
+        except (FollowupError, OperatorContractError, JournalError):
             app.logger.exception(
                 "mission stage refused",
                 extra={"cycle_id": body.get("cycle_id"), "stage": body.get("expected_stage")},

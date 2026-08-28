@@ -4,6 +4,9 @@ import { readFileSync } from 'node:fs';
 
 import {
   buildAgentGraph,
+  approveFollowup,
+  createFollowup,
+  fetchFollowup,
   launchMission,
   missionAtEntry,
   missionMetrics,
@@ -95,6 +98,33 @@ test('launch sends only the frozen contract identity', async () => {
   assert.equal(calls[0][0], '/api/operator/missions');
   assert.equal(calls[0][1].body, '{"contract_id":"contract-1234567890abcdef12345678"}');
   assert.equal(calls[0][1].headers['Idempotency-Key'], 'nightwatch-demo-20260814');
+});
+
+test('follow-up API keeps drafting public and approval operator-only', async () => {
+  const calls = [];
+  const fetchImpl = async (...args) => {
+    calls.push(args);
+    return { ok: true, json: async () => ({ cycle_id: 'nightwatch-live-parent' }) };
+  };
+
+  await fetchFollowup('nightwatch-live-parent', { fetchImpl });
+  await createFollowup('nightwatch-live-parent', { fetchImpl });
+  await approveFollowup('followup-1234567890abcdef12345678', {
+    authorize_new_budget: true,
+    dataset_id: 'dataset-1234567890abcdef12345678',
+    maximum_gpu_minutes: 10,
+  }, 'followup-demo-20260828', { fetchImpl });
+
+  assert.equal(calls[0][0], '/api/missions/nightwatch-live-parent/follow-up');
+  assert.equal(calls[0][1].method, undefined);
+  assert.equal(calls[1][1].method, 'POST');
+  assert.equal(calls[2][0], '/api/operator/follow-ups/followup-1234567890abcdef12345678/approve');
+  assert.equal(calls[2][1].headers['Idempotency-Key'], 'followup-demo-20260828');
+  assert.deepEqual(JSON.parse(calls[2][1].body), {
+    authorize_new_budget: true,
+    dataset_id: 'dataset-1234567890abcdef12345678',
+    maximum_gpu_minutes: 10,
+  });
 });
 
 test('live refusal metrics explain why a perfect target and safety result stayed locked', () => {

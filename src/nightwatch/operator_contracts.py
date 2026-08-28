@@ -13,6 +13,13 @@ from google.api_core.exceptions import Conflict, NotFound, PreconditionFailed
 from nightwatch.agent_roster import AGENT_TAXONOMY_VERSION, APPROVED_AGENT_ROSTER, MANDATORY_SPECIALISTS, MAX_SPECIALISTS
 from nightwatch.contracts import Suite
 from nightwatch.datasets import canonical_prompt
+from nightwatch.followup import (
+    FollowupApproval,
+    FollowupDraft,
+    FollowupError,
+    followup_approval_from_dict,
+    followup_draft_from_dict,
+)
 from nightwatch.journal import JournalError
 from nightwatch.model_config import validate_gemma_checkpoint
 
@@ -240,6 +247,16 @@ class DelegationPolicy:
 
 
 @dataclass(frozen=True)
+class MissionLineage:
+    parent_cycle_id: str
+    parent_manifest_id: str
+    parent_head_sha256: str
+    followup_draft_id: str
+    previous_dataset_sha256: str
+    evidence_rotated: bool
+
+
+@dataclass(frozen=True)
 class MissionContract:
     contract_id: str
     schema_version: int
@@ -255,6 +272,7 @@ class MissionContract:
     policy: ReleasePolicy
     compute: ComputeLimits
     delegation: DelegationPolicy | None = None
+    lineage: MissionLineage | None = None
     runtime: str = "modal"
     workflow: str = "generic_text_classification"
 
@@ -262,6 +280,8 @@ class MissionContract:
         value = asdict(self)
         if self.delegation is None:
             value.pop("delegation")
+        if self.lineage is None:
+            value.pop("lineage")
         return value
 
     def public_summary(self) -> dict[str, Any]:
@@ -278,6 +298,7 @@ class MissionContract:
             "policy": asdict(self.policy),
             "compute": asdict(self.compute),
             "delegation": asdict(self.delegation) if self.delegation else None,
+            "lineage": asdict(self.lineage) if self.lineage else None,
             "runtime": self.runtime,
             "workflow": self.workflow,
             "frozen": True,
@@ -289,6 +310,10 @@ class OperatorStore(Protocol):
     def read_dataset(self, dataset_id: str) -> FrozenDataset | None: ...
     def create_contract(self, contract: MissionContract) -> MissionContract: ...
     def read_contract(self, contract_id: str) -> MissionContract | None: ...
+    def create_followup(self, draft: FollowupDraft) -> FollowupDraft: ...
+    def read_followup(self, draft_id: str) -> FollowupDraft | None: ...
+    def create_followup_approval(self, approval: FollowupApproval) -> FollowupApproval: ...
+    def read_followup_approval(self, draft_id: str) -> FollowupApproval | None: ...
 
 
 class InMemoryOperatorStore:
@@ -297,6 +322,8 @@ class InMemoryOperatorStore:
     def __init__(self) -> None:
         self._datasets: dict[str, FrozenDataset] = {}
         self._contracts: dict[str, MissionContract] = {}
+        self._followups: dict[str, FollowupDraft] = {}
+        self._followup_approvals: dict[str, FollowupApproval] = {}
 
     def create_dataset(self, dataset: FrozenDataset) -> FrozenDataset:
         existing = self._datasets.get(dataset.dataset_id)
@@ -319,6 +346,28 @@ class InMemoryOperatorStore:
     def read_contract(self, contract_id: str) -> MissionContract | None:
         return self._contracts.get(contract_id)
 
+    def create_followup(self, draft: FollowupDraft) -> FollowupDraft:
+        validated = followup_draft_from_dict(draft.to_dict())
+        existing = self._followups.get(draft.draft_id)
+        if existing is not None and existing != validated:
+            raise OperatorContractError("follow-up identity already contains different bytes")
+        self._followups[draft.draft_id] = validated
+        return validated
+
+    def read_followup(self, draft_id: str) -> FollowupDraft | None:
+        return self._followups.get(draft_id)
+
+    def create_followup_approval(self, approval: FollowupApproval) -> FollowupApproval:
+        validated = followup_approval_from_dict(approval.to_dict())
+        existing = self._followup_approvals.get(approval.draft_id)
+        if existing is not None and existing != validated:
+            raise OperatorContractError("follow-up already has a different approval")
+        self._followup_approvals[approval.draft_id] = validated
+        return validated
+
+    def read_followup_approval(self, draft_id: str) -> FollowupApproval | None:
+        return self._followup_approvals.get(draft_id)
+
 
 def _boolean_cell(value: object, field: str) -> bool:
     if isinstance(value, bool):
@@ -337,7 +386,12 @@ def _number(value: object, field: str, minimum: float, maximum: float) -> float:
     return parsed
 
 
-def build_mission_contract(value: object, dataset: FrozenDataset) -> MissionContract:
+def build_mission_contract(
+    value: object,
+    dataset: FrozenDataset,
+    *,
+    lineage: MissionLineage | None = None,
+) -> MissionContract:
     legacy_fields = {
         "baseline_artifact",
         "compute",
@@ -538,8 +592,22 @@ def build_mission_contract(value: object, dataset: FrozenDataset) -> MissionCont
             ),
         )
 
+    if lineage is not None:
+        if (
+            not lineage.evidence_rotated
+            or not _SHA256.fullmatch(lineage.parent_head_sha256)
+            or not _SHA256.fullmatch(lineage.previous_dataset_sha256)
+            or not _CONTRACT_ID.fullmatch(lineage.parent_manifest_id)
+            or not re.fullmatch(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$", lineage.parent_cycle_id)
+            or not re.fullmatch(r"^followup-[a-f0-9]{24}$", lineage.followup_draft_id)
+        ):
+            raise OperatorContractError("follow-up lineage is malformed")
+        if dataset.sha256 == lineage.previous_dataset_sha256:
+            raise OperatorContractError("follow-up evidence must differ from the parent mission")
+
+    schema_version = 3 if lineage else 2 if delegation else 1
     material = {
-        "schema_version": 2 if delegation else 1,
+        "schema_version": schema_version,
         "subject": subject,
         "model_id": model_id,
         "model_revision": model_revision,
@@ -552,13 +620,14 @@ def build_mission_contract(value: object, dataset: FrozenDataset) -> MissionCont
         "policy": asdict(policy),
         "compute": asdict(compute),
         **({"delegation": asdict(delegation)} if delegation else {}),
+        **({"lineage": asdict(lineage)} if lineage else {}),
         "runtime": "modal",
         "workflow": "generic_text_classification",
     }
     digest = hashlib.sha256(_canonical_json_bytes(material)).hexdigest()
     return MissionContract(
         contract_id=f"contract-{digest[:24]}",
-        schema_version=2 if delegation else 1,
+        schema_version=schema_version,
         subject=subject,
         model_id=model_id,
         model_revision=model_revision,
@@ -571,6 +640,7 @@ def build_mission_contract(value: object, dataset: FrozenDataset) -> MissionCont
         policy=policy,
         compute=compute,
         delegation=delegation,
+        lineage=lineage,
     )
 
 
@@ -605,6 +675,7 @@ def mission_contract_from_dict(value: object) -> MissionContract:
                 if value.get("delegation") is not None
                 else None
             ),
+            lineage=(MissionLineage(**value["lineage"]) if value.get("lineage") is not None else None),
             runtime=value["runtime"],
             workflow=value["workflow"],
         )
@@ -662,10 +733,52 @@ def contract_request(contract: MissionContract) -> dict[str, Any]:
 def revalidate_contract(contract: MissionContract, dataset: FrozenDataset) -> MissionContract:
     """Re-run semantic policy validation after loading immutable stored bytes."""
 
-    rebuilt = build_mission_contract(contract_request(contract), dataset)
+    rebuilt = build_mission_contract(
+        contract_request(contract),
+        dataset,
+        lineage=contract.lineage,
+    )
     if rebuilt != contract:
         raise OperatorContractError("stored mission contract failed semantic validation")
     return contract
+
+
+def build_followup_contract(
+    parent: MissionContract,
+    dataset: FrozenDataset,
+    draft: FollowupDraft,
+    *,
+    maximum_gpu_minutes: int,
+) -> MissionContract:
+    """Create a child contract without allowing callers to author lineage fields."""
+
+    if (
+        draft.parent_manifest_id != parent.contract_id
+        or draft.parent_dataset_sha256 != parent.dataset_sha256
+    ):
+        raise OperatorContractError("follow-up draft does not match its parent contract")
+    if (
+        isinstance(maximum_gpu_minutes, bool)
+        or not isinstance(maximum_gpu_minutes, int)
+        or not 1 <= maximum_gpu_minutes <= draft.proposed_maximum_gpu_minutes
+    ):
+        raise OperatorContractError("approved GPU budget exceeds the follow-up proposal")
+    request = contract_request(parent)
+    request["dataset_id"] = dataset.dataset_id
+    request["compute"] = {
+        **request["compute"],
+        "maximum_gpu_minutes": maximum_gpu_minutes,
+        "maximum_training_attempts": 1,
+    }
+    lineage = MissionLineage(
+        parent_cycle_id=draft.parent_cycle_id,
+        parent_manifest_id=draft.parent_manifest_id,
+        parent_head_sha256=draft.parent_head_sha256,
+        followup_draft_id=draft.draft_id,
+        previous_dataset_sha256=draft.parent_dataset_sha256,
+        evidence_rotated=True,
+    )
+    return build_mission_contract(request, dataset, lineage=lineage)
 
 
 def mission_manifest_from_contract(contract: MissionContract):
@@ -718,6 +831,18 @@ class GCSOperatorStore:
         if not _CONTRACT_ID.fullmatch(contract_id):
             raise OperatorContractError("contract ID is malformed")
         return f"operator/contracts/{contract_id}.json"
+
+    @staticmethod
+    def _followup_name(draft_id: str) -> str:
+        if re.fullmatch(r"^followup-[a-f0-9]{24}$", draft_id) is None:
+            raise OperatorContractError("follow-up draft ID is malformed")
+        return f"operator/followups/{draft_id}.json"
+
+    @staticmethod
+    def _followup_approval_name(draft_id: str) -> str:
+        if re.fullmatch(r"^followup-[a-f0-9]{24}$", draft_id) is None:
+            raise OperatorContractError("follow-up draft ID is malformed")
+        return f"operator/followup-approvals/{draft_id}.json"
 
     def create_dataset(self, dataset: FrozenDataset) -> FrozenDataset:
         raw = dataset.canonical_bytes()
@@ -787,6 +912,78 @@ class GCSOperatorStore:
         if contract.contract_id != contract_id:
             raise OperatorContractError("stored contract identity does not match its object path")
         return contract
+
+    def create_followup(self, draft: FollowupDraft) -> FollowupDraft:
+        try:
+            validated = followup_draft_from_dict(draft.to_dict())
+        except FollowupError as exc:
+            raise OperatorContractError("follow-up draft failed integrity validation") from exc
+        raw = _canonical_json_bytes(validated.to_dict())
+        blob = self._bucket.blob(self._followup_name(draft.draft_id))
+        try:
+            blob.upload_from_string(
+                raw,
+                content_type="application/json",
+                if_generation_match=0,
+                timeout=GCS_TIMEOUT_SECONDS,
+            )
+        except (Conflict, PreconditionFailed):
+            existing = self.read_followup(draft.draft_id)
+            if existing != validated:
+                raise OperatorContractError("follow-up identity already contains different bytes")
+            return existing
+        return validated
+
+    def read_followup(self, draft_id: str) -> FollowupDraft | None:
+        try:
+            raw = self._bucket.blob(self._followup_name(draft_id)).download_as_bytes(
+                timeout=GCS_TIMEOUT_SECONDS
+            )
+        except NotFound:
+            return None
+        if not raw or len(raw) > MAX_CONTRACT_BYTES:
+            raise OperatorContractError("stored follow-up draft has an invalid size")
+        try:
+            value = json.loads(raw)
+            return followup_draft_from_dict(value)
+        except (json.JSONDecodeError, UnicodeDecodeError, FollowupError) as exc:
+            raise OperatorContractError("stored follow-up draft is malformed") from exc
+
+    def create_followup_approval(self, approval: FollowupApproval) -> FollowupApproval:
+        try:
+            validated = followup_approval_from_dict(approval.to_dict())
+        except FollowupError as exc:
+            raise OperatorContractError("follow-up approval failed integrity validation") from exc
+        raw = _canonical_json_bytes(validated.to_dict())
+        blob = self._bucket.blob(self._followup_approval_name(approval.draft_id))
+        try:
+            blob.upload_from_string(
+                raw,
+                content_type="application/json",
+                if_generation_match=0,
+                timeout=GCS_TIMEOUT_SECONDS,
+            )
+        except (Conflict, PreconditionFailed):
+            existing = self.read_followup_approval(approval.draft_id)
+            if existing != validated:
+                raise OperatorContractError("follow-up already has a different approval")
+            return existing
+        return validated
+
+    def read_followup_approval(self, draft_id: str) -> FollowupApproval | None:
+        try:
+            raw = self._bucket.blob(self._followup_approval_name(draft_id)).download_as_bytes(
+                timeout=GCS_TIMEOUT_SECONDS
+            )
+        except NotFound:
+            return None
+        if not raw or len(raw) > MAX_CONTRACT_BYTES:
+            raise OperatorContractError("stored follow-up approval has an invalid size")
+        try:
+            value = json.loads(raw)
+            return followup_approval_from_dict(value)
+        except (json.JSONDecodeError, UnicodeDecodeError, FollowupError) as exc:
+            raise OperatorContractError("stored follow-up approval is malformed") from exc
 
 
 def require_contract(store: OperatorStore, contract_id: str) -> MissionContract:

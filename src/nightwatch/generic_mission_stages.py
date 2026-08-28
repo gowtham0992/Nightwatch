@@ -94,6 +94,19 @@ class GenericTextClassificationStageExecutor:
             "limits": {"maximum_training_attempts": 1, "maximum_gpu_minutes": contract.compute.maximum_gpu_minutes},
             "dataset": {"dataset_id": contract.dataset_id, "sha256": contract.dataset_sha256, "rows": dataset.row_count},
             "deployment_authorized": False,
+            **(
+                {
+                    "lineage": {
+                        "parent_cycle_id": contract.lineage.parent_cycle_id,
+                        "parent_manifest_id": contract.lineage.parent_manifest_id,
+                        "parent_head_sha256": contract.lineage.parent_head_sha256,
+                        "followup_draft_id": contract.lineage.followup_draft_id,
+                        "evidence_rotated": contract.lineage.evidence_rotated,
+                    }
+                }
+                if contract.lineage
+                else {}
+            ),
         }
         compact_result = {
             "artifact_name": result["artifact_name"],

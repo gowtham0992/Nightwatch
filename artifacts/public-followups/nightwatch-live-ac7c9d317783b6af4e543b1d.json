@@ -1,0 +1,24 @@
+{
+  "cycle_id": "nightwatch-live-ac7c9d317783b6af4e543b1d",
+  "followup": {
+    "draft_id": "followup-c6cf05ae664966c7d7a4c756",
+    "draft_sha256": "c6cf05ae664966c7d7a4c756d611b3d5b2ce6d2f8b3a2c2a78d07cd596578655",
+    "schema_version": 1,
+    "parent_cycle_id": "nightwatch-live-ac7c9d317783b6af4e543b1d",
+    "parent_manifest_id": "contract-8d1d1940d6190b2b50ef7dd8",
+    "parent_head_sha256": "6d7d4c0ae6374a6b0230a342a3b0caff44c3fc2586f33173744ac2df2250329f",
+    "parent_evaluation_sha256": "24529cf24f6d37721918933e1ea07b9887771cba184ee7cb59f16b1c7bfb6d83",
+    "failed_invariants": ["minimum_target_gain", "maximum_regression_drop", "minimum_safety_accuracy", "require_zero_critical_misses"],
+    "repair_emphasis": [
+      {"capability": "target_repair", "reason": "Recover the missed target gain without weakening protected behavior.", "proposed_rows": 12},
+      {"capability": "safety_boundary", "reason": "Restore safety decisions and eliminate critical misses.", "proposed_rows": 16},
+      {"capability": "regression_guard", "reason": "Preserve routine behavior while the repair changes the boundary.", "proposed_rows": 12}
+    ],
+    "proposed_compute": {"maximum_gpu_minutes": 20, "maximum_training_attempts": 1},
+    "rationale": "The candidate failed 4 frozen release invariants. Nightwatch converted those failures into a bounded repair plan, but the previous evaluation is now treated as spent evidence. A different frozen dataset and a separately authorized compute budget are required.",
+    "requirements": {"fresh_evidence_required": true, "new_budget_authorization_required": true, "maximum_lineage_depth": 1},
+    "status": "awaiting_operator_approval",
+    "execution_authorized": false,
+    "deployment_authorized": false
+  }
+}

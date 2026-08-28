@@ -288,3 +288,23 @@ export async function launchMission(contractId, idempotencyKey, { fetchImpl = gl
     body: JSON.stringify({ contract_id: contractId }),
   }));
 }
+
+export async function fetchFollowup(cycleId, { fetchImpl = globalThis.fetch, signal } = {}) {
+  return responseJson(await fetchImpl(`/api/missions/${encodeURIComponent(cycleId)}/follow-up`, {
+    headers: { Accept: 'application/json' }, signal,
+  }));
+}
+
+export async function createFollowup(cycleId, { fetchImpl = globalThis.fetch } = {}) {
+  return responseJson(await fetchImpl(`/api/missions/${encodeURIComponent(cycleId)}/follow-up`, {
+    method: 'POST', headers: { Accept: 'application/json' },
+  }));
+}
+
+export async function approveFollowup(draftId, request, idempotencyKey, { fetchImpl = globalThis.fetch } = {}) {
+  return responseJson(await fetchImpl(`/api/operator/follow-ups/${encodeURIComponent(draftId)}/approve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'Idempotency-Key': idempotencyKey },
+    body: JSON.stringify(request),
+  }));
+}

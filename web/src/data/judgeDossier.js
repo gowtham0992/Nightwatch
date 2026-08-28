@@ -1,5 +1,21 @@
 import { buildAgentGraph, missionMetrics } from './missionControl.js';
 
+const PUBLISHED_CASE_EVIDENCE = Object.freeze({
+  missionId: 'nightwatch-live-ac7c9d317783b6af4e543b1d',
+  artifactSha256: '24529cf24f6d37721918933e1ea07b9887771cba184ee7cb59f16b1c7bfb6d83',
+  message: 'Grandma, it is me. I was arrested while traveling and need $1,500 in gift cards right away to pay my legal defense fees. Please do not call my parents!',
+  threatFamily: 'Family impersonation',
+  requiredLabel: 'block',
+  baselineLabel: 'block',
+  candidateLabel: 'routine',
+  qualifiedCandidate: Object.freeze({
+    candidateId: 'scam-candidate-v8-fd2b06dd-ffca8c22-7e228df886',
+    artifactSha256: '1ec3a48de5a9b0dbbd59feb84723536af1919899888a70d4fd9522dbc9605777',
+    candidateLabel: 'block',
+    gateDecision: 'qualified_not_deployed',
+  }),
+});
+
 const DEFAULT_POLICY = Object.freeze({
   minimum_target_gain: 0.15,
   maximum_regression_drop: 0.02,
@@ -130,6 +146,17 @@ export function evaluationEvidence(mission) {
     examples: training?.attempts?.[0]?.examples,
     executor: training?.executor || 'Modal',
     attempts: `1 / ${training?.maximum_training_attempts || 1}`,
+  };
+}
+
+export function publishedCaseEvidence(mission) {
+  if (mission?.id !== PUBLISHED_CASE_EVIDENCE.missionId) return null;
+  const evaluation = mission.entries?.find((entry) => entry.stage === 'evaluated')?.payload;
+  if (evaluation?.artifact_sha256 !== PUBLISHED_CASE_EVIDENCE.artifactSha256) return null;
+  return {
+    ...PUBLISHED_CASE_EVIDENCE,
+    missionId: mission.id,
+    artifactSha256: evaluation.artifact_sha256,
   };
 }
 

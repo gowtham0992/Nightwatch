@@ -8,6 +8,21 @@ Nightwatch separates autonomous repair from release authority. AI agents can dia
 
 The product flow above is the judge-readable view: one authenticated request advances six bounded stages, records immutable evidence, and ends in one of two explicit non-deployment states.
 
+## A refusal can inform one governed child mission
+
+![Nightwatch governed follow-up architecture](images/nightwatch-governed-followup-architecture.png)
+
+[Download the 4K governed follow-up architecture](images/nightwatch-governed-followup-architecture-4k.png)
+
+`rejected` is still terminal: no seventh stage is appended and no agent retries. After the terminal journal head exists, deterministic code may create one content-addressed `FollowupDraft` from the failed invariant IDs. That draft has `execution_authorized=false` and `deployment_authorized=false`.
+
+The private operator must supply two genuinely new inputs before another mission can exist:
+
+1. a different canonical evaluation SHA-256, because the parent evidence is treated as spent;
+2. a separately approved GPU-minute ceiling, never higher than the proposal and always limited to one attempt.
+
+Approval creates a new schema-v3 child contract that commits to the parent cycle, parent contract, terminal head, follow-up draft, rotated evidence digest, and new budget. The child inherits the pinned model, release policy, baseline adapter, field mapping, and approved Registry roster. Maximum lineage depth is one, so a child cannot recursively manufacture another retry. The same deterministic release gate evaluates the child, and both branches remain non-deploying.
+
 ## Google Cloud enforces the boundary
 
 The deployed topology uses separate identities for private autonomous execution and public verification. The public service cannot read Firestore, invoke Gemini or Modal, or start a mission; it can only show validated redacted evidence and request a fixed proof.
@@ -38,6 +53,9 @@ Firestore stores one head at `missions/{cycle_id}` and one immutable document pe
 Every entry commits to its predecessor and canonical payload with SHA-256. The fixed all-zero genesis hash starts each mission. The terminal head therefore identifies the complete ordered history, not only the final result.
 
 Cloud Storage holds create-only stage artifacts and external-call claims. Each external effect is keyed by cycle ID and stage:
+
+- `operator/followups/{draft_id}.json` stores a create-only non-executable proposal;
+- `operator/followup-approvals/{draft_id}.json` stores at most one operator approval bound to a child contract, evidence digest, budget, and idempotency hash;
 
 - a duplicate Cloud Task returns an identical completed journal entry;
 - a crash before artifact creation leaves nothing durable and can retry safely;
@@ -82,6 +100,7 @@ The verifier can create receipts but cannot overwrite or delete them. The public
 |---|---|---|---|
 | Public judge service | Bundled redacted missions; isolated public receipts | Enqueue one fixed public-verification task | Read Firestore, call Gemini or Modal, launch missions, write receipts |
 | Private evidence/operator service | Firestore mission evidence | Enqueue the fixed mission and private verification tasks | Write Firestore evidence, select arbitrary manifests, deploy models |
+| Governed follow-up controller | Parent contract, terminal journal, uploaded datasets, create-only proposal/approval objects | Create one child contract and enqueue its `created` stage after explicit operator consent | Reuse parent evidence, raise the proposed budget, authorize a second child, deploy a model |
 | Mission OIDC invoker | Nothing | Invoke only the private mission worker | Call other application services |
 | Mission worker | Approved local inputs, mission artifacts, and read-only Agent Registry results | Append Firestore stages; create artifacts; call approved private specialists, Vertex AI, and the claimed Modal function | Register agents, call unpinned endpoints, deploy models, rewrite artifacts, change policy |
 | Target Repair specialist | Projected diagnosis and observed errors | Invoke Gemini through Vertex AI and return one schema-bound A2A artifact | Read Firestore/GCS/Modal, call sibling agents, alter policy or deploy |
@@ -98,6 +117,7 @@ The diagnostician remains an ADK role inside the mission worker. The repair spec
 - The public service, mission worker, and verifiers are capped at one instance; the authenticated evidence service is capped at two.
 - Gemini 3.6 Flash handles the agent path; no Pro model is used.
 - The live manifest allows one training attempt and at most 20 GPU minutes.
+- Follow-up proposals grant no execution authority; child missions require rotated evidence, a new explicit budget, and lineage depth one.
 - Queue concurrency, rate, retry count, and retry windows are explicitly capped.
 - Browser and API responses use CSP, frame denial, no-referrer, no-sniff, body-size limits, and no-store rules for private or mutable responses.
 - Secrets enter through runtime configuration or managed secret stores and are excluded from the repository and container build context.

@@ -12,6 +12,7 @@ from google.auth.exceptions import DefaultCredentialsError
 from nightwatch.cloud_tasks import ScheduledVerification
 from nightwatch.cloud_tasks import verification_id as build_verification_id
 from nightwatch.contracts import Stage
+from nightwatch.followup import build_followup_draft
 from nightwatch.journal import GENESIS_HASH, JournalEntry, JournalError
 from nightwatch.service import create_app
 from nightwatch.model_config import GEMMA_1B_MODEL_ID, GEMMA_1B_MODEL_REVISION
@@ -101,6 +102,34 @@ def operator_store_with_contract() -> tuple[InMemoryOperatorStore, object]:
     store.create_dataset(dataset)
     store.create_contract(contract)
     return store, contract
+
+
+def refused_operator_entries(contract_id: str, cycle_id: str) -> list[JournalEntry]:
+    return [
+        JournalEntry(cycle_id, Stage.CREATED, "2026-08-28T00:00:00Z", {"manifest_id": contract_id}, GENESIS_HASH, "1" * 64),
+        JournalEntry(
+            cycle_id,
+            Stage.EVALUATED,
+            "2026-08-28T00:01:00Z",
+            {
+                "manifest_id": contract_id,
+                "accepted": False,
+                "artifact_sha256": "2" * 64,
+                "decision": {
+                    "accepted": False,
+                    "failed_invariants": [
+                        "minimum_target_gain",
+                        "maximum_regression_drop",
+                        "minimum_safety_accuracy",
+                        "require_zero_critical_misses",
+                    ],
+                },
+            },
+            "1" * 64,
+            "3" * 64,
+        ),
+        JournalEntry(cycle_id, Stage.REJECTED, "2026-08-28T00:02:00Z", {"manifest_id": contract_id}, "3" * 64, "4" * 64),
+    ]
 
 
 class StubVerifier:
@@ -215,6 +244,7 @@ def test_operator_launch_is_hidden_unless_explicitly_enabled(
         ("post", "/api/operator/datasets"),
         ("post", "/api/operator/contracts"),
         ("get", "/api/operator/contracts/contract-1234567890abcdef12345678"),
+        ("post", "/api/operator/follow-ups/followup-1234567890abcdef12345678/approve"),
     ],
 )
 def test_every_operator_route_is_absent_from_the_public_service(
@@ -264,6 +294,101 @@ def test_operator_launch_is_fixed_bounded_and_idempotent(
         Stage.CREATED,
     )
     assert injected.status_code == 400
+
+
+def test_followup_approval_requires_fresh_evidence_and_queues_one_child(
+    web_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    store, parent = operator_store_with_contract()
+    cycle_id = "nightwatch-live-parent-followup"
+    journal = StubJournal(refused_operator_entries(parent.contract_id, cycle_id))
+    queue = StubMissionQueue()
+    monkeypatch.delenv("NIGHTWATCH_PUBLIC_MODE", raising=False)
+    monkeypatch.setenv("NIGHTWATCH_OPERATOR_MODE", "1")
+    client = create_app(
+        static_root=web_root,
+        reader=journal,
+        mission_queue=queue,
+        operator_store=store,
+    ).test_client()
+
+    created = client.post(f"/api/missions/{cycle_id}/follow-up")
+    assert created.status_code == 201
+    draft_id = created.json["followup"]["draft_id"]
+    assert created.json["followup"]["execution_authorized"] is False
+
+    reused = client.post(
+        f"/api/operator/follow-ups/{draft_id}/approve",
+        json={
+            "authorize_new_budget": True,
+            "dataset_id": parent.dataset_id,
+            "maximum_gpu_minutes": 10,
+        },
+        headers={"Idempotency-Key": "followup-parent-reused-evidence"},
+    )
+    assert reused.status_code == 409
+    assert queue.calls == []
+
+    original = store.read_dataset(parent.dataset_id)
+    assert original is not None
+    fresh_rows = [dict(row, message=f"{row['message']} fresh") for row in original.rows]
+    fresh_raw = ("\n".join(json.dumps(row) for row in fresh_rows) + "\n").encode()
+    fresh = store.create_dataset(parse_uploaded_dataset(fresh_raw, "jsonl"))
+    approved = client.post(
+        f"/api/operator/follow-ups/{draft_id}/approve",
+        json={
+            "authorize_new_budget": True,
+            "dataset_id": fresh.dataset_id,
+            "maximum_gpu_minutes": 10,
+        },
+        headers={"Idempotency-Key": "followup-parent-fresh-evidence"},
+    )
+
+    assert approved.status_code == 202
+    assert approved.json["parent_cycle_id"] == cycle_id
+    assert approved.json["approval"]["fresh_evidence_confirmed"] is True
+    assert approved.json["approval"]["deployment_authorized"] is False
+    assert queue.calls == [
+        (approved.json["cycle_id"], approved.json["manifest_id"], Stage.CREATED)
+    ]
+    child = store.read_contract(approved.json["manifest_id"])
+    assert child is not None and child.lineage is not None
+    assert child.lineage.parent_cycle_id == cycle_id
+    assert child.dataset_sha256 == fresh.sha256
+
+
+def test_public_followup_is_static_redacted_and_read_only(
+    web_root: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    store, parent = operator_store_with_contract()
+    cycle_id = "nightwatch-live-ac7c9d317783b6af4e543b1d"
+    draft = build_followup_draft(
+        cycle_id,
+        refused_operator_entries(parent.contract_id, cycle_id),
+        parent,
+    )
+    followups = tmp_path / "followups"
+    followups.mkdir()
+    (followups / f"{cycle_id}.json").write_text(
+        json.dumps({"cycle_id": cycle_id, "followup": draft.public_summary()}),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("NIGHTWATCH_PUBLIC_MODE", "1")
+    monkeypatch.setenv("NIGHTWATCH_OPERATOR_MODE", "1")
+    monkeypatch.setenv("NIGHTWATCH_PUBLIC_FOLLOWUPS_DIR", str(followups))
+    client = create_app(static_root=web_root, operator_store=store).test_client()
+
+    loaded = client.get(f"/api/missions/{cycle_id}/follow-up")
+    mutation = client.post(f"/api/missions/{cycle_id}/follow-up")
+
+    assert loaded.status_code == 200
+    assert loaded.json["followup"]["parent_cycle_id"] == cycle_id
+    assert "parent_dataset_sha256" not in loaded.json["followup"]
+    assert loaded.json["followup"]["execution_authorized"] is False
+    assert mutation.status_code == 404
 
 
 @pytest.mark.parametrize(

@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3840" height="2160" viewBox="0 0 3840 2160">
+  <defs>
+    <style>
+      .sans{font-family:Inter,Arial,sans-serif}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+      .eyebrow{font-size:30px;font-weight:700;letter-spacing:5px}.title{font-size:108px;font-weight:650;letter-spacing:-5px}.sub{font-size:40px;fill:#aab1b0}
+      .section{font-size:25px;font-weight:700;letter-spacing:3px}.h2{font-size:46px;font-weight:650}.body{font-size:27px;fill:#b5bcbb}.small{font-size:22px;fill:#929b9b}.code{font-size:21px;letter-spacing:1px}
+    </style>
+    <marker id="cyan-arrow" markerWidth="14" markerHeight="14" refX="11" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L12,5 L0,10" fill="none" stroke="#82d9d6" stroke-width="2"/></marker>
+    <marker id="lime-arrow" markerWidth="14" markerHeight="14" refX="11" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L12,5 L0,10" fill="none" stroke="#b9f56b" stroke-width="2"/></marker>
+  </defs>
+  <rect width="3840" height="2160" fill="#14191b"/>
+  <text x="170" y="135" class="mono eyebrow" fill="#82d9d6">NIGHTWATCH / GOVERNED FOLLOW-UP</text>
+  <text x="170" y="280" class="sans title" fill="#f2f4f1">A refusal is terminal. The learning is not.</text>
+  <text x="170" y="365" class="sans sub">Agents may prepare the next bounded mission. Only an authenticated operator can fund it.</text>
+  <line x1="170" y1="435" x2="3670" y2="435" stroke="#344044" stroke-width="2"/>
+
+  <rect x="170" y="535" width="720" height="560" rx="18" fill="#1e2529" stroke="#ff7f7a" stroke-width="3"/>
+  <rect x="170" y="535" width="9" height="560" rx="4" fill="#ff7f7a"/>
+  <text x="225" y="610" class="mono section" fill="#ff8d88">01 / SEALED PARENT</text>
+  <text x="225" y="700" class="sans h2" fill="#f2f4f1">Candidate refused.</text>
+  <text x="225" y="755" class="sans h2" fill="#8d9695">Production preserved.</text>
+  <rect x="225" y="825" width="610" height="95" rx="9" fill="#171d20" stroke="#3d494d"/>
+  <text x="255" y="866" class="mono small">FROZEN RELEASE CHECKS</text><text x="740" y="878" text-anchor="end" class="mono section" fill="#ff8d88">4 / 4 FAILED</text>
+  <text x="225" y="980" class="sans body">The journal head and evaluation artifact</text>
+  <text x="225" y="1020" class="sans body">bind the exact failure. No agent can edit them.</text>
+  <text x="225" y="1068" class="mono code" fill="#82d9d6">HEAD 6D7D4C0A…0329F</text>
+
+  <line x1="890" y1="815" x2="1050" y2="815" stroke="#82d9d6" stroke-width="5" marker-end="url(#cyan-arrow)"/>
+  <text x="970" y="775" text-anchor="middle" class="mono small" fill="#82d9d6">CODE ONLY</text>
+
+  <rect x="1060" y="535" width="1220" height="560" rx="18" fill="#1e2529" stroke="#82d9d6" stroke-width="3"/>
+  <rect x="1060" y="535" width="9" height="560" rx="4" fill="#82d9d6"/>
+  <text x="1115" y="610" class="mono section" fill="#82d9d6">02 / DETERMINISTIC TRANSLATION</text>
+  <text x="1115" y="690" class="sans h2" fill="#f2f4f1">Failures become a bounded repair plan.</text>
+  <text x="1115" y="750" class="sans body">No inference, training, or deployment authority is created.</text>
+  <g transform="translate(1115 820)">
+    <rect width="330" height="190" rx="10" fill="#20282d" stroke="#3b484d"/><text x="25" y="42" class="mono small" fill="#82d9d6">TARGET REPAIR</text><text x="25" y="98" class="sans h2" fill="#f2f4f1">12</text><text x="88" y="98" class="sans body">rows proposed</text><text x="25" y="145" class="sans small">Recover missed gain.</text>
+    <rect x="365" width="330" height="190" rx="10" fill="#20282d" stroke="#3b484d"/><text x="390" y="42" class="mono small" fill="#82d9d6">SAFETY BOUNDARY</text><text x="390" y="98" class="sans h2" fill="#f2f4f1">16</text><text x="453" y="98" class="sans body">rows proposed</text><text x="390" y="145" class="sans small">Eliminate critical misses.</text>
+    <rect x="730" width="330" height="190" rx="10" fill="#20282d" stroke="#3b484d"/><text x="755" y="42" class="mono small" fill="#82d9d6">REGRESSION GUARD</text><text x="755" y="98" class="sans h2" fill="#f2f4f1">12</text><text x="818" y="98" class="sans body">rows proposed</text><text x="755" y="145" class="sans small">Preserve routine behavior.</text>
+  </g>
+
+  <line x1="2280" y1="815" x2="2440" y2="815" stroke="#82d9d6" stroke-width="5" marker-end="url(#cyan-arrow)"/>
+  <text x="2360" y="775" text-anchor="middle" class="mono small" fill="#82d9d6">CREATE ONLY</text>
+
+  <rect x="2450" y="535" width="1220" height="560" rx="18" fill="#111618" stroke="#ff7f7a" stroke-width="3"/>
+  <text x="2505" y="610" class="mono section" fill="#ff8d88">03 / AUTHORITY BOUNDARY</text>
+  <text x="2505" y="695" class="sans h2" fill="#f2f4f1">The proposal stops here.</text>
+  <rect x="2505" y="765" width="1110" height="92" rx="8" fill="#321f21" stroke="#774348"/>
+  <text x="2540" y="822" class="mono section" fill="#ff8d88">NO EXECUTION AUTHORITY</text>
+  <g class="sans body">
+    <text x="2505" y="930" fill="#f2f4f1">Fresh evidence</text><text x="2880" y="930" fill="#ff8d88">REQUIRED</text>
+    <text x="2505" y="980" fill="#f2f4f1">New compute budget</text><text x="2880" y="980" fill="#ff8d88">REQUIRED</text>
+    <text x="2505" y="1030" fill="#f2f4f1">Automatic deployment</text><text x="2880" y="1030" fill="#ff8d88">FORBIDDEN</text>
+  </g>
+
+  <line x1="170" y1="1215" x2="3670" y2="1215" stroke="#344044" stroke-width="2"/>
+  <rect x="170" y="1285" width="980" height="520" rx="18" fill="#1e2529" stroke="#b9f56b" stroke-width="3"/>
+  <rect x="170" y="1285" width="9" height="520" rx="4" fill="#b9f56b"/>
+  <text x="225" y="1360" class="mono section" fill="#b9f56b">04 / AUTHENTICATED OPERATOR</text>
+  <text x="225" y="1445" class="sans h2" fill="#f2f4f1">Supply what agents cannot.</text>
+  <g class="sans body"><text x="225" y="1530">1. Upload a different frozen evaluation</text><text x="225" y="1585">2. Approve one capped GPU budget</text><text x="225" y="1640">3. Authorize exactly one child mission</text></g>
+  <text x="225" y="1735" class="mono code" fill="#b9f56b">IAM ONLY · EXPLICIT CONSENT · CREATE ONCE</text>
+
+  <line x1="1150" y1="1545" x2="1325" y2="1545" stroke="#b9f56b" stroke-width="5" marker-end="url(#lime-arrow)"/>
+
+  <rect x="1335" y="1285" width="1050" height="520" rx="18" fill="#1e2529" stroke="#82d9d6" stroke-width="3"/>
+  <text x="1390" y="1360" class="mono section" fill="#82d9d6">05 / HASH-LINKED CHILD CONTRACT</text>
+  <text x="1390" y="1445" class="sans h2" fill="#f2f4f1">One new bounded mission.</text>
+  <g transform="translate(1390 1520)">
+    <rect width="430" height="88" rx="7" fill="#171d20" stroke="#3d494d"/><text x="25" y="38" class="mono small">PARENT HEAD</text><text x="25" y="70" class="mono code" fill="#82d9d6">6D7D4C0A…0329F</text>
+    <rect x="465" width="430" height="88" rx="7" fill="#171d20" stroke="#3d494d"/><text x="490" y="38" class="mono small">FOLLOW-UP DRAFT</text><text x="490" y="70" class="mono code" fill="#82d9d6">CONTENT ADDRESSED</text>
+    <rect y="115" width="430" height="88" rx="7" fill="#171d20" stroke="#3d494d"/><text x="25" y="153" class="mono small">EVIDENCE</text><text x="25" y="185" class="mono code" fill="#b9f56b">ROTATED SHA-256</text>
+    <rect x="465" y="115" width="430" height="88" rx="7" fill="#171d20" stroke="#3d494d"/><text x="490" y="153" class="mono small">COMPUTE</text><text x="490" y="185" class="mono code" fill="#b9f56b">1 ATTEMPT · NEW CAP</text>
+  </g>
+  <text x="1390" y="1762" class="sans small">The child inherits policy, model pin, and the approved Registry roster.</text>
+
+  <line x1="2385" y1="1545" x2="2560" y2="1545" stroke="#82d9d6" stroke-width="5" marker-end="url(#cyan-arrow)"/>
+
+  <rect x="2570" y="1285" width="1100" height="520" rx="18" fill="#1e2529" stroke="#82d9d6" stroke-width="3"/>
+  <text x="2625" y="1360" class="mono section" fill="#82d9d6">06 / SAME RELEASE BOUNDARY</text>
+  <text x="2625" y="1445" class="sans h2" fill="#f2f4f1">Evidence decides again.</text>
+  <rect x="2625" y="1525" width="460" height="145" rx="9" fill="#172420" stroke="#5c7d59"/>
+  <text x="2660" y="1570" class="mono small" fill="#b9f56b">ALL CHECKS PASS</text><text x="2660" y="1625" class="sans h2" fill="#f2f4f1">Qualified</text><text x="2660" y="1658" class="mono small">NOT DEPLOYED</text>
+  <rect x="3140" y="1525" width="475" height="145" rx="9" fill="#2d1d20" stroke="#7a4449"/>
+  <text x="3175" y="1570" class="mono small" fill="#ff8d88">ANY CHECK FAILS</text><text x="3175" y="1625" class="sans h2" fill="#f2f4f1">Refused</text><text x="3175" y="1658" class="mono small">NOT DEPLOYED</text>
+  <text x="2625" y="1745" class="sans body">Neither outcome moves a production pointer.</text>
+
+  <line x1="170" y1="1925" x2="3670" y2="1925" stroke="#344044" stroke-width="2"/>
+  <text x="170" y="2010" class="mono section" fill="#929b9b">AUTHORITY</text>
+  <text x="420" y="2010" class="mono section" fill="#82d9d6">AGENTS</text><text x="580" y="2010" class="mono small">diagnose · propose · author</text>
+  <text x="1230" y="2010" class="mono section" fill="#b9f56b">OPERATOR</text><text x="1465" y="2010" class="mono small">fresh evidence · new budget · one launch</text>
+  <text x="2320" y="2010" class="mono section" fill="#ff8d88">CODE</text><text x="2460" y="2010" class="mono small">validate · measure · qualify / refuse</text>
+</svg>
