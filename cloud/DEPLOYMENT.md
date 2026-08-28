@@ -181,6 +181,14 @@ After promotion, public proof `verify-c20c18c0e306d9d0ff533be85e685a6426503d2b` 
 
 Rollback was exercised by routing public traffic to `nightwatch-public-qualified-ff0cf26`, authenticated traffic to `nightwatch-evidence-adaptive-task-g2`, and verifier traffic to `nightwatch-public-verifier-agentproof2`. All three reported healthy in that state and were restored to the final revisions. The public-verification and mission queues were empty afterward; the three final revisions had no ERROR-level logs. IAM remained unchanged: only the public judge service grants `allUsers` invoke access, the verifier accepts only `nightwatch-public-invoker`, each specialist accepts only `nightwatch-mission-worker`, and each specialist holds only `roles/aiplatform.user` at project scope.
 
+## Judge gate sequencing release — August 28, 2026 UTC
+
+Public revision `nightwatch-public-scroll-82f2326` runs immutable digest `sha256:214ecdff84f95e122f31ccd7dd9a93b61cf8c864a55840b58ff0459e4bd17fdd`. The judge-page gate now waits for smooth scrolling to settle before beginning its four deterministic checks; the former viewport-triggered auto-run was removed. Reduced-motion clients still jump to the boundary and begin immediately.
+
+The zero-traffic candidate passed all 25 frontend evidence tests, the production Vite build, public-redacted health, required security headers, public operator-route denial, the real six-entry refusal projection, and both browser gate paths. In the live browser, refusal stayed pending throughout the scroll before ending `Four of four failed`; qualification followed the same sequence before ending `Four of four passed`. The service retained its dedicated public identity, one CPU, 512 MiB memory, 20-request concurrency, 15-second timeout, and scale-to-zero/max-one boundary.
+
+After promotion, canonical health reported release `82f2326`. Rollback was exercised by routing all public traffic to healthy revision `nightwatch-public-registry-a2a-final`, verifying public-redacted health, and restoring `nightwatch-public-scroll-82f2326`. The restored revision reported healthy and had no ERROR-level logs. No private operator, verifier, mission worker, IAM, queue, Firestore, Gemini, Modal, dataset, evidence, or release-policy change was required.
+
 ## Verify the live mission
 
 This request binds the task to the current adaptive-fleet mission and its exact Firestore head. Keep the identity token in memory and change the idempotency key for a new verification intent.
