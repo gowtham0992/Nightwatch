@@ -3,6 +3,7 @@ import { fetchVerificationReceipt, requestVerification } from './data/missionAda
 import { discoveryEvidence, dossierFacts, evaluationEvidence, missionRecord, releaseChecks } from './data/judgeDossier.js';
 import { SELF_SERVICE_MISSION_ID } from './data/missionControl.js';
 import { shortHash } from './data/scamMission.js';
+import { scrollToElementThen } from './utils/scrollGate.js';
 import './judgeDossier.css';
 
 const STAGE_LABELS = Object.freeze({
@@ -150,8 +151,6 @@ function ReleaseBoundary({ mission, qualified, runToken }) {
   const checks = useMemo(() => releaseChecks(mission), [mission]);
   const [step, setStep] = useState(0);
   const [running, setRunning] = useState(false);
-  const releaseRef = useRef(null);
-  const playedRef = useRef(false);
   const handledRunTokenRef = useRef(runToken);
   const resolved = Math.min(step, checks.length);
   const complete = resolved === checks.length;
@@ -159,21 +158,8 @@ function ReleaseBoundary({ mission, qualified, runToken }) {
   useEffect(() => {
     if (handledRunTokenRef.current === runToken) return;
     handledRunTokenRef.current = runToken;
-    playedRef.current = true;
     run();
   }, [run, runToken]);
-  useEffect(() => {
-    const node = releaseRef.current;
-    if (!node || playedRef.current || !globalThis.IntersectionObserver) return undefined;
-    const observer = new globalThis.IntersectionObserver((entries) => {
-      if (!entries.some((entry) => entry.isIntersecting) || playedRef.current) return;
-      playedRef.current = true;
-      run();
-      observer.disconnect();
-    }, { threshold: 0.38 });
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [run]);
   useEffect(() => {
     if (!running) return undefined;
     const reduced = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -183,7 +169,7 @@ function ReleaseBoundary({ mission, qualified, runToken }) {
     return () => globalThis.clearTimeout(timer);
   }, [checks.length, running, step]);
   const progress = qualified ? 10 + resolved * 20.5 : 10 + resolved * 15.5;
-  return <div ref={releaseRef} className={`nw-release ${qualified ? 'qualified' : 'refused'} ${complete ? 'complete' : ''}`}>
+  return <div className={`nw-release ${qualified ? 'qualified' : 'refused'} ${complete ? 'complete' : ''}`}>
     <div className="nw-release-summary"><div><span>Deterministic code only</span><h3>{complete ? qualified ? 'Four of four passed. The line can open.' : 'Four of four failed. The line stays shut.' : running ? `Checking invariant ${resolved + 1} of ${checks.length}.` : 'The candidate reaches the line no agent can cross.'}</h3></div><b>{complete ? qualified ? 'QUALIFIED · NOT DEPLOYED' : 'REFUSED · PRODUCTION PRESERVED' : 'RELEASE PENDING'}</b></div>
     <div className="nw-release-track" aria-hidden="true"><span className="nw-candidate" style={{ '--candidate-progress': progress }}>candidate-01</span><i /><div><strong>Release line</strong><small>{complete ? qualified ? 'open for human review' : 'closed by evidence' : 'awaiting invariants'}</small></div></div>
     <ol className="nw-checks">{checks.map((check, index) => {
@@ -241,9 +227,16 @@ export default function JudgeDossier({ mission, story, onSelectStory }) {
   const qualified = story === 'qualified' || mission.outcome === 'qualified';
   const facts = useMemo(() => dossierFacts(mission), [mission]);
   const [runToken, setRunToken] = useState(0);
+  const cancelGateScrollRef = useRef(() => {});
+  useEffect(() => () => cancelGateScrollRef.current(), []);
   const startGate = () => {
-    setRunToken((value) => value + 1);
-    globalThis.document?.getElementById('boundary')?.scrollIntoView({ behavior: globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    cancelGateScrollRef.current();
+    const boundary = globalThis.document?.getElementById('boundary');
+    const reducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    cancelGateScrollRef.current = scrollToElementThen(boundary, () => {
+      cancelGateScrollRef.current = () => {};
+      setRunToken((value) => value + 1);
+    }, { reducedMotion });
   };
   return <main className="nw-dossier">
     <Hero mission={mission} facts={facts} qualified={qualified} story={story} onSelectStory={onSelectStory} onStartGate={startGate} />
