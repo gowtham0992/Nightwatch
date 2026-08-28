@@ -6,7 +6,11 @@ from google.api_core.exceptions import AlreadyExists
 
 from nightwatch.contracts import Stage
 from nightwatch.mission_orchestrator import SAFETY_270M_V1
-from nightwatch.mission_tasks import CloudTasksMissionQueue, mission_task_id
+from nightwatch.mission_tasks import (
+    MISSION_TASK_GENERATION,
+    CloudTasksMissionQueue,
+    mission_task_id,
+)
 
 
 class FakeClient:
@@ -43,6 +47,7 @@ def queue(client: FakeClient) -> CloudTasksMissionQueue:
 
 
 def test_stage_task_is_oidc_bound_with_deterministic_name_and_30_minute_deadline() -> None:
+    assert MISSION_TASK_GENERATION == "g2"
     client = FakeClient()
     scheduled = queue(client).enqueue_stage(
         "mission-live-301",

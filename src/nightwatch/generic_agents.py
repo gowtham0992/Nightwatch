@@ -67,6 +67,7 @@ async def diagnose_failures(
         evidence_case_ids: list[str] = Field(min_length=1, max_length=8)
         repair_objective: str = Field(min_length=20, max_length=500)
         protected_behaviors: list[str] = Field(min_length=2, max_length=6)
+        required_capabilities: list[str] = Field(min_length=1, max_length=3)
 
     result = await _structured_agent(
         name="nightwatch_generic_diagnostician",
@@ -75,6 +76,9 @@ async def diagnose_failures(
             "Use only supplied misclassified rows. Cite observed case IDs. Explain the smallest "
             "repairable pattern without hidden reasoning. Never change labels, thresholds, model, "
             "dataset, compute limits, or deployment state. Preserve regression and safety behavior."
+            " Select only from these repair capabilities: target_repair, safety_boundary, regression_guard. "
+            "Request target_repair for target-suite errors, safety_boundary for safety-suite errors, and "
+            "regression_guard whenever protected behavior must be preserved."
         ),
         schema=Diagnosis,
         request={"failure_packet": failure_packet, "labels": list(contract.labels)},
@@ -83,7 +87,42 @@ async def diagnose_failures(
     cited = result.get("evidence_case_ids")
     if not isinstance(cited, list) or not set(cited) <= allowed:
         raise JournalError("diagnostician cited evidence outside the frozen baseline scan")
+    capabilities = result.get("required_capabilities")
+    if not isinstance(capabilities, list) or not set(capabilities) <= set(SPECIALISTS):
+        raise JournalError("diagnostician requested a capability outside the frozen taxonomy")
     return result
+
+
+def validate_curriculum_batches(
+    batches: list[dict[str, Any]], failure_packet: dict[str, Any], contract: MissionContract
+) -> dict[str, Any]:
+    evaluation_prompts = {
+        canonical_prompt(str(row["text"]))
+        for row in failure_packet.get("all_cases", [])
+        if isinstance(row, dict) and isinstance(row.get("text"), str)
+    }
+    seen: set[str] = set()
+    rows: list[dict[str, str]] = []
+    specialists: list[str] = []
+    for batch in batches:
+        specialist = batch.get("specialist")
+        if specialist not in SPECIALISTS or specialist in specialists:
+            raise JournalError("curriculum specialist identity was not bound by the orchestrator")
+        specialists.append(specialist)
+        examples = batch.get("examples")
+        if not isinstance(examples, list) or not 8 <= len(examples) <= 16:
+            raise JournalError("curriculum specialist returned an invalid batch size")
+        if {example.get("label") for example in examples} != set(contract.labels):
+            raise JournalError("curriculum specialist did not cover every approved label")
+        for example in examples:
+            text = str(example.get("text", "")).strip()
+            label = example.get("label")
+            fingerprint = canonical_prompt(text)
+            if label not in contract.labels or fingerprint in seen or fingerprint in evaluation_prompts:
+                raise JournalError("authored curriculum violates labels, uniqueness, or leakage policy")
+            seen.add(fingerprint)
+            rows.append({"text": text, "label": str(label), "specialist": specialist})
+    return {"specialists": specialists, "batches": batches, "rows": rows}
 
 
 async def author_parallel_curriculum(
@@ -130,27 +169,4 @@ async def author_parallel_curriculum(
         return {**batch, "specialist": specialist, "assignment": assignment}
 
     batches = await asyncio.gather(*(author(specialist) for specialist in SPECIALISTS))
-    evaluation_prompts = {
-        canonical_prompt(str(row["text"]))
-        for row in failure_packet.get("all_cases", [])
-        if isinstance(row, dict) and isinstance(row.get("text"), str)
-    }
-    seen: set[str] = set()
-    rows: list[dict[str, str]] = []
-    for specialist, batch in zip(SPECIALISTS, batches, strict=True):
-        if batch.get("specialist") != specialist:
-            raise JournalError("curriculum invocation identity was not bound by the orchestrator")
-        examples = batch.get("examples")
-        if not isinstance(examples, list) or not 8 <= len(examples) <= 16:
-            raise JournalError("curriculum specialist returned an invalid batch size")
-        if {example.get("label") for example in examples} != set(contract.labels):
-            raise JournalError("curriculum specialist did not cover every approved label")
-        for example in examples:
-            text = str(example.get("text", "")).strip()
-            label = example.get("label")
-            fingerprint = canonical_prompt(text)
-            if label not in contract.labels or fingerprint in seen or fingerprint in evaluation_prompts:
-                raise JournalError("authored curriculum violates labels, uniqueness, or leakage policy")
-            seen.add(fingerprint)
-            rows.append({"text": text, "label": str(label), "specialist": specialist})
-    return {"specialists": list(SPECIALISTS), "batches": batches, "rows": rows}
+    return validate_curriculum_batches(batches, failure_packet, contract)

@@ -10,7 +10,7 @@ from nightwatch.journal import append_stage, read_journal
 from nightwatch.mission_orchestrator import advance_mission
 from nightwatch.operator_contracts import InMemoryOperatorStore, build_mission_contract, mission_manifest_from_contract, parse_uploaded_dataset
 from nightwatch.stage_artifacts import StageArtifact
-from test_operator_contracts import contract_request, dataset_rows, jsonl_bytes
+from test_operator_contracts import adaptive_contract_request, contract_request, dataset_rows, jsonl_bytes
 
 
 class Journal:
@@ -93,3 +93,43 @@ def test_dynamic_mission_discovers_failure_and_reaches_deterministic_gate(tmp_pa
     assert [output["row_count"] for output in outputs] == [8, 8, 8]
     assert len({output["artifact_sha256"] for output in outputs}) == 3
     assert runtime.calls == ["baseline", "candidate"]
+
+
+def test_adaptive_mission_seals_registry_plan_before_a2a_invocation(tmp_path, monkeypatch) -> None:
+    dataset = parse_uploaded_dataset(jsonl_bytes(), "jsonl")
+    contract = build_mission_contract(adaptive_contract_request(dataset.dataset_id), dataset)
+    store = InMemoryOperatorStore(); store.create_dataset(dataset); store.create_contract(contract)
+    manifest = mission_manifest_from_contract(contract)
+    artifacts = Artifacts(); runtime = Runtime()
+    executor = GenericTextClassificationStageExecutor(artifacts, store, runtime)
+    calls = {"discover": 0, "invoke": 0}
+
+    async def diagnosis(packet, _contract):
+        return {"headline": "Observed bounded failures", "failure_pattern": "The baseline confuses multiple approved labels in target and safety evidence.", "evidence_case_ids": [packet["errors"][0]["case_id"]], "repair_objective": "Restore the observed boundary without damaging protected behavior.", "protected_behaviors": ["Preserve ordinary messages.", "Preserve safety blocking."], "required_capabilities": ["target_repair", "safety_boundary"]}
+
+    async def discover(_diagnosis, _contract):
+        calls["discover"] += 1
+        return {"schema_version": "nightwatch.delegation-plan.v1", "taxonomy_version": "nightwatch.repair-capabilities.v1", "registry_location": "projects/test/locations/us-central1", "required_capabilities": ["target_repair", "safety_boundary", "regression_guard"], "selected_agents": [{"specialist": specialist, "agent_urn": f"urn:agent:{specialist}", "card_sha256": str(index) * 64, "endpoint_origin": f"https://{specialist}.example", "service_account": f"{specialist}@example.iam.gserviceaccount.com", "capabilities": [specialist], "registry_resource": f"agents/{specialist}"} for index, specialist in enumerate(("target_repair", "safety_boundary", "regression_guard"), start=1)]}
+
+    async def invoke(**kwargs):
+        calls["invoke"] += 1
+        batches = []
+        for batch_index, specialist in enumerate(("target_repair", "safety_boundary", "regression_guard")):
+            examples = [{"text": f"Adaptive original {batch_index}-{index}", "label": contract.labels[index % len(contract.labels)]} for index in range(8)]
+            batches.append({"specialist": specialist, "assignment": "bounded", "rationale": f"Bounded rationale for {specialist}", "examples": examples, "a2a_receipt": {"agent_card_sha256": str(batch_index + 1) * 64, "request_sha256": "a" * 64, "response_sha256": "b" * 64}})
+        return {"batches": batches, "receipts": []}
+
+    monkeypatch.setattr("nightwatch.generic_mission_stages.diagnose_failures", diagnosis)
+    monkeypatch.setattr("nightwatch.generic_mission_stages.discover_delegation_plan", discover)
+    monkeypatch.setattr("nightwatch.generic_mission_stages.invoke_delegation_plan", invoke)
+    journal = Journal(tmp_path / "adaptive.jsonl")
+    for stage in (Stage.CREATED, Stage.DIAGNOSED, Stage.CURRICULUM_READY):
+        advance_mission("mission-adaptive-001", contract.contract_id, journal=journal, executor=executor, expected_stage=stage, manifest=manifest)
+    # A retry of an already sealed stage reads immutable evidence and cannot rediscover.
+    executor.execute("mission-adaptive-001", Stage.DIAGNOSED, manifest, tuple(journal.read_cycle("mission-adaptive-001")))
+
+    assert calls == {"discover": 1, "invoke": 1}
+    diagnosed = artifacts.read("mission-adaptive-001", Stage.DIAGNOSED, contract.contract_id)
+    assert len(diagnosed.payload["delegation_plan"]["selected_agents"]) == 3
+    authored = artifacts.read("mission-adaptive-001", Stage.CURRICULUM_READY, contract.contract_id)
+    assert all("a2a_receipt" in output for output in authored.payload["specialist_artifacts"])

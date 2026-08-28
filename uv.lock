@@ -17,6 +17,22 @@ resolution-markers = [
 ]
 
 [[package]]
+name = "a2a-sdk"
+version = "0.3.26"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "google-api-core" },
+    { name = "httpx" },
+    { name = "httpx-sse" },
+    { name = "protobuf" },
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/be/97/a6840e01795b182ce751ca165430d46459927cde9bfab838087cbb24aef7/a2a_sdk-0.3.26.tar.gz", hash = "sha256:44068e2d037afbb07ab899267439e9bc7eaa7ac2af94f1e8b239933c993ad52d", size = 274598, upload-time = "2026-04-09T15:21:13.902Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dd/d5/51f4ee1bf3b736add42a542d3c8a3fd3fa85f3d36c17972127defc46c26f/a2a_sdk-0.3.26-py3-none-any.whl", hash = "sha256:754e0573f6d33b225c1d8d51f640efa69cbbed7bdfb06ce9c3540ea9f58d4a91", size = 151016, upload-time = "2026-04-09T15:21:12.35Z" },
+]
+
+[[package]]
 name = "accelerate"
 version = "1.14.0"
 source = { registry = "https://pypi.org/simple" }
@@ -920,6 +936,11 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ab/9b/6151ab3e5566b85008322605be7c3d27cc30b85946b7d026c8d56bdfc46c/google_adk-1.35.2.tar.gz", hash = "sha256:8ee69cc3ed2fb828664f761a50cc1351668d685506206eda6df2e2cb9f3f2147", size = 2431987, upload-time = "2026-06-17T20:43:04.974Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/79/6f/d472034f28c78a0f423d56e421284ab40a726b2311788abdce9a1c41689c/google_adk-1.35.2-py3-none-any.whl", hash = "sha256:58db7398a9b6513d0a045e3d25ac9138f58165fb25404b3765581776de4c3ce4", size = 2876762, upload-time = "2026-06-17T20:43:02.678Z" },
+]
+
+[package.optional-dependencies]
+a2a = [
+    { name = "a2a-sdk" },
 ]
 
 [[package]]
@@ -2284,8 +2305,9 @@ source = { editable = "." }
 
 [package.optional-dependencies]
 agent = [
-    { name = "google-adk" },
+    { name = "google-adk", extra = ["a2a"] },
     { name = "google-genai" },
+    { name = "uvicorn" },
 ]
 cloud = [
     { name = "google-cloud-firestore" },
@@ -2319,7 +2341,7 @@ requires-dist = [
     { name = "accelerate", marker = "extra == 'train'", specifier = ">=1.12,<2" },
     { name = "datasets", marker = "extra == 'train'", specifier = ">=4.4,<5" },
     { name = "flask", marker = "extra == 'service'", specifier = ">=3.1,<4" },
-    { name = "google-adk", marker = "extra == 'agent'", specifier = ">=1.18,<2" },
+    { name = "google-adk", extras = ["a2a"], marker = "extra == 'agent'", specifier = ">=1.18,<2" },
     { name = "google-cloud-firestore", marker = "extra == 'cloud'", specifier = ">=2.21,<3" },
     { name = "google-cloud-firestore", marker = "extra == 'service'", specifier = ">=2.21,<3" },
     { name = "google-cloud-storage", marker = "extra == 'cloud'", specifier = ">=3.3,<4" },
@@ -2334,6 +2356,7 @@ requires-dist = [
     { name = "torch", marker = "extra == 'train'", specifier = ">=2.9,<3" },
     { name = "transformers", marker = "extra == 'train'", specifier = ">=4.57,<5" },
     { name = "trl", marker = "extra == 'train'", specifier = ">=0.29,<0.30" },
+    { name = "uvicorn", marker = "extra == 'agent'", specifier = ">=0.38,<1" },
 ]
 provides-extras = ["train", "agent", "cloud", "experiment", "service", "dev"]
 

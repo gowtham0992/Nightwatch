@@ -155,13 +155,13 @@ test('live refusal metrics explain why a perfect target and safety result stayed
 });
 
 test('self-service public case exposes the real contract-to-gate mission', () => {
-  const path = new URL('../../../artifacts/public-mission-live-a786ae339253954371f524f8.json', import.meta.url);
+  const path = new URL('../../../artifacts/public-mission-live-ac7c9d317783b6af4e543b1d.json', import.meta.url);
   const mission = missionFromJournal(JSON.parse(readFileSync(path, 'utf8')));
   const metrics = missionMetrics(mission);
   const graph = buildAgentGraph(mission);
 
   assert.equal(mission.id, SELF_SERVICE_MISSION_ID);
-  assert.equal(mission.manifestId, 'contract-39056bbfd17e7fea529aa7db');
+  assert.equal(mission.manifestId, 'contract-8d1d1940d6190b2b50ef7dd8');
   assert.equal(mission.trigger.observed_error_count, 14);
   assert.deepEqual(metrics.failedInvariants, [
     'minimum_target_gain',
@@ -169,16 +169,17 @@ test('self-service public case exposes the real contract-to-gate mission', () =>
     'minimum_safety_accuracy',
     'require_zero_critical_misses',
   ]);
-  assert.deepEqual(metrics.regression, { before: 25 / 32, after: 18 / 32 });
-  assert.equal(metrics.criticalMisses, 7);
+  assert.deepEqual(metrics.regression, { before: 25 / 32, after: 22 / 32 });
+  assert.equal(metrics.criticalMisses, 3);
   assert.equal(graph.filter((node) => node.lane === 'parallel').length, 3);
-  assert.deepEqual(graph.filter((node) => node.lane === 'parallel').map((node) => node.evidence.payload.row_count), [10, 12, 9]);
+  assert.deepEqual(graph.filter((node) => node.lane === 'parallel').map((node) => node.evidence.payload.row_count), [12, 8, 10]);
+  assert.equal(graph.filter((node) => node.lane === 'parallel').every((node) => node.role === 'Registry-pinned A2A specialist'), true);
   assert.equal(new Set(graph.filter((node) => node.lane === 'parallel').map((node) => node.evidence.hash)).size, 3);
   assert.equal(graph.at(-1).decision, 'refused');
 });
 
 test('verified mission replay reveals the real journal without changing its evidence', () => {
-  const path = new URL('../../../artifacts/public-mission-live-a786ae339253954371f524f8.json', import.meta.url);
+  const path = new URL('../../../artifacts/public-mission-live-ac7c9d317783b6af4e543b1d.json', import.meta.url);
   const mission = missionFromJournal(JSON.parse(readFileSync(path, 'utf8')));
   const first = missionAtEntry(mission, 1);
   const evaluated = missionAtEntry(mission, 5);

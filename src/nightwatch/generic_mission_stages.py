@@ -4,7 +4,8 @@ import asyncio
 from typing import Any, Protocol
 
 from nightwatch.contracts import Stage
-from nightwatch.generic_agents import GEMINI_AGENT_MODEL, SPECIALISTS, SPECIALIST_BRIEFS, author_parallel_curriculum, diagnose_failures
+from nightwatch.adaptive_fleet import discover_delegation_plan, invoke_delegation_plan
+from nightwatch.generic_agents import GEMINI_AGENT_MODEL, SPECIALISTS, SPECIALIST_BRIEFS, author_parallel_curriculum, diagnose_failures, validate_curriculum_batches
 from nightwatch.generic_evaluation import decide_release, evaluate_predictions, validate_predictions
 from nightwatch.journal import JournalEntry, JournalError
 from nightwatch.mission_orchestrator import MissionManifest
@@ -110,10 +111,19 @@ class GenericTextClassificationStageExecutor:
             raise JournalError("diagnosis requires immutable baseline evidence")
         try:
             diagnosis = asyncio.run(diagnose_failures(packet, contract))
+            delegation_plan = (
+                asyncio.run(discover_delegation_plan(diagnosis, contract))
+                if contract.delegation is not None
+                else None
+            )
         except (RuntimeError, ValueError) as exc:
             raise JournalError("Gemini diagnosis failed its bounded contract") from exc
-        projection = {"actor": "gemini_adk_diagnostician", "model": GEMINI_AGENT_MODEL, "observed_error_count": len(packet["errors"]), **diagnosis, "repair_families": list(SPECIALISTS), "authorized_action": "author bounded additive curriculum", "forbidden_action": "change evidence, policy, compute, or deployment"}
-        return self._create(cycle_id, Stage.DIAGNOSED, manifest, {"journal_payload": projection, "diagnosis": diagnosis})
+        repair_families = (
+            [entry["specialist"] for entry in delegation_plan["selected_agents"]]
+            if delegation_plan else list(SPECIALISTS)
+        )
+        projection = {"actor": "gemini_adk_diagnostician", "model": GEMINI_AGENT_MODEL, "observed_error_count": len(packet["errors"]), **diagnosis, "repair_families": repair_families, "delegation": {"mode": "agent_registry_a2a" if delegation_plan else "in_process", "plan": delegation_plan}, "authorized_action": "author bounded additive curriculum", "forbidden_action": "change evidence, policy, compute, or deployment"}
+        return self._create(cycle_id, Stage.DIAGNOSED, manifest, {"journal_payload": projection, "diagnosis": diagnosis, "delegation_plan": delegation_plan})
 
     def _curriculum(self, cycle_id: str, manifest: MissionManifest) -> dict[str, Any]:
         contract, dataset = self._inputs(manifest)
@@ -121,6 +131,7 @@ class GenericTextClassificationStageExecutor:
         diagnosed = self._artifacts.read(cycle_id, Stage.DIAGNOSED, manifest.manifest_id)
         packet = created.payload.get("failure_packet") if created else None
         diagnosis = diagnosed.payload.get("diagnosis") if diagnosed else None
+        delegation_plan = diagnosed.payload.get("delegation_plan") if diagnosed else None
         if not isinstance(packet, dict) or not isinstance(diagnosis, dict):
             raise JournalError("curriculum requires baseline and diagnosis evidence")
         try:
@@ -131,14 +142,29 @@ class GenericTextClassificationStageExecutor:
                     for row in dataset.rows
                 ],
             }
-            curriculum = asyncio.run(author_parallel_curriculum(diagnosis, agent_packet, contract))
+            if contract.delegation is not None:
+                if not isinstance(delegation_plan, dict):
+                    raise RuntimeError("adaptive mission is missing its sealed delegation plan")
+                fleet_result = asyncio.run(
+                    invoke_delegation_plan(
+                        cycle_id=cycle_id,
+                        contract=contract,
+                        diagnosis=diagnosis,
+                        failure_packet=agent_packet,
+                        delegation_plan=delegation_plan,
+                    )
+                )
+                curriculum = validate_curriculum_batches(fleet_result["batches"], agent_packet, contract)
+            else:
+                curriculum = asyncio.run(author_parallel_curriculum(diagnosis, agent_packet, contract))
         except (RuntimeError, ValueError) as exc:
             raise JournalError("parallel Gemini curriculum fleet failed its bounded contract") from exc
         batches = curriculum.get("batches")
-        if not isinstance(batches, list) or len(batches) != len(SPECIALISTS):
+        expected_specialists = [entry["specialist"] for entry in delegation_plan["selected_agents"]] if isinstance(delegation_plan, dict) else list(SPECIALISTS)
+        if not isinstance(batches, list) or len(batches) != len(expected_specialists):
             raise JournalError("parallel Gemini curriculum fleet returned incomplete specialist evidence")
         specialist_outputs = []
-        for specialist, batch in zip(SPECIALISTS, batches, strict=True):
+        for specialist, batch in zip(expected_specialists, batches, strict=True):
             if not isinstance(batch, dict) or batch.get("specialist") != specialist:
                 raise JournalError("parallel Gemini curriculum specialist identity is invalid")
             examples = batch.get("examples")
@@ -163,6 +189,7 @@ class GenericTextClassificationStageExecutor:
                     "assignment": assignment,
                     "row_count": len(examples),
                     "artifact_sha256": artifact.sha256,
+                    **({"a2a_receipt": batch["a2a_receipt"]} if isinstance(batch.get("a2a_receipt"), dict) else {}),
                 }
             )
         projection = {"architect": {"framework": "google_adk", "model": GEMINI_AGENT_MODEL}, "repair_families": curriculum["specialists"], "curriculum_rows": len(curriculum["rows"]), "parallel_agents": len(curriculum["specialists"]), "specialist_outputs": specialist_outputs, "leakage_check": "passed"}

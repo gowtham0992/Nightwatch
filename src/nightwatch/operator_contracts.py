@@ -10,6 +10,7 @@ from typing import Any, Protocol
 
 from google.api_core.exceptions import Conflict, NotFound, PreconditionFailed
 
+from nightwatch.agent_roster import AGENT_TAXONOMY_VERSION, APPROVED_AGENT_ROSTER, MANDATORY_SPECIALISTS, MAX_SPECIALISTS
 from nightwatch.contracts import Suite
 from nightwatch.datasets import canonical_prompt
 from nightwatch.journal import JournalError
@@ -221,6 +222,24 @@ class ComputeLimits:
 
 
 @dataclass(frozen=True)
+class ApprovedAgent:
+    specialist: str
+    agent_urn: str
+    card_sha256: str
+    endpoint_origin: str
+    service_account: str
+    capabilities: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class DelegationPolicy:
+    taxonomy_version: str
+    maximum_specialists: int
+    mandatory_specialists: tuple[str, ...]
+    approved_agents: tuple[ApprovedAgent, ...]
+
+
+@dataclass(frozen=True)
 class MissionContract:
     contract_id: str
     schema_version: int
@@ -235,11 +254,15 @@ class MissionContract:
     instruction: str
     policy: ReleasePolicy
     compute: ComputeLimits
+    delegation: DelegationPolicy | None = None
     runtime: str = "modal"
     workflow: str = "generic_text_classification"
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        value = asdict(self)
+        if self.delegation is None:
+            value.pop("delegation")
+        return value
 
     def public_summary(self) -> dict[str, Any]:
         return {
@@ -254,6 +277,7 @@ class MissionContract:
             "instruction": self.instruction,
             "policy": asdict(self.policy),
             "compute": asdict(self.compute),
+            "delegation": asdict(self.delegation) if self.delegation else None,
             "runtime": self.runtime,
             "workflow": self.workflow,
             "frozen": True,
@@ -314,7 +338,7 @@ def _number(value: object, field: str, minimum: float, maximum: float) -> float:
 
 
 def build_mission_contract(value: object, dataset: FrozenDataset) -> MissionContract:
-    if not isinstance(value, dict) or set(value) != {
+    legacy_fields = {
         "baseline_artifact",
         "compute",
         "dataset_id",
@@ -323,6 +347,10 @@ def build_mission_contract(value: object, dataset: FrozenDataset) -> MissionCont
         "model",
         "policy",
         "subject",
+    }
+    if not isinstance(value, dict) or frozenset(value) not in {
+        frozenset(legacy_fields),
+        frozenset(legacy_fields | {"delegation"}),
     }:
         raise OperatorContractError("mission contract fields are incomplete or unsupported")
     if value["dataset_id"] != dataset.dataset_id:
@@ -481,8 +509,37 @@ def build_mission_contract(value: object, dataset: FrozenDataset) -> MissionCont
         maximum_gpu_minutes=gpu_minutes,
     )
 
+    delegation: DelegationPolicy | None = None
+    if "delegation" in value:
+        raw_delegation = value["delegation"]
+        if not isinstance(raw_delegation, dict) or set(raw_delegation) != {
+            "approved_agents", "mandatory_specialists", "maximum_specialists", "taxonomy_version"
+        }:
+            raise OperatorContractError("delegation policy fields are incomplete or unsupported")
+        expected_agents = [
+            {**agent, "capabilities": list(agent["capabilities"])}
+            for agent in APPROVED_AGENT_ROSTER
+        ]
+        if raw_delegation.get("taxonomy_version") != AGENT_TAXONOMY_VERSION:
+            raise OperatorContractError("delegation taxonomy version is not approved")
+        if raw_delegation.get("maximum_specialists") != MAX_SPECIALISTS:
+            raise OperatorContractError("delegation specialist ceiling is not approved")
+        if raw_delegation.get("mandatory_specialists") != list(MANDATORY_SPECIALISTS):
+            raise OperatorContractError("delegation mandatory specialist set is not approved")
+        if raw_delegation.get("approved_agents") != expected_agents:
+            raise OperatorContractError("delegation roster is not the operator-approved fleet")
+        delegation = DelegationPolicy(
+            taxonomy_version=AGENT_TAXONOMY_VERSION,
+            maximum_specialists=MAX_SPECIALISTS,
+            mandatory_specialists=MANDATORY_SPECIALISTS,
+            approved_agents=tuple(
+                ApprovedAgent(**{**agent, "capabilities": tuple(agent["capabilities"])})
+                for agent in APPROVED_AGENT_ROSTER
+            ),
+        )
+
     material = {
-        "schema_version": 1,
+        "schema_version": 2 if delegation else 1,
         "subject": subject,
         "model_id": model_id,
         "model_revision": model_revision,
@@ -494,13 +551,14 @@ def build_mission_contract(value: object, dataset: FrozenDataset) -> MissionCont
         "instruction": instruction,
         "policy": asdict(policy),
         "compute": asdict(compute),
+        **({"delegation": asdict(delegation)} if delegation else {}),
         "runtime": "modal",
         "workflow": "generic_text_classification",
     }
     digest = hashlib.sha256(_canonical_json_bytes(material)).hexdigest()
     return MissionContract(
         contract_id=f"contract-{digest[:24]}",
-        schema_version=1,
+        schema_version=2 if delegation else 1,
         subject=subject,
         model_id=model_id,
         model_revision=model_revision,
@@ -512,6 +570,7 @@ def build_mission_contract(value: object, dataset: FrozenDataset) -> MissionCont
         instruction=instruction,
         policy=policy,
         compute=compute,
+        delegation=delegation,
     )
 
 
@@ -533,6 +592,19 @@ def mission_contract_from_dict(value: object) -> MissionContract:
             instruction=value["instruction"],
             policy=ReleasePolicy(**value["policy"]),
             compute=ComputeLimits(**value["compute"]),
+            delegation=(
+                DelegationPolicy(
+                    taxonomy_version=value["delegation"]["taxonomy_version"],
+                    maximum_specialists=value["delegation"]["maximum_specialists"],
+                    mandatory_specialists=tuple(value["delegation"]["mandatory_specialists"]),
+                    approved_agents=tuple(
+                        ApprovedAgent(**{**agent, "capabilities": tuple(agent["capabilities"])})
+                        for agent in value["delegation"]["approved_agents"]
+                    ),
+                )
+                if value.get("delegation") is not None
+                else None
+            ),
             runtime=value["runtime"],
             workflow=value["workflow"],
         )
@@ -569,6 +641,21 @@ def contract_request(contract: MissionContract) -> dict[str, Any]:
             "require_zero_critical_misses": contract.policy.require_zero_critical_misses,
         },
         "subject": contract.subject,
+        **(
+            {
+                "delegation": {
+                    "taxonomy_version": contract.delegation.taxonomy_version,
+                    "maximum_specialists": contract.delegation.maximum_specialists,
+                    "mandatory_specialists": list(contract.delegation.mandatory_specialists),
+                    "approved_agents": [
+                        {**asdict(agent), "capabilities": list(agent.capabilities)}
+                        for agent in contract.delegation.approved_agents
+                    ],
+                }
+            }
+            if contract.delegation
+            else {}
+        ),
     }
 
 

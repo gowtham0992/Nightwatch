@@ -4,6 +4,7 @@ import json
 
 import pytest
 
+from nightwatch.agent_roster import AGENT_TAXONOMY_VERSION, APPROVED_AGENT_ROSTER, MANDATORY_SPECIALISTS, MAX_SPECIALISTS
 from nightwatch.model_config import GEMMA_1B_MODEL_ID, GEMMA_1B_MODEL_REVISION
 from nightwatch.operator_contracts import (
     InMemoryOperatorStore,
@@ -64,6 +65,20 @@ def contract_request(dataset_id: str) -> dict[str, object]:
     }
 
 
+def adaptive_contract_request(dataset_id: str) -> dict[str, object]:
+    request = contract_request(dataset_id)
+    request["delegation"] = {
+        "taxonomy_version": AGENT_TAXONOMY_VERSION,
+        "maximum_specialists": MAX_SPECIALISTS,
+        "mandatory_specialists": list(MANDATORY_SPECIALISTS),
+        "approved_agents": [
+            {**entry, "capabilities": list(entry["capabilities"])}
+            for entry in APPROVED_AGENT_ROSTER
+        ],
+    }
+    return request
+
+
 def test_uploaded_jsonl_is_canonical_and_content_addressed() -> None:
     first = parse_uploaded_dataset(jsonl_bytes(), "jsonl")
     second = parse_uploaded_dataset(jsonl_bytes(), ".jsonl")
@@ -103,6 +118,29 @@ def test_contract_is_frozen_by_exact_model_dataset_policy_and_budget() -> None:
     assert contract.compute.maximum_gpu_minutes == 20
     assert contract.runtime == "modal"
     assert mission_contract_from_dict(contract.to_dict()) == contract
+
+
+def test_adaptive_contract_pins_registry_identities_endpoints_and_card_hashes() -> None:
+    dataset = parse_uploaded_dataset(jsonl_bytes(), "jsonl")
+    contract = build_mission_contract(adaptive_contract_request(dataset.dataset_id), dataset)
+
+    assert contract.schema_version == 2
+    assert contract.delegation is not None
+    assert contract.delegation.maximum_specialists == 3
+    assert contract.delegation.mandatory_specialists == ("regression_guard",)
+    assert [agent.specialist for agent in contract.delegation.approved_agents] == [
+        "target_repair", "safety_boundary", "regression_guard"
+    ]
+    assert mission_contract_from_dict(contract.to_dict()) == contract
+
+
+def test_adaptive_contract_rejects_operator_substitution_of_registered_agent() -> None:
+    dataset = parse_uploaded_dataset(jsonl_bytes(), "jsonl")
+    request = adaptive_contract_request(dataset.dataset_id)
+    request["delegation"]["approved_agents"][0]["endpoint_origin"] = "https://attacker.example"
+
+    with pytest.raises(OperatorContractError, match="operator-approved fleet"):
+        build_mission_contract(request, dataset)
 
 
 def test_contract_id_changes_when_release_policy_changes() -> None:

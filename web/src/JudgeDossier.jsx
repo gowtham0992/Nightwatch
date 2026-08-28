@@ -57,7 +57,7 @@ function Hero({ mission, facts, qualified, story, onSelectStory, onStartGate }) 
       <h1>{qualified ? <>This repair earned the line.<em>A human still decides deployment.</em></> : <>Nightwatch stopped a dangerous AI repair.<em>Production never saw it.</em></>}</h1>
       <p>{qualified
         ? 'The same autonomous repair fleet passed every frozen invariant. Nightwatch qualified the candidate, sealed the evidence, and stopped before deployment.'
-        : `A Gemini diagnostician split a discovered Gemma failure across three specialist agents. Nightwatch trained their repair once, found ${criticalMisses} critical misses, and refused its own work.`}</p>
+        : `A Gemini diagnostician declared three capabilities. Agent Registry resolved the pinned specialists, private A2A carried their work, and the gate found ${criticalMisses} critical misses before refusing the repair.`}</p>
       <div className="nw-hero-actions">
         <button type="button" className="nw-primary" onClick={onStartGate}>{qualified ? 'Run the passing gate' : 'Run the refusal gate'} <span>→</span></button>
         <a href="#mission">Follow the mission</a>
@@ -65,13 +65,15 @@ function Hero({ mission, facts, qualified, story, onSelectStory, onStartGate }) 
       <small>Read-only evidence replay · no training spend · no deployment authority</small>
       <div className="nw-stack-line" aria-label="Google technology stack">
         <span>Google stack</span>
-        <p>Gemini 3.6 Flash via Vertex AI · Google ADK · Cloud Run · Tasks · Firestore · Cloud Storage</p>
+        <p>{qualified
+          ? 'Gemini 3.6 Flash · Google ADK · Cloud Run · Tasks · Firestore'
+          : 'Gemini 3.6 Flash · Google ADK · Agent Registry · A2A · Cloud Run · Tasks · Firestore'}</p>
       </div>
     </div>
     <BoundaryPreview qualified={qualified} />
     <dl className="nw-hero-proof">
       <div><dt>Execution</dt><dd>{facts.graph.length} accountable nodes</dd></div>
-      <div><dt>{qualified ? 'Repair design' : 'Agent fleet'}</dt><dd>{qualified ? `${mission.retained?.evidence?.repairBatches} Gemini-authored batches` : `${facts.specialists.length} Gemini specialists`}</dd></div>
+      <div><dt>{qualified ? 'Repair design' : 'Agent fleet'}</dt><dd>{qualified ? `${mission.retained?.evidence?.repairBatches} Gemini-authored batches` : `${facts.specialists.length} Registry agents over A2A`}</dd></div>
       <div><dt>Evidence</dt><dd>{facts.caseCount} frozen cases</dd></div>
       <div><dt>Release</dt><dd>{qualified ? '4 / 4 passed' : '4 / 4 failed'}</dd></div>
     </dl>
@@ -123,14 +125,14 @@ function SpecialistFleet({ facts }) {
   useEffect(() => { setSelectedId(facts.specialists[0]?.id); }, [facts.specialists]);
   const selected = facts.specialists.find((specialist) => specialist.id === selectedId) || facts.specialists[0];
   return <div className="nw-fleet">
-    <div className="nw-diagnostician"><span>01</span><div><small>Gemini diagnostician</small><strong>Split one failure into three bounded assignments.</strong></div></div>
+    <div className="nw-diagnostician"><span>01</span><div><small>Gemini diagnostician · Google ADK</small><strong>Declared three capabilities; Agent Registry matched only the frozen roster.</strong></div></div>
     <div className="nw-fleet-connector" aria-hidden="true"><span /></div>
-    <div className="nw-specialists" aria-label="Independent Gemini specialist agents">
+    <div className="nw-specialists" aria-label="Registry-discovered private A2A specialist agents">
       {facts.specialists.map((specialist, index) => <button type="button" key={specialist.id} className={selected?.id === specialist.id ? 'active' : ''} aria-pressed={selected?.id === specialist.id} onClick={() => setSelectedId(specialist.id)}>
-        <span>0{index + 2}</span><small>Gemini specialist</small><strong>{specialist.name}</strong><p>{specialist.assignment}</p><div className="nw-specialist-receipt"><b>{specialist.rows} sealed rows</b><code>SHA {shortHash(specialist.hash)}</code></div>
+        <span>0{index + 2}</span><small>{specialist.receipt ? 'Registry agent · private A2A' : 'Gemini specialist'}</small><strong>{specialist.name}</strong><p>{specialist.assignment}</p><div className="nw-specialist-receipt"><b>{specialist.rows} sealed rows</b><code>SHA {shortHash(specialist.hash)}</code></div>
       </button>)}
     </div>
-    {selected && <div className="nw-selected-artifact" aria-live="polite"><div><span>Selected sealed artifact</span><code>{selected.hash}</code></div><p>{selected.rows} independently authored rows survived schema, uniqueness, and leakage validation before the curriculum was merged.</p></div>}
+    {selected && <div className="nw-selected-artifact" aria-live="polite"><div><span>{selected.receipt ? 'A2A receipt + sealed artifact' : 'Selected sealed artifact'}</span><code>{selected.hash}</code></div><p>{selected.rows} independently authored rows survived schema, uniqueness, and leakage validation before the curriculum was merged.</p>{selected.receipt && <p><b>Agent Card</b> {shortHash(selected.receipt.agent_card_sha256)} · <b>request</b> {shortHash(selected.receipt.request_sha256)} · <b>response</b> {shortHash(selected.receipt.response_sha256)}</p>}</div>}
   </div>;
 }
 
@@ -247,7 +249,7 @@ export default function JudgeDossier({ mission, story, onSelectStory }) {
     <Hero mission={mission} facts={facts} qualified={qualified} story={story} onSelectStory={onSelectStory} onStartGate={startGate} />
     <ContractStrip mission={mission} facts={facts} />
     <Chapter number={1} kicker="Autonomous discovery" title="Nightwatch found the failure itself." copy="The repair did not begin from a score typed into a demo. The pinned Gemma model was measured against the frozen contract first." id="mission"><Discovery mission={mission} facts={facts} /></Chapter>
-    <Chapter number={2} kicker="Agent orchestration" title={qualified ? 'Gemini designed a bounded curriculum.' : 'One diagnosis became three accountable jobs.'} copy={qualified ? 'The retained passing case preserves its real five-batch repair design, validation totals, and content-addressed curriculum.' : 'Each Gemini specialist received a different boundary, authored a different artifact, and sealed it before the validator merged anything.'}>{qualified ? <RetainedCurriculum mission={mission} /> : <SpecialistFleet facts={facts} />}</Chapter>
+    <Chapter number={2} kicker="Agent orchestration" title={qualified ? 'Gemini designed a bounded curriculum.' : 'Registry discovery became three private A2A jobs.'} copy={qualified ? 'The retained passing case preserves its real five-batch repair design, validation totals, and content-addressed curriculum.' : 'The diagnosis named capabilities, not endpoints. Agent Registry resolved the exact frozen identities; each specialist returned a separately hashed A2A receipt before anything was merged.'}>{qualified ? <RetainedCurriculum mission={mission} /> : <SpecialistFleet facts={facts} />}</Chapter>
     <Chapter number={3} kicker="Bounded repair" title="One candidate. No hidden retries." copy="Nightwatch spent the single training attempt the operator authorised, then evaluated the result against exactly the same evidence."><Evaluation mission={mission} facts={facts} /></Chapter>
     <Chapter number={4} kicker="The release boundary" title="The agents finish. The evidence takes over." copy="This is the separation Nightwatch exists to enforce: Gemini can design a repair, but it cannot relax a threshold or approve its own work." id="boundary"><ReleaseBoundary key={mission.id} mission={mission} qualified={qualified} runToken={runToken} /></Chapter>
     <Chapter number={5} kicker="Verifiable record" title={qualified ? 'The gate can say yes.' : 'Six handoffs. One tamper-evident chain.'} copy={qualified ? 'Passing the boundary qualifies a candidate for human review; it does not deploy it.' : `The completed mission ran in ${facts.durationSeconds} seconds. Every entry carries the hash of the one before it, ending at the exact head below.`} id="proof"><EvidenceRecord mission={mission} facts={facts} qualified={qualified} /></Chapter>

@@ -10,6 +10,9 @@ Nightwatch separates its private operator surface, public judge surface, and pri
 - `nightwatch-verifier`: Cloud Tasks worker, Firestore read-only, maximum one instance and one concurrent request.
 - `nightwatch-mission-control`: private operator trigger with enqueue-only access, maximum one instance.
 - `nightwatch-mission-worker`: private Gemini/ADK + Modal stage worker, maximum one instance and one concurrent request.
+- `nightwatch-specialist-target`: private A2A Target Repair agent, Vertex AI user only, maximum one instance.
+- `nightwatch-specialist-safety`: private A2A Safety Boundary agent, Vertex AI user only, maximum one instance.
+- `nightwatch-specialist-regression`: private A2A Regression Guard agent, Vertex AI user only, maximum one instance.
 - `nightwatch-missions`: one dispatch per second, one concurrent stage, and three bounded attempts.
 - `nightwatch-public-verifications`: isolated public queue with the same one-per-second, one-concurrent, 30-second retry limits.
 - `nightwatch-verifications`: one dispatch per second, one concurrent dispatch, three configured attempts within a 30-second retry window.
@@ -21,7 +24,7 @@ Nightwatch separates its private operator surface, public judge surface, and pri
 
 The canonical private control URL is `https://nightwatch-evidence-w3a6oefsma-uc.a.run.app`. Use the canonical `*.a.run.app` worker URL as both the Cloud Tasks target and OIDC audience; the alternate numeric hostname is not interchangeable for this purpose.
 
-The canonical public judge URL is `https://nightwatch-public-w3a6oefsma-uc.a.run.app`. The current public and authenticated releases are `nightwatch-public-judgeux-8e874be` and `nightwatch-evidence-judgeux-8e874be`, both from immutable service image digest `sha256:eb82e720e98a0e90016a24d011ffea1976445a35f058e137ef95ee8191023417`. The compatible proof verifier remains `nightwatch-public-verifier-agentproof2` on service image digest `sha256:5adde6d84784213dacc736371b885cabb848b8902e4359b4c802a733805f9a12`. The private stage worker is `nightwatch-mission-worker-agentproof2` on mission image digest `sha256:550536b27c8d9d1af153217446d552065535c8be7b57e00fd16bdf69421479c0`. The judge view defaults to the fresh agent-proof refusal mission and exposes only its bundled, strictly redacted evidence.
+The canonical public judge URL is `https://nightwatch-public-w3a6oefsma-uc.a.run.app`. The current public, authenticated, and public-proof releases are `nightwatch-public-registry-a2a-final`, `nightwatch-evidence-registry-a2a-final`, and `nightwatch-public-verifier-registry-a2a-final`, all from immutable service image digest `sha256:90b9b7569d4b1f960212ac76ad38e02571fbddd4bffdfed49c0d673a817076d5`. The private stage worker is `nightwatch-mission-worker-adaptive-task-g2` on mission image digest `sha256:d51b49994d5e3c9a77f52542103de2b8dc7baf22ebb515549b822ce59077bc4a`. The three specialist services run final `*-final-a2a` revisions from specialist digest `sha256:3e663ee7a3a4ded8627d5ab112b819411839f0a5375221d389ba708c74453faa`. The judge view defaults to the adaptive-fleet refusal mission and exposes only its bundled, strictly redacted evidence.
 
 The mission control and worker run immutable image digest `sha256:e3d09ce4d07c652c777034ca5c1c06c217d5862f09c87edbee9cbbe235665478` in revisions `nightwatch-mission-control-scam-ff4f` and `nightwatch-mission-worker-scam-ff4f`. Fresh scam mission `nightwatch-scam-20260814-001` traversed all six stages unattended in 94 seconds and qualified a new cycle-bound adapter. Its terminal Firestore head is `3e7ff1420b51b9accfe4bd325c4faf00d89823d1db2bcbcac08eda6b0a916930`; private receipt `verify-1b69f5647d8003263b96eb03f185b9f653966d3a` independently sealed all six entries. The candidate reached 36/36 target, 24/24 safety, and 28/32 regression cases with zero critical misses and zero benign blocks. It remains qualified, not deployed.
 
@@ -152,11 +155,35 @@ Before enabling the route, preserve the existing private Cloud Run IAM policy an
 - act as `nightwatch-missions-invoker` when creating that task.
 - create and read objects under the private mission bucket's `operator/` prefix. Bucket-level public access prevention remains enforced.
 
-Configure the private service with the existing mission queue location, name, canonical worker URL, invoker service account, mission artifact bucket, and `NIGHTWATCH_MODAL_CONNECTED=1` after the worker connection is verified. Modal credentials belong only on the worker. Do not copy credentials, these settings, or these permissions to `nightwatch-public`. The worker uses Vertex AI through ADC and `roles/aiplatform.user`; the dynamic workflow invokes the Gemini/ADK diagnostician and three parallel curriculum authors between a create-only Modal baseline call and one create-only training call.
+Configure the private service with the existing mission queue location, name, canonical worker URL, invoker service account, mission artifact bucket, and `NIGHTWATCH_MODAL_CONNECTED=1` after the worker connection is verified. Modal credentials belong only on the worker. Do not copy credentials, these settings, or these permissions to `nightwatch-public`. The worker uses Vertex AI through ADC and `roles/aiplatform.user`; the dynamic workflow invokes the Gemini/ADK diagnostician, resolves the bounded fleet through Agent Registry, and calls three private ADK specialists over A2A between a create-only Modal baseline call and one create-only training call.
+
+## Adaptive Agent Registry fleet — August 28, 2026 UTC
+
+Nightwatch now deploys Target Repair, Safety Boundary, and Regression Guard as three independent, IAM-protected Cloud Run services. Each runs the same immutable code image under a different service account, has scale-to-zero/max-one configuration, and holds only `roles/aiplatform.user` at project scope. The mission worker has `roles/agentregistry.viewer` and service-level `roles/run.invoker`; it has no registry-write authority.
+
+The operator contract schema v2 pins each specialist's Agent Registry URN, Agent Card SHA-256, HTTPS origin, service account, and capability tag. Gemini emits capabilities from a fixed taxonomy. Deterministic routing adds the mandatory regression guard, searches Agent Registry, rejects anything outside the frozen roster, and writes the selected plan into the immutable `diagnosed` artifact before any A2A invocation. A retry therefore cannot pick a different agent. The existing in-process schema-v1 path remains the exercised rollback for retained missions; there is no silent fallback from a v2 mission.
+
+One-shot Cloud Run Job execution `nightwatch-registry-spike-cxw9g` proved the final three-service path under the real `nightwatch-mission-worker` identity. Agent Registry returned all three frozen URNs and exact card hashes, and each private A2A call returned a distinct request/response receipt. Cloud Logging recorded schema `nightwatch.adaptive-fleet-proof.v1`; the job exited successfully with no user token or temporary impersonation grant. An earlier execution deliberately failed closed when Safety still served its previous immutable card. The mismatch was corrected by immutable revision rollout rather than weakening the pin, and the unchanged proof then passed.
+
+Frozen contract `contract-8d1d1940d6190b2b50ef7dd8` then exercised the path as a real model-repair product, not a connectivity spike. Mission `nightwatch-live-ac7c9d317783b6af4e543b1d` scanned the pinned Gemma checkpoint against all 92 cases, found 14 baseline errors, and sealed a three-agent Registry plan before delegation. Target Repair returned 12 rows, Safety Boundary 8, and Regression Guard 10. Every handoff retains its Agent Card, A2A request, A2A response, and artifact SHA-256 independently.
+
+The single allowed Modal attempt trained `candidate-01` from those 30 validated rows in 3.9603 measured seconds. Target accuracy improved from 30/36 to 33/36, but safety fell from 23/24 to 15/24, regression fell from 25/32 to 22/32, and three critical cases were missed. All four fixed release invariants failed, so deterministic code wrote `refused_not_deployed`; the six-entry Firestore chain terminates at `6d7d4c0ae6374a6b0230a342a3b0caff44c3fc2586f33173744ac2df2250329f` and production remained unchanged.
+
+The first dispatch failed closed because the isolated Modal app still parsed the previous contract schema. After its parser was updated, the original deterministic Cloud Tasks name had already exhausted its three retry attempts and remained tombstoned. Recovery generation `g2` produced a new deterministic task identity for the same frozen contract and cycle; it did not create a second mission, change evidence, or authorize a second training attempt. Worker revision `nightwatch-mission-worker-adaptive-task-g2` and authenticated revision `nightwatch-evidence-adaptive-task-g2` completed that preserved mission.
+
+## Adaptive-fleet judge release — August 28, 2026 UTC
+
+Public revision `nightwatch-public-registry-a2a-final`, authenticated revision `nightwatch-evidence-registry-a2a-final`, and verifier revision `nightwatch-public-verifier-registry-a2a-final` run the same immutable service digest `sha256:90b9b7569d4b1f960212ac76ad38e02571fbddd4bffdfed49c0d673a817076d5`. The public projection exposes the selected Registry URNs, Agent Card hashes, A2A request/response receipt hashes, artifact hashes, row counts, measurements, and terminal decision. It excludes raw cases, dataset identity, model revision, endpoint origins, service accounts, Modal call identity, private artifact locations, and credentials. The public operator route returns 404.
+
+The exact zero-traffic candidates passed redacted/public and authenticated/private health, six-entry mission loading, operator capability preservation, CSP/frame/no-sniff headers, public route denial, both real outcomes, a complete refusal replay, desktop 1440×900 and mobile 390×844 rendering, zero page-level horizontal overflow, and clean browser logs. The retained qualified case deliberately omits Agent Registry and A2A from its per-case stack because that historical mission predates the adaptive fleet.
+
+After promotion, public proof `verify-c20c18c0e306d9d0ff533be85e685a6426503d2b` crossed the isolated Cloud Tasks queue. The private verifier reread all six Firestore entries and sealed exact head `6d7d4c0ae6374a6b0230a342a3b0caff44c3fc2586f33173744ac2df2250329f` at `2026-08-28T02:56:44.982000Z`. This is a rollout record rather than a permanent public lookup identity.
+
+Rollback was exercised by routing public traffic to `nightwatch-public-qualified-ff0cf26`, authenticated traffic to `nightwatch-evidence-adaptive-task-g2`, and verifier traffic to `nightwatch-public-verifier-agentproof2`. All three reported healthy in that state and were restored to the final revisions. The public-verification and mission queues were empty afterward; the three final revisions had no ERROR-level logs. IAM remained unchanged: only the public judge service grants `allUsers` invoke access, the verifier accepts only `nightwatch-public-invoker`, each specialist accepts only `nightwatch-mission-worker`, and each specialist holds only `roles/aiplatform.user` at project scope.
 
 ## Verify the live mission
 
-This request binds the task to the exact Firestore head. Keep the identity token in memory and change the idempotency key for a new verification intent.
+This request binds the task to the current adaptive-fleet mission and its exact Firestore head. Keep the identity token in memory and change the idempotency key for a new verification intent.
 
 ```bash
 NW_ID_TOKEN="$(gcloud auth print-identity-token)"
@@ -165,8 +192,8 @@ curl --fail --silent --show-error \
   --header "Authorization: Bearer ${NW_ID_TOKEN}" \
   --header 'Content-Type: application/json' \
   --header 'Idempotency-Key: operator:replace-with-unique-request' \
-  --data '{"expected_head_hash":"7bc281853fd88a253f895165e7edc4ebc3f1bc9eafb1ddf1da99348be096323d"}' \
-  https://nightwatch-evidence-w3a6oefsma-uc.a.run.app/api/missions/nightwatch-v2-qualification/verifications
+  --data '{"expected_head_hash":"6d7d4c0ae6374a6b0230a342a3b0caff44c3fc2586f33173744ac2df2250329f"}' \
+  https://nightwatch-evidence-w3a6oefsma-uc.a.run.app/api/missions/nightwatch-live-ac7c9d317783b6af4e543b1d/verifications
 unset NW_ID_TOKEN
 ```
 

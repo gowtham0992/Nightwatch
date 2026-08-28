@@ -8,6 +8,7 @@ import pytest
 from nightwatch.contracts import Stage
 from nightwatch.journal import GENESIS_HASH, JournalEntry, JournalError
 from nightwatch.public_evidence import (
+    ADAPTIVE_FLEET_PUBLIC_MISSION_ID,
     AGENT_PROOF_PUBLIC_MISSION_ID,
     JUDGE_LIVE_MISSION_ID,
     LIVE_PUBLIC_MISSION_ID,
@@ -381,5 +382,32 @@ def test_agent_proof_snapshot_exposes_distinct_specialist_receipts_without_priva
         "artifact_uri", "artifact_name", "dataset_id", "evidence_case_ids",
         "modal_call_id", "model_revision", "selected_artifact", "safety-023",
         "repair-target-unsolicited_link_caution_boundary-002",
+    ]:
+        assert forbidden not in serialized
+
+
+def test_adaptive_fleet_snapshot_proves_registry_and_a2a_without_private_authority() -> None:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "artifacts"
+        / "public-mission-live-ac7c9d317783b6af4e543b1d.json"
+    )
+
+    snapshot = load_public_snapshot(path, expected_cycle_id=ADAPTIVE_FLEET_PUBLIC_MISSION_ID)
+    serialized = json.dumps(snapshot, sort_keys=True)
+    diagnosis = snapshot["entries"][1]["payload"]
+    outputs = snapshot["entries"][2]["payload"]["specialist_outputs"]
+
+    assert snapshot["head_hash"] == "6d7d4c0ae6374a6b0230a342a3b0caff44c3fc2586f33173744ac2df2250329f"
+    assert diagnosis["delegation"]["discovery"] == "google_cloud_agent_registry"
+    assert diagnosis["delegation"]["transport"] == "a2a_jsonrpc_oidc"
+    assert len(diagnosis["delegation"]["selected_agents"]) == 3
+    assert [output["row_count"] for output in outputs] == [12, 8, 10]
+    assert all(output["a2a_receipt"]["schema_version"] == "nightwatch.specialist-receipt.v1" for output in outputs)
+    assert len({output["a2a_receipt"]["response_sha256"] for output in outputs}) == 3
+    for forbidden in [
+        "artifact_uri", "dataset_id", "endpoint_origin", "evidence_case_ids",
+        "modal_call_id", "model_revision", "selected_artifact", "service_account",
+        "safety-009", "repair-target-credential_request_delivery_fraud-003",
     ]:
         assert forbidden not in serialized

@@ -43,6 +43,7 @@ export function dossierFacts(mission) {
     assignment: node.evidence?.payload?.assignment || node.role,
     rows: node.evidence?.payload?.row_count ?? null,
     hash: node.evidence?.hash || mission.headHash,
+    receipt: node.evidence?.payload?.a2a_receipt || null,
   }));
   const evaluatedCaseCount = Object.values(evaluation.candidate?.scores || {})
     .reduce((total, suite) => total + (suite?.total || 0), 0);
@@ -68,6 +69,7 @@ export function dossierFacts(mission) {
     trainingAttempts: training.attempts?.length ?? 1,
     gpuMinutes: created.limits?.maximum_gpu_minutes ?? mission.limits?.maximum_gpu_minutes ?? null,
     durationSeconds: elapsedSeconds(entries),
+    delegation: diagnosis.delegation || null,
     specialists,
     graph,
   };

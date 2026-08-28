@@ -3,7 +3,7 @@ import { SCAM_MISSION } from './scamMission.js';
 const STAGE_ORDER = ['created', 'diagnosed', 'curriculum_ready', 'trained', 'evaluated', 'promoted', 'rejected'];
 const HASH = /^[a-f0-9]{64}$/;
 export const JUDGE_LIVE_MISSION_ID = 'nightwatch-live-89e73407c43d525c4bc19272';
-export const SELF_SERVICE_MISSION_ID = 'nightwatch-live-a786ae339253954371f524f8';
+export const SELF_SERVICE_MISSION_ID = 'nightwatch-live-ac7c9d317783b6af4e543b1d';
 
 export function storySelectionChanges(currentStory, nextStory) {
   return currentStory !== nextStory;
@@ -216,7 +216,7 @@ export function buildAgentGraph(mission) {
     return {
       id: `author-${slug(family)}`,
       name: title(family),
-      role: 'Gemini ADK family author',
+      role: output?.a2a_receipt ? 'Registry-pinned A2A specialist' : 'Gemini ADK family author',
       lane: 'parallel',
       status: authorStatus,
       evidence: curriculum ? {

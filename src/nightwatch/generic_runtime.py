@@ -16,7 +16,7 @@ from nightwatch.stage_artifacts import GCS_TIMEOUT_SECONDS
 
 _CALL_ID = re.compile(r"^fc-[A-Za-z0-9_-]{4,200}$")
 _OPERATION = re.compile(r"^(baseline|candidate)$")
-_RUNTIME_GENERATION = "g2"
+_RUNTIME_GENERATION = "g3"
 
 
 @dataclass(frozen=True)

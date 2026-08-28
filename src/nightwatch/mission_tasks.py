@@ -13,6 +13,7 @@ from nightwatch.firestore_journal import validate_cycle_id
 from nightwatch.mission_orchestrator import validate_manifest_id
 
 MISSION_TASK_DEADLINE_SECONDS = 30 * 60
+MISSION_TASK_GENERATION = "g2"
 
 
 @dataclass(frozen=True)
@@ -25,7 +26,13 @@ class ScheduledMissionStage:
 def mission_task_id(cycle_id: str, manifest_id: str, expected_stage: Stage) -> str:
     validate_cycle_id(cycle_id)
     validate_manifest_id(manifest_id)
-    material = f"{cycle_id}\n{manifest_id}\n{expected_stage.value}".encode()
+    # Keep exhausted/deleted Cloud Tasks immutable while allowing an explicit,
+    # audited recovery generation to resume the same mission stage. Cloud Tasks
+    # retains deleted names for deduplication, so reusing a failed name is not
+    # available even when no journal entry was written.
+    material = (
+        f"{MISSION_TASK_GENERATION}\n{cycle_id}\n{manifest_id}\n{expected_stage.value}"
+    ).encode()
     return f"mission-{hashlib.sha256(material).hexdigest()[:40]}"
 
 

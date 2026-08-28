@@ -12,6 +12,7 @@ from flask import Flask, Response, jsonify, request
 from google.api_core.exceptions import GoogleAPICallError, RetryError
 from google.auth.exceptions import GoogleAuthError
 
+from nightwatch.agent_roster import AGENT_TAXONOMY_VERSION, MANDATORY_SPECIALISTS, MAX_SPECIALISTS, public_roster
 from nightwatch.firestore_journal import FirestoreJournal, validate_cycle_id
 from nightwatch.contracts import Stage
 from nightwatch.journal import ALLOWED_TRANSITIONS, JournalEntry, JournalError
@@ -351,6 +352,14 @@ def create_app(
                     "learning_rates": [0.00005, 0.0001, 0.0002, 0.0005, 0.001],
                     "maximum_training_attempts": 1,
                     "maximum_gpu_minutes": 20,
+                },
+                "agent_fleet": {
+                    "taxonomy_version": AGENT_TAXONOMY_VERSION,
+                    "maximum_specialists": MAX_SPECIALISTS,
+                    "mandatory_specialists": list(MANDATORY_SPECIALISTS),
+                    "approved_agents": public_roster(),
+                    "discovery": "google_cloud_agent_registry",
+                    "transport": "a2a_jsonrpc_oidc",
                 },
                 "deployment_authorized": False,
             }

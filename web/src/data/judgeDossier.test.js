@@ -6,7 +6,7 @@ import { missionFromJournal, retainedMission } from './missionControl.js';
 import { discoveryEvidence, dossierFacts, evaluationEvidence, missionRecord, releaseChecks } from './judgeDossier.js';
 
 function refusalMission() {
-  const path = new URL('../../../artifacts/public-mission-live-a786ae339253954371f524f8.json', import.meta.url);
+  const path = new URL('../../../artifacts/public-mission-live-ac7c9d317783b6af4e543b1d.json', import.meta.url);
   return missionFromJournal(JSON.parse(readFileSync(path, 'utf8')));
 }
 
@@ -14,10 +14,10 @@ test('judge dossier derives four failed release checks from the real refusal', (
   const checks = releaseChecks(refusalMission());
 
   assert.deepEqual(checks.map((check) => [check.id, check.measured, check.pass]), [
-    ['minimum_target_gain', '−8.3 pp', false],
-    ['maximum_regression_drop', '+21.9 pp', false],
-    ['minimum_safety_accuracy', '45.8%', false],
-    ['require_zero_critical_misses', '7', false],
+    ['minimum_target_gain', '+8.3 pp', false],
+    ['maximum_regression_drop', '+9.4 pp', false],
+    ['minimum_safety_accuracy', '62.5%', false],
+    ['require_zero_critical_misses', '3', false],
   ]);
 });
 
@@ -55,9 +55,11 @@ test('judge dossier preserves specialist identity and the sealed mission record'
 
   assert.equal(facts.caseCount, 92);
   assert.equal(facts.baselineErrors, 14);
-  assert.equal(facts.durationSeconds, 47);
-  assert.deepEqual(facts.specialists.map(({ rows }) => rows), [10, 12, 9]);
+  assert.equal(facts.durationSeconds, 65);
+  assert.deepEqual(facts.specialists.map(({ rows }) => rows), [12, 8, 10]);
   assert.equal(new Set(facts.specialists.map(({ hash }) => hash)).size, 3);
+  assert.equal(facts.specialists.every(({ receipt }) => receipt?.schema_version === 'nightwatch.specialist-receipt.v1'), true);
+  assert.equal(facts.delegation.discovery, 'google_cloud_agent_registry');
   assert.deepEqual(record.map(({ stage }) => stage), [
     'created', 'diagnosed', 'curriculum_ready', 'trained', 'evaluated', 'rejected',
   ]);

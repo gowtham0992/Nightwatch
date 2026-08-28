@@ -4,6 +4,8 @@ Nightwatch separates autonomous repair from release authority. AI agents can dia
 
 ![Nightwatch product architecture](images/nightwatch-product-architecture.png)
 
+[Download the 4K product architecture](images/nightwatch-product-architecture-4k.png)
+
 The product flow above is the judge-readable view: one authenticated request advances six bounded stages, records immutable evidence, and ends in one of two explicit non-deployment states.
 
 ## Google Cloud enforces the boundary
@@ -12,15 +14,17 @@ The deployed topology uses separate identities for private autonomous execution 
 
 ![Nightwatch Google Cloud internals](images/nightwatch-gcp-internals.png)
 
+[Download the 4K Google Cloud architecture](images/nightwatch-google-cloud-architecture-4k.png)
+
 ## One request advances a complete bounded workflow
 
-An authenticated operator starts the fixed `scam-safety-live-1b-v1` manifest. The server derives the cycle ID and enqueues the first Cloud Task. Each task advances exactly one lifecycle stage, persists its evidence, and schedules the next stage:
+An authenticated operator uploads bounded evaluation data, maps the evidence suites, and freezes a content-addressed contract containing the pinned Gemma revision, release policy, compute ceiling, and exact approved agent roster. The server derives the cycle ID and enqueues the first Cloud Task. Each task advances exactly one lifecycle stage, persists its evidence, and schedules the next stage:
 
 | Stage | Authority | External effect |
 |---|---|---|
 | `created` | Deterministic controller | Freezes model revision, budget, seed, hyperparameters, and gate version |
-| `diagnosed` | Gemini 3.6 Flash through Google ADK | Produces one schema-bound repair plan from observed failures |
-| `curriculum_ready` | Parallel Gemini/ADK specialists plus deterministic validation | Creates targeted curriculum and leakage evidence |
+| `diagnosed` | Gemini 3.6 Flash through Google ADK, then deterministic Registry routing | Emits bounded capabilities and seals the approved URNs, card hashes, endpoints, and identities before delegation |
+| `curriculum_ready` | Three private A2A specialists plus deterministic validation | Creates independently hashed curriculum, request/response receipts, and leakage evidence |
 | `trained` | Modal training campaign | Claims one cycle-bound call and persists the Gemma LoRA candidate and predictions |
 | `evaluated` | Deterministic Python | Scores target, safety, regression, protected recall, coverage, and critical misses |
 | `promoted` or `rejected` | Deterministic Python | Records `qualified_not_deployed` or `refused_not_deployed` |
@@ -38,6 +42,7 @@ Cloud Storage holds create-only stage artifacts and external-call claims. Each e
 - a duplicate Cloud Task returns an identical completed journal entry;
 - a crash before artifact creation leaves nothing durable and can retry safely;
 - a crash after artifact creation reloads that artifact instead of calling Gemini or Modal again;
+- a retry after diagnosis reuses the sealed delegation plan instead of querying Agent Registry again;
 - a repeated Modal stage resumes the claimed call rather than launching a second training job;
 - a conflicting artifact or result fails closed.
 
@@ -45,19 +50,16 @@ The mission queue permits one concurrent dispatch, one dispatch per second, and 
 
 ## The model cannot approve itself
 
-Gemini sees bounded development evidence and can propose a repair. It cannot read the sealed evaluation set or change the mission manifest, labels, thresholds, budget, journal history, terminal verdict, or deployment state.
+Gemini sees bounded development evidence and can propose a repair. It cannot read the sealed evaluation set or change the mission manifest, approved agent roster, labels, thresholds, budget, journal history, terminal verdict, or deployment state.
 
 The scam gate is versioned code. A candidate qualifies only when it satisfies every predeclared invariant:
 
 1. target accuracy improves by at least 15 percentage points;
 2. overall regression loss is at most two points;
-3. safety-block recall remains at least 95%;
-4. critical misses remain zero;
-5. benign blocking stays at or below 5% and does not increase;
-6. protected regression-label recall does not decline;
-7. every sealed case has exactly one valid prediction.
+3. safety accuracy remains at least 95%;
+4. critical misses remain zero.
 
-This separation is why the live candidate that reached 100% target and safety accuracy was still refused: routine-message recall fell from 87.5% to 75.0%.
+This separation is why the adaptive-fleet candidate was refused even though target accuracy improved from 83.3% to 91.7%: safety fell to 62.5%, regression lost 9.4 points, and three critical scams were missed.
 
 ## Public proof does not require public authority
 
@@ -81,11 +83,14 @@ The verifier can create receipts but cannot overwrite or delete them. The public
 | Public judge service | Bundled redacted missions; isolated public receipts | Enqueue one fixed public-verification task | Read Firestore, call Gemini or Modal, launch missions, write receipts |
 | Private evidence/operator service | Firestore mission evidence | Enqueue the fixed mission and private verification tasks | Write Firestore evidence, select arbitrary manifests, deploy models |
 | Mission OIDC invoker | Nothing | Invoke only the private mission worker | Call other application services |
-| Mission worker | Approved local inputs and mission artifacts | Append Firestore stages; create artifacts; call Vertex AI and the claimed Modal function | Deploy models, rewrite artifacts, change policy |
+| Mission worker | Approved local inputs, mission artifacts, and read-only Agent Registry results | Append Firestore stages; create artifacts; call approved private specialists, Vertex AI, and the claimed Modal function | Register agents, call unpinned endpoints, deploy models, rewrite artifacts, change policy |
+| Target Repair specialist | Projected diagnosis and observed errors | Invoke Gemini through Vertex AI and return one schema-bound A2A artifact | Read Firestore/GCS/Modal, call sibling agents, alter policy or deploy |
+| Safety Boundary specialist | Projected diagnosis and observed errors | Invoke Gemini through Vertex AI and return one schema-bound A2A artifact | Read Firestore/GCS/Modal, call sibling agents, alter policy or deploy |
+| Regression Guard specialist | Projected diagnosis and observed errors | Invoke Gemini through Vertex AI and return one schema-bound A2A artifact | Read Firestore/GCS/Modal, call sibling agents, alter policy or deploy |
 | Public verifier OIDC invoker | Nothing | Invoke only the public verifier | Call other application services |
 | Public verifier | Exact Firestore mission | Create one isolated verification receipt | Write Firestore, overwrite/delete receipts, call models |
 
-Google ADK roles inside the mission worker are logical agent boundaries, not IAM boundaries. Their output contracts, input projections, and downstream validators provide application-level isolation; Cloud Run service accounts provide the security boundary.
+The diagnostician remains an ADK role inside the mission worker. The repair specialists are real IAM boundaries: three separate private Cloud Run services discovered through Agent Registry and invoked over A2A with Google-signed OIDC tokens. Each has its own service account and only Vertex AI user access. Registry output is never authority by itself; the contract-pinned identity and card checks are.
 
 ## Failure and cost policy
 

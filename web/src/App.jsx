@@ -77,7 +77,7 @@ function MissionHeader({ mission, health, launchState, onNewMission, onWalkthrou
       <StorySwitch story={story} onSelect={onSelectStory} />
       <div className="eyebrow"><span>MISSION / {mission.id}</span><span>{mission.mode === 'live' ? 'LIVE JOURNAL' : 'VERIFIED RUN'}</span></div>
       <h1>{isJudgeRefusal ? <>It hit 100%.<br /><em>We still refused it.</em></> : isSelfService ? <>The agents did the work.<br /><em>The gate said no.</em></> : <>Repair the model.<br /><em>Protect the boundary.</em></>}</h1>
-      <p>{isJudgeRefusal ? 'In this live run, Nightwatch diagnosed a failing Gemma scam detector, assembled three Gemini repair specialists, trained one bounded candidate, then caught a hidden regression and kept production locked.' : isSelfService ? 'An operator selected Gemma, supplied a real 92-case dataset, mapped three evidence suites, froze the compute and release contract, and clicked Run. Nightwatch discovered 14 baseline failures, ran the full repair fleet, then refused the unsafe candidate.' : 'Nightwatch autonomously diagnoses a failing Gemma scam detector, assembles a specialist repair fleet, trains one bounded candidate, and hands release authority to deterministic code.'}</p>
+      <p>{isJudgeRefusal ? 'In this live run, Nightwatch diagnosed a failing Gemma scam detector, assembled three Gemini repair specialists, trained one bounded candidate, then caught a hidden regression and kept production locked.' : isSelfService ? 'An operator froze a real Gemma mission and clicked Run. Nightwatch found 14 baseline failures, used Agent Registry to discover three pinned specialists, invoked them over private A2A, trained once, and refused the unsafe candidate.' : 'Nightwatch autonomously diagnoses a failing Gemma scam detector, assembles a specialist repair fleet, trains one bounded candidate, and hands release authority to deterministic code.'}</p>
       <div className="mission-actions">
         {health?.operator_enabled ? <button className="launch-button" type="button" onClick={onNewMission}><span>＋</span>New repair mission</button> : <><button className="launch-button" type="button" onClick={onWalkthrough}><span>▶</span>Try guided self-service</button><a className="secondary-action" href="#mission">Inspect evidence ↓</a></>}
         <span className="action-note">{health?.operator_enabled ? 'Model + dataset → autonomous repair · max 1 GPU attempt' : 'Read-only · no training spend'}</span>
@@ -97,7 +97,7 @@ function MissionContract({ mission }) {
     <dl>
       <div><dt>Model</dt><dd>{mission.model}</dd><small>revision pinned privately</small></div>
       <div><dt>Evidence</dt><dd>{created.evidence_case_count} cases</dd><small>target · safety · regression</small></div>
-      <div><dt>Repair fleet</dt><dd>{curriculum.parallel_agents} Gemini specialists</dd><small>{curriculum.curriculum_rows} validated rows</small></div>
+      <div><dt>Repair fleet</dt><dd>{curriculum.parallel_agents} Registry agents</dd><small>{curriculum.curriculum_rows} validated A2A rows</small></div>
       <div><dt>Compute bound</dt><dd>{created.limits?.maximum_training_attempts} attempt</dd><small>{created.limits?.maximum_gpu_minutes} GPU-minute ceiling</small></div>
       <div><dt>Execution</dt><dd>{title(training.executor)}</dd><small>credentials server-side</small></div>
       <div><dt>Deployment</dt><dd>Not authorized</dd><small>deterministic gate only</small></div>

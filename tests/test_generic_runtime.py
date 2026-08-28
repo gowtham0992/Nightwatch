@@ -41,5 +41,5 @@ def test_modal_runtime_reuses_the_recorded_call_instead_of_spending_twice() -> N
 
 def test_runtime_call_ledger_uses_an_explicit_recovery_generation() -> None:
     assert GCSRuntimeCallStore._name("mission-runtime-001", "baseline", "call") == (
-        "missions/mission-runtime-001/operations/modal-g2-baseline-call.json"
+        "missions/mission-runtime-001/operations/modal-g3-baseline-call.json"
     )

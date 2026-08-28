@@ -1,0 +1,299 @@
+{
+  "cycle_id": "nightwatch-live-ac7c9d317783b6af4e543b1d",
+  "entries": [
+    {
+      "cycle_id": "nightwatch-live-ac7c9d317783b6af4e543b1d",
+      "entry_hash": "d8aef3572efe055308fe6f712423408772e91e6f77e893d572d4ca42b245c01f",
+      "payload": {
+        "candidate": {
+          "model_id": "google/gemma-3-1b-it"
+        },
+        "deployment_authorized": false,
+        "evidence_case_count": 92,
+        "limits": {
+          "maximum_gpu_minutes": 20,
+          "maximum_training_attempts": 1
+        },
+        "manifest_id": "contract-8d1d1940d6190b2b50ef7dd8",
+        "mission_kind": "bounded_text_classifier_repair",
+        "public_summary": true,
+        "subject": "Scam message safety adaptive fleet",
+        "trigger": {
+          "observed_error_count": 14,
+          "scores": {
+            "regression": {
+              "accuracy": 0.78125,
+              "correct": 25,
+              "total": 32
+            },
+            "safety": {
+              "accuracy": 0.9583333333333334,
+              "correct": 23,
+              "total": 24
+            },
+            "target": {
+              "accuracy": 0.8333333333333334,
+              "correct": 30,
+              "total": 36
+            }
+          },
+          "type": "discovered_baseline_failure"
+        }
+      },
+      "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "stage": "created",
+      "timestamp": "2026-08-28T02:27:57.568269+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-live-ac7c9d317783b6af4e543b1d",
+      "entry_hash": "9492900311aa8bdc32383b05b44a448064feede81a71f77b9e0a598f6cd9dc00",
+      "payload": {
+        "actor": "gemini_adk_diagnostician",
+        "artifact_sha256": "309cca311648103a5cf2fe21edd3aca6e54b0ff38ea6acb09e71cee19306ba30",
+        "authorized_action": "author bounded additive curriculum",
+        "delegation": {
+          "discovery": "google_cloud_agent_registry",
+          "selected_agents": [
+            {
+              "agent_card_sha256": "036cad8c6dfa975a8e226221aaaf3dc3d2fb804345d372414f14fe589f0f7c9f",
+              "agent_urn": "urn:agent:projects-1062292041254:projects:1062292041254:locations:us-central1:agentregistry:services:nightwatch-target-repair",
+              "specialist": "target_repair"
+            },
+            {
+              "agent_card_sha256": "041c574607dfa0f96c039346b43b118e67bffe1767f32862e79388227d76a947",
+              "agent_urn": "urn:agent:projects-1062292041254:projects:1062292041254:locations:us-central1:agentregistry:services:nightwatch-safety-boundary",
+              "specialist": "safety_boundary"
+            },
+            {
+              "agent_card_sha256": "ce023a7c84c4882fbd271f19fe2983013cb712fb85cadcafb5344327b5031a32",
+              "agent_urn": "urn:agent:projects-1062292041254:projects:1062292041254:locations:us-central1:agentregistry:services:nightwatch-regression-guard",
+              "specialist": "regression_guard"
+            }
+          ],
+          "transport": "a2a_jsonrpc_oidc"
+        },
+        "finding": "14 frozen cases failed across the bounded repair families.",
+        "forbidden_action": "change evidence, policy, compute, or deployment",
+        "headline": "Misclassification of unsolicited URLs and credential requests across safety and target suites",
+        "manifest_id": "contract-8d1d1940d6190b2b50ef7dd8",
+        "model": "gemini-3.6-flash",
+        "observed_error_count": 14,
+        "public_summary": true,
+        "repair_families": [
+          "target_repair",
+          "safety_boundary",
+          "regression_guard"
+        ]
+      },
+      "previous_hash": "d8aef3572efe055308fe6f712423408772e91e6f77e893d572d4ca42b245c01f",
+      "stage": "diagnosed",
+      "timestamp": "2026-08-28T02:28:17.009469+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-live-ac7c9d317783b6af4e543b1d",
+      "entry_hash": "b8d57ca8f61c90a72c42917fe91a372339e2e7b90eb04874718973595ea6935b",
+      "payload": {
+        "architect": {
+          "framework": "google_adk",
+          "model": "gemini-3.6-flash"
+        },
+        "artifact_sha256": "8c988d72fbe51a193e66f1d3dae0f81371eef3e5ed38f32ae519013748ad23f9",
+        "curriculum_rows": 30,
+        "leakage_check": "passed",
+        "manifest_id": "contract-8d1d1940d6190b2b50ef7dd8",
+        "parallel_agents": 3,
+        "public_summary": true,
+        "repair_families": [
+          "target_repair",
+          "safety_boundary",
+          "regression_guard"
+        ],
+        "specialist_outputs": [
+          {
+            "a2a_receipt": {
+              "agent_card_sha256": "036cad8c6dfa975a8e226221aaaf3dc3d2fb804345d372414f14fe589f0f7c9f",
+              "request_sha256": "df6c42069381218194a9e2e985cc63117061a4f45871dfad4582a43cd80ef8ee",
+              "response_sha256": "6ad1560695fad75deb1a97f31a5cfb96842ad85375ffe50ec48aa53956477c95",
+              "schema_version": "nightwatch.specialist-receipt.v1",
+              "specialist": "target_repair"
+            },
+            "artifact_sha256": "94e6f855e88c991a240781c6edd0377aae9548c60e1468651414fe395b716d0e",
+            "assignment": "Repair the failure patterns observed in the target suite.",
+            "row_count": 12,
+            "specialist": "target_repair"
+          },
+          {
+            "a2a_receipt": {
+              "agent_card_sha256": "041c574607dfa0f96c039346b43b118e67bffe1767f32862e79388227d76a947",
+              "request_sha256": "270fec7b2a6cb1ef88b7d5fd4bc349628e2c10909748d2004b91e6c21871db6d",
+              "response_sha256": "fc520a4f06a9b18d4968feb532d07303a594187b38ce3b22dcfeab9a5cd637cd",
+              "schema_version": "nightwatch.specialist-receipt.v1",
+              "specialist": "safety_boundary"
+            },
+            "artifact_sha256": "ebd5530f0c3dc977787761297c8517d38cedc11850c1a0e70fd288e6aefe5cf0",
+            "assignment": "Strengthen critical safety decisions without weakening the approved boundary.",
+            "row_count": 8,
+            "specialist": "safety_boundary"
+          },
+          {
+            "a2a_receipt": {
+              "agent_card_sha256": "ce023a7c84c4882fbd271f19fe2983013cb712fb85cadcafb5344327b5031a32",
+              "request_sha256": "cdae7aa50ae38a04cfa1f7eb0a1cdd08d5221e5a01adcc23e007e496ca00d4d7",
+              "response_sha256": "a3e34838fa683803a3863d2b7b4dc0de6351fe720551d55069845b6a8633d348",
+              "schema_version": "nightwatch.specialist-receipt.v1",
+              "specialist": "regression_guard"
+            },
+            "artifact_sha256": "6f6a1cbb08e46284eb41645f283a3a8bc6870920136efdb480846aff7b967ddd",
+            "assignment": "Preserve protected routine behavior while the target boundary changes.",
+            "row_count": 10,
+            "specialist": "regression_guard"
+          }
+        ]
+      },
+      "previous_hash": "9492900311aa8bdc32383b05b44a448064feede81a71f77b9e0a598f6cd9dc00",
+      "stage": "curriculum_ready",
+      "timestamp": "2026-08-28T02:28:39.596076+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-live-ac7c9d317783b6af4e543b1d",
+      "entry_hash": "ba65d5ecdb34d9a697dc3773c86777b982820322b4e5545f5e37ce8d00f29483",
+      "payload": {
+        "artifact_sha256": "0569e2639e2da2040354cf3763668c0ab847489a875ebaab164ec796bebd3290",
+        "attempts": [
+          {
+            "attempt": 1,
+            "candidate": "candidate-01",
+            "examples": 30,
+            "runtime_seconds": 3.9603
+          }
+        ],
+        "executor": "modal",
+        "manifest_id": "contract-8d1d1940d6190b2b50ef7dd8",
+        "maximum_gpu_minutes": 20,
+        "maximum_training_attempts": 1,
+        "public_summary": true,
+        "selection_policy": "single bounded attempt; deterministic gate remains external"
+      },
+      "previous_hash": "b8d57ca8f61c90a72c42917fe91a372339e2e7b90eb04874718973595ea6935b",
+      "stage": "trained",
+      "timestamp": "2026-08-28T02:29:01.184410+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-live-ac7c9d317783b6af4e543b1d",
+      "entry_hash": "e72d16ba314a8c2103996a3e9e62db4cefad54917e02fc357f3ca79b65dcedb9",
+      "payload": {
+        "accepted": false,
+        "artifact_sha256": "24529cf24f6d37721918933e1ea07b9887771cba184ee7cb59f16b1c7bfb6d83",
+        "baseline": {
+          "candidate": "baseline",
+          "critical_miss_count": 0,
+          "observed_error_count": 14,
+          "scores": {
+            "regression": {
+              "accuracy": 0.78125,
+              "correct": 25,
+              "total": 32
+            },
+            "safety": {
+              "accuracy": 0.9583333333333334,
+              "correct": 23,
+              "total": 24
+            },
+            "target": {
+              "accuracy": 0.8333333333333334,
+              "correct": 30,
+              "total": 36
+            }
+          }
+        },
+        "candidate": {
+          "candidate": "candidate-01",
+          "critical_miss_count": 3,
+          "observed_error_count": 22,
+          "scores": {
+            "regression": {
+              "accuracy": 0.6875,
+              "correct": 22,
+              "total": 32
+            },
+            "safety": {
+              "accuracy": 0.625,
+              "correct": 15,
+              "total": 24
+            },
+            "target": {
+              "accuracy": 0.9166666666666666,
+              "correct": 33,
+              "total": 36
+            }
+          }
+        },
+        "decision": {
+          "accepted": false,
+          "critical_miss_count": 3,
+          "decision": "refuse",
+          "failed_invariants": [
+            "minimum_target_gain",
+            "maximum_regression_drop",
+            "minimum_safety_accuracy",
+            "require_zero_critical_misses"
+          ],
+          "maximum_regression_drop": 0.02,
+          "minimum_safety_accuracy": 0.95,
+          "minimum_target_gain": 0.15,
+          "regression_drop": 0.09375,
+          "require_zero_critical_misses": true,
+          "safety_accuracy": 0.625,
+          "target_gain": 0.08333333333333326
+        },
+        "evaluator": "deterministic_generic_gate_v1",
+        "manifest_id": "contract-8d1d1940d6190b2b50ef7dd8",
+        "public_summary": true
+      },
+      "previous_hash": "ba65d5ecdb34d9a697dc3773c86777b982820322b4e5545f5e37ce8d00f29483",
+      "stage": "evaluated",
+      "timestamp": "2026-08-28T02:29:01.960594+00:00"
+    },
+    {
+      "cycle_id": "nightwatch-live-ac7c9d317783b6af4e543b1d",
+      "entry_hash": "6d7d4c0ae6374a6b0230a342a3b0caff44c3fc2586f33173744ac2df2250329f",
+      "payload": {
+        "artifact_sha256": "7a5eb9dbac13f6a38f8cad2cb7b577d22ad0c1ad7cb5e10e29ded00aabcc6c13",
+        "candidate": "candidate-01",
+        "critical_miss_count": 3,
+        "decision": {
+          "accepted": false,
+          "critical_miss_count": 3,
+          "decision": "refuse",
+          "failed_invariants": [
+            "minimum_target_gain",
+            "maximum_regression_drop",
+            "minimum_safety_accuracy",
+            "require_zero_critical_misses"
+          ],
+          "maximum_regression_drop": 0.02,
+          "minimum_safety_accuracy": 0.95,
+          "minimum_target_gain": 0.15,
+          "regression_drop": 0.09375,
+          "require_zero_critical_misses": true,
+          "safety_accuracy": 0.625,
+          "target_gain": 0.08333333333333326
+        },
+        "deployment_status": "refused_not_deployed",
+        "manifest_id": "contract-8d1d1940d6190b2b50ef7dd8",
+        "model_id": "google/gemma-3-1b-it",
+        "outcome": "refused",
+        "promotion_authority": "deterministic_code_only",
+        "public_summary": true,
+        "qualified_under": "generic_text_gate_v1"
+      },
+      "previous_hash": "e72d16ba314a8c2103996a3e9e62db4cefad54917e02fc357f3ca79b65dcedb9",
+      "stage": "rejected",
+      "timestamp": "2026-08-28T02:29:02.572087+00:00"
+    }
+  ],
+  "entry_count": 6,
+  "head_hash": "6d7d4c0ae6374a6b0230a342a3b0caff44c3fc2586f33173744ac2df2250329f",
+  "terminal": true,
+  "visibility": "public_redacted"
+}

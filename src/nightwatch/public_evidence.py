@@ -16,6 +16,7 @@ LIVE_PUBLIC_MISSION_ID = "nightwatch-cloud-20260811-001"
 JUDGE_LIVE_MISSION_ID = "nightwatch-live-89e73407c43d525c4bc19272"
 SELF_SERVICE_PUBLIC_MISSION_ID = "nightwatch-live-fe8a4e9d756508004f9214de"
 AGENT_PROOF_PUBLIC_MISSION_ID = "nightwatch-live-a786ae339253954371f524f8"
+ADAPTIVE_FLEET_PUBLIC_MISSION_ID = "nightwatch-live-ac7c9d317783b6af4e543b1d"
 PUBLIC_MISSION_IDS = frozenset(
     {
         PUBLIC_MISSION_ID,
@@ -23,6 +24,7 @@ PUBLIC_MISSION_IDS = frozenset(
         JUDGE_LIVE_MISSION_ID,
         SELF_SERVICE_PUBLIC_MISSION_ID,
         AGENT_PROOF_PUBLIC_MISSION_ID,
+        ADAPTIVE_FLEET_PUBLIC_MISSION_ID,
     }
 )
 PUBLIC_IDEMPOTENCY_KEY = "public:nightwatch-v2-proof:isolated-v1"
@@ -52,8 +54,11 @@ _PUBLIC_STAGE_PREFIX = (
 )
 _ALLOWED_KEYS = {
     "accuracy",
+    "a2a_receipt",
     "accepted",
     "actor",
+    "agent_card_sha256",
+    "agent_urn",
     "adjudicated_disagreements",
     "architect",
     "assignment",
@@ -72,8 +77,10 @@ _ALLOWED_KEYS = {
     "curriculum_rows",
     "cycle_id",
     "decision",
+    "delegation",
     "defer",
     "deployment_status",
+    "discovery",
     "deployment_authorized",
     "development",
     "development_suite_counts",
@@ -125,6 +132,8 @@ _ALLOWED_KEYS = {
     "regression_drop",
     "regression_label_recall",
     "repair_families",
+    "request_sha256",
+    "response_sha256",
     "row_count",
     "require_zero_critical_misses",
     "reason_count",
@@ -135,7 +144,9 @@ _ALLOWED_KEYS = {
     "safety",
     "safety_accuracy",
     "scores",
+    "schema_version",
     "selection_policy",
+    "selected_agents",
     "specialist",
     "specialist_outputs",
     "stage",
@@ -148,6 +159,7 @@ _ALLOWED_KEYS = {
     "token_jaccard",
     "total",
     "total_examples",
+    "transport",
     "parallel_agents",
     "training_runtime_seconds",
     "runtime_seconds",
@@ -311,7 +323,7 @@ def _public_scam_payload(entry: JournalEntry) -> dict[str, Any]:
         evidence_ids = _required(payload, "evidence_case_ids")
         if not isinstance(evidence_ids, list):
             raise JournalError("public scam diagnosis evidence is malformed")
-        return {
+        result = {
             **common,
             "manifest_id": _required(payload, "manifest_id"),
             "actor": _required(payload, "actor"),
@@ -324,8 +336,9 @@ def _public_scam_payload(entry: JournalEntry) -> dict[str, Any]:
             "forbidden_action": _required(payload, "forbidden_action"),
             "artifact_sha256": _required(payload, "artifact_sha256"),
         }
+        return result
     if entry.stage is Stage.CURRICULUM_READY:
-        return {
+        result = {
             **common,
             "manifest_id": _required(payload, "manifest_id"),
             "architect": _required(payload, "architect"),
@@ -335,6 +348,7 @@ def _public_scam_payload(entry: JournalEntry) -> dict[str, Any]:
             "leakage_check": _required(payload, "leakage_check"),
             "artifact_sha256": _required(payload, "artifact_sha256"),
         }
+        return result
     if entry.stage is Stage.TRAINED:
         attempts = _required(payload, "attempts")
         if not isinstance(attempts, list) or not all(isinstance(attempt, dict) for attempt in attempts):
@@ -431,6 +445,40 @@ def _public_generic_decision(value: object) -> dict[str, Any]:
     }
 
 
+def _public_generic_delegation(value: object) -> dict[str, Any]:
+    if not isinstance(value, dict) or value.get("mode") != "agent_registry_a2a":
+        raise JournalError("public generic delegation evidence is malformed")
+    plan = _required(value, "plan")
+    selected = _required(plan, "selected_agents") if isinstance(plan, dict) else None
+    if not isinstance(selected, list) or not 1 <= len(selected) <= 3:
+        raise JournalError("public generic delegation plan is malformed")
+    projected_agents = []
+    for agent in selected:
+        if not isinstance(agent, dict):
+            raise JournalError("public generic selected agent is malformed")
+        card_sha256 = _required(agent, "card_sha256")
+        agent_urn = _required(agent, "agent_urn")
+        specialist = _required(agent, "specialist")
+        if (
+            not isinstance(card_sha256, str)
+            or not _HASH.fullmatch(card_sha256)
+            or not isinstance(agent_urn, str)
+            or not agent_urn.startswith("urn:agent:")
+            or not isinstance(specialist, str)
+        ):
+            raise JournalError("public generic selected agent identity is malformed")
+        projected_agents.append({
+            "specialist": specialist,
+            "agent_urn": agent_urn,
+            "agent_card_sha256": card_sha256,
+        })
+    return {
+        "discovery": "google_cloud_agent_registry",
+        "transport": "a2a_jsonrpc_oidc",
+        "selected_agents": projected_agents,
+    }
+
+
 def _public_generic_payload(entry: JournalEntry) -> dict[str, Any]:
     payload = entry.payload
     common = {"public_summary": True, "manifest_id": _required(payload, "manifest_id")}
@@ -470,7 +518,7 @@ def _public_generic_payload(entry: JournalEntry) -> dict[str, Any]:
         observed_error_count = _required(payload, "observed_error_count")
         if not isinstance(observed_error_count, int) or observed_error_count < 1:
             raise JournalError("public generic diagnosis count is malformed")
-        return {
+        result = {
             **common,
             "actor": _required(payload, "actor"),
             "model": _required(payload, "model"),
@@ -482,6 +530,9 @@ def _public_generic_payload(entry: JournalEntry) -> dict[str, Any]:
             "forbidden_action": _required(payload, "forbidden_action"),
             "artifact_sha256": _required(payload, "artifact_sha256"),
         }
+        if "delegation" in payload:
+            result["delegation"] = _public_generic_delegation(payload["delegation"])
+        return result
     if entry.stage is Stage.CURRICULUM_READY:
         result = {
             **common,
@@ -512,6 +563,21 @@ def _public_generic_payload(entry: JournalEntry) -> dict[str, Any]:
                     "row_count": row_count,
                     "artifact_sha256": artifact_sha256,
                 })
+                receipt = output.get("a2a_receipt")
+                if receipt is not None:
+                    if not isinstance(receipt, dict) or receipt.get("specialist") != output.get("specialist"):
+                        raise JournalError("public generic A2A receipt is malformed")
+                    hashes = {
+                        key: _required(receipt, key)
+                        for key in ("agent_card_sha256", "request_sha256", "response_sha256")
+                    }
+                    if not all(isinstance(value, str) and _HASH.fullmatch(value) for value in hashes.values()):
+                        raise JournalError("public generic A2A receipt hash is malformed")
+                    projected_outputs[-1]["a2a_receipt"] = {
+                        "schema_version": _required(receipt, "schema_version"),
+                        "specialist": receipt["specialist"],
+                        **hashes,
+                    }
             result["specialist_outputs"] = projected_outputs
         return result
     if entry.stage is Stage.TRAINED:
@@ -562,7 +628,11 @@ def _public_generic_payload(entry: JournalEntry) -> dict[str, Any]:
 
 
 def _public_payload(entry: JournalEntry) -> dict[str, Any]:
-    if entry.cycle_id in {SELF_SERVICE_PUBLIC_MISSION_ID, AGENT_PROOF_PUBLIC_MISSION_ID}:
+    if entry.cycle_id in {
+        SELF_SERVICE_PUBLIC_MISSION_ID,
+        AGENT_PROOF_PUBLIC_MISSION_ID,
+        ADAPTIVE_FLEET_PUBLIC_MISSION_ID,
+    }:
         return _public_generic_payload(entry)
     if entry.cycle_id == JUDGE_LIVE_MISSION_ID:
         return _public_scam_payload(entry)

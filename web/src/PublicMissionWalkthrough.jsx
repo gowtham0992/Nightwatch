@@ -73,7 +73,7 @@ export default function PublicMissionWalkthrough({ onCancel, onInspect, onCompar
         {cursor < 0 ? <div className="theater-brief">
           <span className="theater-kicker">A 30-SECOND AUTONOMOUS REPAIR MISSION</span>
           <h1>Watch Nightwatch repair a model—<em>and refuse its own work.</em></h1>
-          <p>A Gemma scam detector is failing. Nightwatch will measure the failure, summon three Gemini repair agents, train one candidate, test it against frozen safety evidence, and let deterministic code decide whether it ships.</p>
+          <p>A Gemma scam detector is failing. Nightwatch will measure the failure, discover three pinned specialists through Agent Registry, invoke them over private A2A, train one candidate, and let deterministic code decide whether it ships.</p>
           <div className="theater-contract">
             <div><span>MODEL</span><strong>{contract.model}</strong></div>
             <div><span>FROZEN EVIDENCE</span><strong>{contract.cases} cases · {contract.errors} errors</strong></div>
@@ -97,6 +97,6 @@ export default function PublicMissionWalkthrough({ onCancel, onInspect, onCompar
       {cursor >= 0 && <><Timeline stages={stages} cursor={cursor} onSelect={(index) => { setCursor(index); setPaused(true); }} />
         <div className="theater-controls"><div className="theater-progress"><span style={{ width: `${((cursor + 1) / stages.length) * 100}%` }} /></div>{!complete && <button className="theater-pause" type="button" onClick={() => setPaused((value) => !value)}>{paused ? '▶ Continue' : 'Ⅱ Pause'}</button>}{complete && <button className="theater-pause" type="button" onClick={start}>↻ Replay</button>}</div></>}
     </section>
-    <div className="theater-proofline"><span><b>6</b> hash-chained handoffs</span><span><b>3</b> Gemini ADK repair agents</span><span><b>1</b> bounded Modal attempt</span><span><b>0</b> deployment permissions</span><code>{shortHash(mission.headHash)}</code></div>
+    <div className="theater-proofline"><span><b>6</b> hash-chained handoffs</span><span><b>3</b> Registry + A2A agents</span><span><b>1</b> bounded Modal attempt</span><span><b>0</b> deployment permissions</span><code>{shortHash(mission.headHash)}</code></div>
   </main>;
 }
