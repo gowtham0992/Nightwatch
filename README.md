@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://nightwatch-public-w3a6oefsma-uc.a.run.app/">Live judge experience</a>
-  · <a href="https://youtu.be/XNeef08JqI4">Demo video</a>
+  · <a href="https://youtu.be/IAqn-2RnCWU">Demo video</a>
   · <a href="docs/architecture.md">Architecture</a>
   · <a href="docs/threat-model.md">Threat model</a>
   · <a href="cloud/DEPLOYMENT.md">Deployment evidence</a>
@@ -21,19 +21,19 @@ Nightwatch is an autonomous repair line for specialized AI models. One authentic
 **Hackathon:** [All Things Agentic Hackathon](https://allthingsagentichackathon.devpost.com/)<br>
 **Track:** The Taskmaster<br>
 **Core stack:** Gemini 3.6 Flash · Google ADK · Agent2Agent (A2A) · Google Cloud Agent Registry · Cloud Run · Cloud Tasks · Firestore · Cloud Storage · Vertex AI · Gemma 3 · Modal<br>
-**Submission pack:** [Hosted project](https://nightwatch-public-w3a6oefsma-uc.a.run.app/) · [3:13 demo](https://youtu.be/XNeef08JqI4) · [Source code](https://github.com/gowtham0992/Nightwatch) · [Judge quickstart](#judge-quickstart) · [Architecture](docs/architecture.md) · [Google Cloud proof](cloud/DEPLOYMENT.md)<br>
-**Bonus:** Gemma 3 is the pinned student model repaired and evaluated by Nightwatch · [Public X launch post](https://x.com/GothamSarves/status/2090937163215147229) with `#AllThingsAgenticHackathon`
+**Submission pack:** [Hosted project](https://nightwatch-public-w3a6oefsma-uc.a.run.app/) · [3:12 demo](https://youtu.be/IAqn-2RnCWU) · [Source code](https://github.com/gowtham0992/Nightwatch) · [Judge quickstart](#judge-quickstart) · [Architecture](docs/architecture.md) · [Google Cloud proof](cloud/DEPLOYMENT.md)<br>
+**Bonus:** Gemma 3 is the pinned student model repaired and evaluated by Nightwatch · [Public X launch post](https://x.com/GothamSarves/status/2093233314777981028) with `#AllThingsAgenticHackathon`
 
 ## Watch Nightwatch run the complete repair mission
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=XNeef08JqI4">
-    <img src="https://img.youtube.com/vi/XNeef08JqI4/maxresdefault.jpg" alt="Watch the Nightwatch autonomous model-repair demo" width="720">
+  <a href="https://www.youtube.com/watch?v=IAqn-2RnCWU">
+    <img src="https://img.youtube.com/vi/IAqn-2RnCWU/maxresdefault.jpg" alt="Watch the Nightwatch autonomous model-repair demo" width="720">
   </a>
 </p>
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=XNeef08JqI4"><strong>Watch the 3:13 demo</strong></a> · Real agents · Real Google Cloud execution · Deterministic release decision
+  <a href="https://www.youtube.com/watch?v=IAqn-2RnCWU"><strong>Watch the 3:12 demo</strong></a> · Real agents · Real Google Cloud execution · Deterministic release decision
 </p>
 
 ## This is a Taskmaster, not a chatbot
@@ -113,7 +113,7 @@ Every interaction has a failure policy. Stage task IDs are deterministic, Firest
 | **Google Cloud service** | **Cloud Run** hosts the public, private, worker, verifier, and three private specialist services; **Agent Registry** provides capability discovery; **Cloud Tasks** provides durable orchestration; **Firestore** stores the journal; **Cloud Storage** stores immutable artifacts and receipts; **Vertex AI** serves Gemini. |
 | **Autonomous action beyond chat** | One request advances detection → diagnosis → repair design → training → evaluation → release decision without hand-holding. There is no chat interface. |
 | **Hosted project** | The [public Cloud Run experience](https://nightwatch-public-w3a6oefsma-uc.a.run.app/) is available without credentials and exposes no operator capability. |
-| **Demo video** | The public [3:13 product demo](https://youtu.be/XNeef08JqI4) explains the problem and value, shows the autonomous mission and release gate, and includes visible Google Cloud deployment proof. |
+| **Demo video** | The public [3:12 product demo](https://youtu.be/IAqn-2RnCWU) explains the problem and value, shows the autonomous mission and release gate, and includes visible Google Cloud deployment proof. |
 | **Source repository** | This repository contains the application, tests, deployment configuration, retained public evidence, and MIT license. |
 | **Additional Google AI model** | The student is the pinned `google/gemma-3-1b-it` model, trained as a LoRA candidate. This satisfies the optional Gemma integration bonus. |
 | **Reproducibility** | Local product, test, container, and Google Cloud deployment instructions are below and in the [deployment runbook](cloud/DEPLOYMENT.md). |
