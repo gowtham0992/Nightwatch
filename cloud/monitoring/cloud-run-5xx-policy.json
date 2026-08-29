@@ -4,6 +4,9 @@
     "content": "The public judge experience is returning sustained server errors. Follow the checked-in runbook: https://github.com/gowtham0992/Nightwatch/blob/main/cloud/monitoring/runbook.md",
     "mimeType": "text/markdown"
   },
+  "notificationChannels": [
+    "projects/nightwatch-agentic-0992/notificationChannels/10574075472569398232"
+  ],
   "conditions": [
     {
       "displayName": "Public service 5xx rate exceeds 0.01 requests per second for two minutes",
