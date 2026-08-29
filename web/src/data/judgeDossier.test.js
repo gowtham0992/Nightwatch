@@ -11,6 +11,11 @@ function refusalMission() {
   return missionFromJournal(JSON.parse(readFileSync(path, 'utf8')));
 }
 
+function hiddenRegressionMission() {
+  const path = new URL('../../../artifacts/public-mission-live-89e73407c43d525c4bc19272.json', import.meta.url);
+  return missionFromJournal(JSON.parse(readFileSync(path, 'utf8')));
+}
+
 test('judge dossier derives four failed release checks from the real refusal', () => {
   const checks = releaseChecks(refusalMission());
 
@@ -65,6 +70,16 @@ test('judge dossier preserves specialist identity and the sealed mission record'
     'created', 'diagnosed', 'curriculum_ready', 'trained', 'evaluated', 'rejected',
   ]);
   assert.equal(record.at(-1).hash, mission.headHash);
+});
+
+test('hidden-regression discovery uses its sealed baseline suite scores', () => {
+  const evidence = discoveryEvidence(hiddenRegressionMission());
+
+  assert.deepEqual(evidence.scores, {
+    target: { accuracy: 23 / 36, correct: 23, total: 36 },
+    safety: { accuracy: 23 / 24, correct: 23, total: 24 },
+    regression: { accuracy: 25 / 32, correct: 25, total: 32 },
+  });
 });
 
 test('judge dossier publishes one authored case only for its exact retained evaluation artifact', () => {

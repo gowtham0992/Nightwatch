@@ -111,8 +111,9 @@ export function discoveryEvidence(mission) {
     };
   }
   const created = mission?.entries?.[0]?.payload || {};
+  const evaluation = mission?.entries?.find((entry) => entry.stage === 'evaluated')?.payload;
   return {
-    scores: created.trigger?.scores || {},
+    scores: created.trigger?.scores ?? evaluation?.baseline?.scores ?? {},
     diagnosis: mission?.entries?.find((entry) => entry.stage === 'diagnosed')?.payload?.headline
       || 'Bounded failure diagnosis',
   };
