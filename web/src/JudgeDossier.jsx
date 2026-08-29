@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fetchVerificationReceipt, requestVerification } from './data/missionAdapter.js';
-import { discoveryEvidence, dossierFacts, evaluationEvidence, missionRecord, publishedCaseEvidence, releaseChecks } from './data/judgeDossier.js';
+import { discoveryEvidence, dossierFacts, evaluationEvidence, missionRecord, publishedCaseEvidence, releaseChecks, releaseSummary } from './data/judgeDossier.js';
 import { JUDGE_LIVE_MISSION_ID, SELF_SERVICE_MISSION_ID } from './data/missionControl.js';
 import { shortHash } from './data/scamMission.js';
 import { scrollToElementThen } from './utils/scrollGate.js';
@@ -54,15 +54,26 @@ function BoundaryPreview({ qualified }) {
 }
 
 function Hero({ mission, facts, qualified, story, onSelectStory, onStartGate, hasCaseEvidence }) {
-  const criticalMisses = releaseChecks(mission).find((check) => check.id === 'require_zero_critical_misses')?.measured;
+  const checks = releaseChecks(mission);
+  const summary = releaseSummary(mission);
+  const criticalMisses = checks.find((check) => check.id === 'require_zero_critical_misses')?.measured;
+  const routineRecall = checks.find((check) => check.id === 'routine_recall_regressed');
+  const hiddenRegression = !qualified && summary.hiddenRegression;
+  const registryA2A = facts.orchestrationMode === 'registry_a2a';
   return <section className="nw-hero" id="top">
     <div className="nw-hero-copy">
       <CaseSwitch story={story} onSelectStory={onSelectStory} />
       <div className="nw-hero-kicker"><span>Verified Google Cloud mission</span><code>{mission.id}</code></div>
-      <h1>{qualified ? <>This repair earned the line.<em>A human still decides deployment.</em></> : <>Nightwatch stopped a dangerous AI repair.<em>Production never saw it.</em></>}</h1>
+      <h1>{qualified
+        ? <>This repair earned the line.<em>A human still decides deployment.</em></>
+        : hiddenRegression
+          ? <>Every headline check passed.<em>Nightwatch still said no.</em></>
+          : <>Nightwatch stopped a dangerous AI repair.<em>Production never saw it.</em></>}</h1>
       <p>{qualified
         ? 'The same autonomous repair fleet passed every frozen invariant. Nightwatch qualified the candidate, sealed the evidence, and stopped before deployment.'
-        : `A Gemini diagnostician declared three capabilities. Agent Registry resolved the pinned specialists, private A2A carried their work, and the gate found ${criticalMisses} critical misses before refusing the repair.`}</p>
+        : hiddenRegression
+          ? `Target and safety reached 100%, with zero critical misses. Routine-message recall fell ${routineRecall.measured}, so deterministic code refused the repair.`
+          : `A Gemini diagnostician declared three capabilities. Agent Registry resolved the pinned specialists, private A2A carried their work, and the gate found ${criticalMisses} critical misses before refusing the repair.`}</p>
       <div className="nw-hero-actions">
         <button type="button" className="nw-primary" onClick={onStartGate}>{qualified ? 'Run the passing gate' : 'Run the refusal gate'} <span>→</span></button>
         <a href={hasCaseEvidence ? '#case-evidence' : '#mission'}>{hasCaseEvidence ? 'Replay one critical miss' : 'Follow the mission'}</a>
@@ -72,15 +83,21 @@ function Hero({ mission, facts, qualified, story, onSelectStory, onStartGate, ha
         <span>Google stack</span>
         <p>{qualified
           ? 'Gemini 3.6 Flash · Google ADK · Cloud Run · Tasks · Firestore'
-          : 'Gemini 3.6 Flash · Google ADK · Agent Registry · A2A · Cloud Run · Tasks · Firestore'}</p>
+          : registryA2A
+            ? 'Gemini 3.6 Flash · Google ADK · Agent Registry · A2A · Cloud Run · Tasks · Firestore'
+            : 'Gemini 3.6 Flash · Google ADK · Cloud Run · Tasks · Firestore'}</p>
       </div>
     </div>
     <BoundaryPreview qualified={qualified} />
     <dl className="nw-hero-proof">
       <div><dt>Execution</dt><dd>{facts.graph.length} accountable nodes</dd></div>
-      <div><dt>{qualified ? 'Repair design' : 'Agent fleet'}</dt><dd>{qualified ? `${mission.retained?.evidence?.repairBatches} Gemini-authored batches` : `${facts.specialists.length} Registry agents over A2A`}</dd></div>
+      <div><dt>{qualified || !registryA2A ? 'Repair design' : 'Agent fleet'}</dt><dd>{qualified
+        ? `${mission.retained?.evidence?.repairBatches} Gemini-authored batches`
+        : registryA2A
+          ? `${facts.specialists.length} Registry agents over A2A`
+          : `${facts.repairFamilies.length} Gemini-authored repair families`}</dd></div>
       <div><dt>Evidence</dt><dd>{facts.caseCount} frozen cases</dd></div>
-      <div><dt>Release</dt><dd>{qualified ? '4 / 4 passed' : '4 / 4 failed'}</dd></div>
+      <div><dt>Release</dt><dd>{qualified ? `${summary.passed} / ${summary.total} passed` : `${summary.failed} / ${summary.total} failed`}</dd></div>
     </dl>
   </section>;
 }
@@ -175,6 +192,19 @@ function RetainedCurriculum({ mission }) {
   </div>;
 }
 
+function BoundedCurriculum({ facts }) {
+  const suiteCases = Object.values(facts.developmentSuiteCounts || {}).reduce((total, count) => total + count, 0);
+  return <div className="nw-retained-curriculum">
+    <div><span>Earlier mission · pre-registry pipeline</span><h3>Gemini ADK authored one bounded curriculum.</h3><p>This retained mission predates the Registry and A2A fleet. Gemini 3.6 Flash addressed three diagnosed repair families in a single sealed curriculum; the journal records leakage validation as {facts.leakageCheck || 'unavailable'} before training.</p></div>
+    <dl>
+      <div><dt>Validated rows</dt><dd>{facts.curriculumRows}</dd></div>
+      <div><dt>Repair families</dt><dd>{facts.repairFamilies.length}</dd></div>
+      <div><dt>Development cases</dt><dd>{suiteCases || '—'}</dd></div>
+      <div><dt>Curriculum SHA</dt><dd><code>{shortHash(facts.curriculumArtifactSha256)}</code></dd></div>
+    </dl>
+  </div>;
+}
+
 function SpecialistFleet({ facts }) {
   const [selectedId, setSelectedId] = useState(facts.specialists[0]?.id);
   useEffect(() => { setSelectedId(facts.specialists[0]?.id); }, [facts.specialists]);
@@ -203,11 +233,13 @@ function Evaluation({ mission, facts }) {
 
 function ReleaseBoundary({ mission, qualified, runToken }) {
   const checks = useMemo(() => releaseChecks(mission), [mission]);
+  const summary = useMemo(() => releaseSummary(mission), [mission]);
   const [step, setStep] = useState(0);
   const [running, setRunning] = useState(false);
   const handledRunTokenRef = useRef(runToken);
   const resolved = Math.min(step, checks.length);
   const complete = resolved === checks.length;
+  const hiddenRegression = summary.hiddenRegression;
   const run = useCallback(() => { setStep(0); setRunning(true); }, []);
   useEffect(() => {
     if (handledRunTokenRef.current === runToken) return;
@@ -222,16 +254,16 @@ function ReleaseBoundary({ mission, qualified, runToken }) {
     const timer = globalThis.setTimeout(() => setStep((value) => value + 1), 620);
     return () => globalThis.clearTimeout(timer);
   }, [checks.length, running, step]);
-  const progress = qualified ? 10 + resolved * 20.5 : 10 + resolved * 15.5;
+  const progress = qualified ? 10 + resolved * (82 / checks.length) : 10 + resolved * (62 / checks.length);
   return <div className={`nw-release ${qualified ? 'qualified' : 'refused'} ${complete ? 'complete' : ''}`}>
-    <div className="nw-release-summary"><div><span>Deterministic code only</span><h3>{complete ? qualified ? 'Four of four passed. The line can open.' : 'Four of four failed. The line stays shut.' : running ? `Checking invariant ${resolved + 1} of ${checks.length}.` : 'The candidate reaches the line no agent can cross.'}</h3></div><b>{complete ? qualified ? 'QUALIFIED · NOT DEPLOYED' : 'REFUSED · PRODUCTION PRESERVED' : 'RELEASE PENDING'}</b></div>
+    <div className="nw-release-summary"><div><span>Deterministic code only</span><h3>{complete ? summary.headline : running ? `Checking invariant ${resolved + 1} of ${checks.length}.` : 'The candidate reaches the line no agent can cross.'}</h3></div><b>{complete ? qualified ? 'QUALIFIED · NOT DEPLOYED' : 'REFUSED · PRODUCTION PRESERVED' : 'RELEASE PENDING'}</b></div>
     <div className="nw-release-track" aria-hidden="true"><span className="nw-candidate" style={{ '--candidate-progress': progress }}>candidate-01</span><i /><div><strong>Release line</strong><small>{complete ? qualified ? 'open for human review' : 'closed by evidence' : 'awaiting invariants'}</small></div></div>
-    <ol className="nw-checks">{checks.map((check, index) => {
+    <ol className={`nw-checks count-${checks.length}`}>{checks.map((check, index) => {
       const done = index < resolved;
       const active = running && index === resolved;
       return <li key={check.id} className={done ? check.pass ? 'pass' : 'fail' : active ? 'active' : 'pending'}><div><span>0{index + 1}</span><b>{done ? check.pass ? 'passed' : 'failed' : active ? 'checking' : 'pending'}</b></div><h4>{check.label}</h4><dl><div><dt>Required</dt><dd>{check.requirement}</dd></div><div><dt>Measured</dt><dd>{check.measured}</dd></div></dl></li>;
     })}</ol>
-    <div className="nw-release-actions"><p>{complete ? qualified ? 'The candidate qualified. Nightwatch stopped here because deployment remains a human decision.' : 'Nightwatch sealed the refusal, spent no second attempt, and left the production model unchanged.' : 'All four thresholds were frozen before Gemini received an assignment.'}</p><button type="button" className="nw-primary" onClick={run} disabled={running}>{running ? 'Running checks…' : complete ? 'Run the gate again' : 'Run all four checks'} <span>→</span></button></div>
+    <div className="nw-release-actions"><p>{complete ? qualified ? 'The candidate qualified. Nightwatch stopped here because deployment remains a human decision.' : hiddenRegression ? 'Four headline checks passed, but protected routine behavior regressed. Nightwatch sealed the refusal and left production unchanged.' : 'Nightwatch sealed the refusal, spent no second attempt, and left the production model unchanged.' : 'Every displayed invariant was frozen before Gemini received an assignment.'}</p><button type="button" className="nw-primary" onClick={run} disabled={running}>{running ? 'Running checks…' : complete ? 'Run the gate again' : `Run all ${checks.length} checks`} <span>→</span></button></div>
   </div>;
 }
 
@@ -280,6 +312,7 @@ function EvidenceRecord({ mission, facts, qualified }) {
 export default function JudgeDossier({ mission, story, onSelectStory, followupRecord }) {
   const qualified = story === 'qualified' || mission.outcome === 'qualified';
   const facts = useMemo(() => dossierFacts(mission), [mission]);
+  const registryA2A = facts.orchestrationMode === 'registry_a2a';
   const caseEvidence = useMemo(() => publishedCaseEvidence(mission), [mission]);
   const [runToken, setRunToken] = useState(0);
   const cancelGateScrollRef = useRef(() => {});
@@ -297,7 +330,7 @@ export default function JudgeDossier({ mission, story, onSelectStory, followupRe
     <Hero mission={mission} facts={facts} qualified={qualified} story={story} onSelectStory={onSelectStory} onStartGate={startGate} hasCaseEvidence={Boolean(caseEvidence)} />
     <ContractStrip mission={mission} facts={facts} />
     <Chapter number={1} kicker="Autonomous discovery" title="Nightwatch found the failure itself." copy="The repair did not begin from a score typed into a demo. The pinned Gemma model was measured against the frozen contract first." id="mission"><Discovery mission={mission} facts={facts} /></Chapter>
-    <Chapter number={2} kicker="Agent orchestration" title={qualified ? 'Gemini designed a bounded curriculum.' : 'Registry discovery became three private A2A jobs.'} copy={qualified ? 'The retained passing case preserves its real five-batch repair design, validation totals, and content-addressed curriculum.' : 'The diagnosis named capabilities, not endpoints. Agent Registry resolved the exact frozen identities; each specialist returned a separately hashed A2A receipt before anything was merged.'}>{qualified ? <RetainedCurriculum mission={mission} /> : <SpecialistFleet facts={facts} />}</Chapter>
+    <Chapter number={2} kicker="Agent orchestration" title={qualified ? 'Gemini designed a bounded curriculum.' : registryA2A ? 'Registry discovery became three private A2A jobs.' : 'Gemini authored one bounded curriculum.'} copy={qualified ? 'The retained passing case preserves its real five-batch repair design, validation totals, and content-addressed curriculum.' : registryA2A ? 'The diagnosis named capabilities, not endpoints. Agent Registry resolved the exact frozen identities; each specialist returned a separately hashed A2A receipt before anything was merged.' : 'This earlier mission used Google ADK before the governed Registry fleet was introduced. Its curriculum, validation result, and artifact identity remain sealed in the journal.'}>{qualified ? <RetainedCurriculum mission={mission} /> : registryA2A ? <SpecialistFleet facts={facts} /> : <BoundedCurriculum facts={facts} />}</Chapter>
     <Chapter number={3} kicker="Bounded repair" title="One candidate. No hidden retries." copy="Nightwatch spent the single training attempt the operator authorised, then evaluated the result against exactly the same evidence."><Evaluation mission={mission} facts={facts} /></Chapter>
     {caseEvidence && <CaseEvidence evidence={caseEvidence} />}
     <Chapter number={4} kicker="The release boundary" title="The agents finish. The evidence takes over." copy="This is the separation Nightwatch exists to enforce: Gemini can design a repair, but it cannot relax a threshold or approve its own work." id="boundary"><ReleaseBoundary key={mission.id} mission={mission} qualified={qualified} runToken={runToken} /></Chapter>

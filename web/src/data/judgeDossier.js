@@ -61,6 +61,7 @@ export function dossierFacts(mission) {
     hash: node.evidence?.hash || mission.headHash,
     receipt: node.evidence?.payload?.a2a_receipt || null,
   }));
+  const registryA2A = specialists.length > 0 && specialists.every((specialist) => Boolean(specialist.receipt));
   const evaluatedCaseCount = Object.values(evaluation.candidate?.scores || {})
     .reduce((total, suite) => total + (suite?.total || 0), 0);
   const retainedCases = mission.retained?.evidence?.cases;
@@ -86,6 +87,11 @@ export function dossierFacts(mission) {
     gpuMinutes: created.limits?.maximum_gpu_minutes ?? mission.limits?.maximum_gpu_minutes ?? null,
     durationSeconds: elapsedSeconds(entries),
     delegation: diagnosis.delegation || null,
+    orchestrationMode: registryA2A ? 'registry_a2a' : 'bounded_curriculum',
+    repairFamilies: diagnosis.repair_families || curriculum.repair_families || [],
+    developmentSuiteCounts: curriculum.development_suite_counts || null,
+    leakageCheck: curriculum.leakage_check || null,
+    curriculumArtifactSha256: curriculum.artifact_sha256 || null,
     specialists,
     graph,
   };
@@ -181,7 +187,7 @@ export function releaseChecks(mission) {
   const safety = finite(metrics.safety?.after);
   const criticalMisses = finite(metrics.criticalMisses, 0);
 
-  return [
+  const checks = [
     {
       id: 'minimum_target_gain', label: 'Target gain',
       requirement: `≥ ${signedPoints(policy.minimum_target_gain)}`,
@@ -207,6 +213,38 @@ export function releaseChecks(mission) {
       pass: !policy.require_zero_critical_misses || criticalMisses === 0,
     },
   ];
+  if (decision.failed_invariants?.includes('routine_recall_regressed')) {
+    const baselineRoutineRecall = finite(evaluation.baseline?.label_recall?.regression?.routine?.accuracy);
+    const candidateRoutineRecall = finite(evaluation.candidate?.label_recall?.regression?.routine?.accuracy);
+    checks.push({
+      id: 'routine_recall_regressed',
+      label: 'Routine-message recall',
+      requirement: `≥ ${percent(baselineRoutineRecall)} baseline`,
+      measured: `${percent(baselineRoutineRecall)} → ${percent(candidateRoutineRecall)}`,
+      pass: Number.isFinite(baselineRoutineRecall)
+        && Number.isFinite(candidateRoutineRecall)
+        && candidateRoutineRecall >= baselineRoutineRecall,
+    });
+  }
+  return checks;
+}
+
+export function releaseSummary(mission) {
+  const checks = releaseChecks(mission);
+  const failed = checks.filter((check) => !check.pass);
+  const qualified = mission?.outcome === 'qualified';
+  const hiddenRegression = failed.length === 1 && failed[0].id === 'routine_recall_regressed';
+  return {
+    total: checks.length,
+    passed: checks.length - failed.length,
+    failed: failed.length,
+    hiddenRegression,
+    headline: qualified
+      ? `All ${checks.length} passed. The line can open.`
+      : hiddenRegression
+        ? 'Every headline check passed. One protected behavior failed.'
+        : `${failed.length} of ${checks.length} failed. The line stays shut.`,
+  };
 }
 
 export function missionRecord(mission) {
