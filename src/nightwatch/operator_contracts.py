@@ -15,9 +15,11 @@ from nightwatch.contracts import Suite
 from nightwatch.datasets import canonical_prompt
 from nightwatch.followup import (
     FollowupApproval,
+    FollowupDispatch,
     FollowupDraft,
     FollowupError,
     followup_approval_from_dict,
+    followup_dispatch_from_dict,
     followup_draft_from_dict,
 )
 from nightwatch.journal import JournalError
@@ -314,6 +316,8 @@ class OperatorStore(Protocol):
     def read_followup(self, draft_id: str) -> FollowupDraft | None: ...
     def create_followup_approval(self, approval: FollowupApproval) -> FollowupApproval: ...
     def read_followup_approval(self, draft_id: str) -> FollowupApproval | None: ...
+    def create_followup_dispatch(self, dispatch: FollowupDispatch) -> FollowupDispatch: ...
+    def read_followup_dispatch(self, draft_id: str) -> FollowupDispatch | None: ...
 
 
 class InMemoryOperatorStore:
@@ -324,6 +328,7 @@ class InMemoryOperatorStore:
         self._contracts: dict[str, MissionContract] = {}
         self._followups: dict[str, FollowupDraft] = {}
         self._followup_approvals: dict[str, FollowupApproval] = {}
+        self._followup_dispatches: dict[str, FollowupDispatch] = {}
 
     def create_dataset(self, dataset: FrozenDataset) -> FrozenDataset:
         existing = self._datasets.get(dataset.dataset_id)
@@ -367,6 +372,17 @@ class InMemoryOperatorStore:
 
     def read_followup_approval(self, draft_id: str) -> FollowupApproval | None:
         return self._followup_approvals.get(draft_id)
+
+    def create_followup_dispatch(self, dispatch: FollowupDispatch) -> FollowupDispatch:
+        validated = followup_dispatch_from_dict(dispatch.to_dict())
+        existing = self._followup_dispatches.get(dispatch.draft_id)
+        if existing is not None and existing != validated:
+            raise OperatorContractError("follow-up already has a different dispatch")
+        self._followup_dispatches[dispatch.draft_id] = validated
+        return validated
+
+    def read_followup_dispatch(self, draft_id: str) -> FollowupDispatch | None:
+        return self._followup_dispatches.get(draft_id)
 
 
 def _boolean_cell(value: object, field: str) -> bool:
@@ -752,6 +768,8 @@ def build_followup_contract(
 ) -> MissionContract:
     """Create a child contract without allowing callers to author lineage fields."""
 
+    if parent.lineage is not None:
+        raise OperatorContractError("the governed follow-up lineage limit has been reached")
     if (
         draft.parent_manifest_id != parent.contract_id
         or draft.parent_dataset_sha256 != parent.dataset_sha256
@@ -843,6 +861,12 @@ class GCSOperatorStore:
         if re.fullmatch(r"^followup-[a-f0-9]{24}$", draft_id) is None:
             raise OperatorContractError("follow-up draft ID is malformed")
         return f"operator/followup-approvals/{draft_id}.json"
+
+    @staticmethod
+    def _followup_dispatch_name(draft_id: str) -> str:
+        if re.fullmatch(r"^followup-[a-f0-9]{24}$", draft_id) is None:
+            raise OperatorContractError("follow-up draft ID is malformed")
+        return f"operator/followup-dispatches/{draft_id}.json"
 
     def create_dataset(self, dataset: FrozenDataset) -> FrozenDataset:
         raw = dataset.canonical_bytes()
@@ -984,6 +1008,42 @@ class GCSOperatorStore:
             return followup_approval_from_dict(value)
         except (json.JSONDecodeError, UnicodeDecodeError, FollowupError) as exc:
             raise OperatorContractError("stored follow-up approval is malformed") from exc
+
+    def create_followup_dispatch(self, dispatch: FollowupDispatch) -> FollowupDispatch:
+        try:
+            validated = followup_dispatch_from_dict(dispatch.to_dict())
+        except FollowupError as exc:
+            raise OperatorContractError("follow-up dispatch failed integrity validation") from exc
+        raw = _canonical_json_bytes(validated.to_dict())
+        blob = self._bucket.blob(self._followup_dispatch_name(dispatch.draft_id))
+        try:
+            blob.upload_from_string(
+                raw,
+                content_type="application/json",
+                if_generation_match=0,
+                timeout=GCS_TIMEOUT_SECONDS,
+            )
+        except (Conflict, PreconditionFailed):
+            existing = self.read_followup_dispatch(dispatch.draft_id)
+            if existing != validated:
+                raise OperatorContractError("follow-up already has a different dispatch")
+            return existing
+        return validated
+
+    def read_followup_dispatch(self, draft_id: str) -> FollowupDispatch | None:
+        try:
+            raw = self._bucket.blob(self._followup_dispatch_name(draft_id)).download_as_bytes(
+                timeout=GCS_TIMEOUT_SECONDS
+            )
+        except NotFound:
+            return None
+        if not raw or len(raw) > MAX_CONTRACT_BYTES:
+            raise OperatorContractError("stored follow-up dispatch has an invalid size")
+        try:
+            value = json.loads(raw)
+            return followup_dispatch_from_dict(value)
+        except (json.JSONDecodeError, UnicodeDecodeError, FollowupError) as exc:
+            raise OperatorContractError("stored follow-up dispatch is malformed") from exc
 
 
 def require_contract(store: OperatorStore, contract_id: str) -> MissionContract:

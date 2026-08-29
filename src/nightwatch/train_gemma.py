@@ -47,13 +47,15 @@ def train(
         for row in examples
     ]
     dataset = Dataset.from_list(rows)
+    cuda_available = torch.cuda.is_available()
+    bf16_available = cuda_available and torch.cuda.is_bf16_supported()
     tokenizer = AutoTokenizer.from_pretrained(model_id, revision=model_revision)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
         revision=model_revision,
-        dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
+        dtype=torch.bfloat16 if bf16_available else torch.float16 if cuda_available else torch.float32,
         device_map="auto",
     )
     model.config.use_cache = False
@@ -74,6 +76,9 @@ def train(
         gradient_accumulation_steps=gradient_accumulation_steps,
         completion_only_loss=True,
         max_length=512,
+        bf16=bf16_available,
+        fp16=cuda_available and not bf16_available,
+        use_cpu=not cuda_available,
         logging_steps=1,
         save_strategy="no",
         report_to="none",

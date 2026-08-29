@@ -7,7 +7,8 @@ Nightwatch’s production path uses Google Cloud for the control plane, durable 
 - **Cloud Run:** public judge surface, IAM-protected operator surface, OIDC-only mission worker, isolated verifier, and three private specialist services.
 - **Cloud Tasks:** one queue advances bounded mission stages; a separate queue performs public verification.
 - **Firestore:** append-only mission journals and terminal heads.
-- **Cloud Storage:** create-only artifacts, external-call claims, follow-up proposals and approvals, and isolated verification receipts.
+- **Cloud Storage:** create-only artifacts, external-call claims, follow-up proposals, approvals, dispatch receipts, and isolated verification receipts.
+- **Cloud Monitoring:** a checked-in alert policy detects sustained public Cloud Run 5xx responses and links to an exercised rollback runbook.
 - **Vertex AI + Google ADK:** Gemini 3.6 Flash diagnosis and specialist work.
 - **Agent Registry + A2A:** read-only capability discovery followed by contract-pinned, OIDC-authenticated specialist calls.
 
@@ -28,6 +29,6 @@ The authoritative resource inventory, immutable revisions, IAM boundaries, rollo
 
 Use separate runtime identities. The public service must have no Firestore, Vertex AI, Agent Registry, specialist-invocation, Modal, or mission-launch permission. The mission worker may read Registry entries but cannot register agents. Each specialist may invoke Vertex AI and nothing else. No application identity receives deployment authority.
 
-Refused dynamic missions automatically seal a create-only follow-up proposal. Only the IAM-protected operator service can approve one child contract, and only after a different canonical evidence SHA and a new capped budget are supplied. The public image contains only the redacted proposal and exposes no approval route.
+Refused dynamic missions automatically seal a create-only follow-up proposal. Only the IAM-protected operator service can approve one child contract, and only after a different canonical evidence SHA and a new capped budget are supplied. Approval and Cloud Tasks dispatch are separate immutable records: if queueing fails after approval, the UI reports the unconfirmed dispatch and can safely enqueue the exact approved child later. The public image contains only the redacted proposal and exposes no approval or dispatch route.
 
 Deploy with minimum instances set to zero, preserve the documented instance and queue caps, and use immutable image digests. Run the zero-traffic checks and rollback rehearsal in [DEPLOYMENT.md](DEPLOYMENT.md) before moving canonical traffic.

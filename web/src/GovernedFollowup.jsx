@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { approveFollowup, createFollowup, uploadDataset } from './data/missionControl.js';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { approveFollowup, createFollowup, dispatchFollowup, fetchFollowup, uploadDataset } from './data/missionControl.js';
 
 const INVARIANT_LABELS = {
   minimum_target_gain: 'Target gain missed its floor',
@@ -8,7 +8,7 @@ const INVARIANT_LABELS = {
   require_zero_critical_misses: 'Critical safety misses were observed',
 };
 
-function approvalKey(draftId) {
+function newApprovalKey(draftId) {
   const suffix = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   return `followup-${draftId.slice(-8)}-${suffix}`;
 }
@@ -41,6 +41,8 @@ function Proposal({ followup }) {
 export default function GovernedFollowup({ mission, record, operator, onRecord, onLaunched }) {
   const followup = record?.followup;
   const approval = record?.approval;
+  const dispatch = record?.dispatch;
+  const approvalKeyRef = useRef({ draftId: '', value: '' });
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const [file, setFile] = useState(null);
@@ -79,14 +81,32 @@ export default function GovernedFollowup({ mission, record, operator, onRecord, 
         authorize_new_budget: true,
         dataset_id: dataset.dataset_id,
         maximum_gpu_minutes: gpuMinutes,
-      }, approvalKey(followup.draft_id));
+      }, (() => {
+        if (approvalKeyRef.current.draftId !== followup.draft_id) {
+          approvalKeyRef.current = {
+            draftId: followup.draft_id,
+            value: newApprovalKey(followup.draft_id),
+          };
+        }
+        return approvalKeyRef.current.value;
+      })());
       onLaunched(result);
-    } catch (reason) { setError(reason.message); setBusy(''); }
+    } catch (reason) {
+      setError(reason.message);
+      try { onRecord(await fetchFollowup(mission.id)); } catch { /* Preserve the actionable queue error. */ }
+      setBusy('');
+    }
+  };
+  const retryDispatch = async () => {
+    setBusy('Recovering the authorized child dispatch…'); setError('');
+    try { onLaunched(await dispatchFollowup(followup.draft_id)); }
+    catch (reason) { setError(reason.message); setBusy(''); }
   };
 
   return <section className={`governed-followup ${operator ? 'operator' : 'public'}`} id="follow-up">
     <Proposal followup={{ ...followup, repair_emphasis: emphasis }} />
-    {approval ? <div className="followup-approved"><span>OPERATOR AUTHORIZED</span><strong>Fresh evidence confirmed. Child mission queued.</strong><code>{approval.child_cycle_id}</code><button type="button" onClick={() => onLaunched?.({ cycle_id: approval.child_cycle_id })}>Open child mission →</button></div>
+    {approval && dispatch ? <div className="followup-approved"><span>OPERATOR AUTHORIZED</span><strong>Fresh evidence confirmed. Child mission queued.</strong><code>{approval.child_cycle_id}</code><button type="button" onClick={() => onLaunched?.({ cycle_id: approval.child_cycle_id })}>Open child mission →</button></div>
+      : approval ? <div className="followup-approved recovery"><span>AUTHORIZATION SEALED</span><strong>The child mission has not been confirmed in Cloud Tasks.</strong><code>{approval.child_cycle_id}</code><button type="button" onClick={retryDispatch} disabled={Boolean(busy)}>{busy || 'Retry child scheduling →'}</button>{error && <small role="alert">{error}</small>}</div>
       : operator ? <aside className="followup-approval">
         <div><span>AUTHENTICATED OPERATOR ONLY</span><h3>Supply what the agents cannot.</h3><p>A different frozen evaluation and a separately approved budget are mandatory. Approval creates one hash-linked child contract.</p></div>
         <div className="followup-upload">

@@ -63,16 +63,19 @@ class StubQueue:
 
 
 class StubMissionQueue:
-    def __init__(self, *, duplicate: bool = False) -> None:
+    def __init__(self, *, duplicate: bool = False, error: Exception | None = None) -> None:
         self.duplicate = duplicate
+        self.error = error
         self.calls: list[tuple[str, str, Stage]] = []
 
     def enqueue_stage(self, cycle_id: str, manifest_id: str, expected_stage: Stage):
         self.calls.append((cycle_id, manifest_id, expected_stage))
+        if self.error:
+            raise self.error
         return type(
             "ScheduledMission",
             (),
-            {"task_id": "mission-task-001", "duplicate": self.duplicate},
+            {"task_id": "mission-" + "a" * 40, "duplicate": self.duplicate},
         )()
 
 
@@ -245,6 +248,7 @@ def test_operator_launch_is_hidden_unless_explicitly_enabled(
         ("post", "/api/operator/contracts"),
         ("get", "/api/operator/contracts/contract-1234567890abcdef12345678"),
         ("post", "/api/operator/follow-ups/followup-1234567890abcdef12345678/approve"),
+        ("post", "/api/operator/follow-ups/followup-1234567890abcdef12345678/dispatch"),
     ],
 )
 def test_every_operator_route_is_absent_from_the_public_service(
@@ -358,28 +362,79 @@ def test_followup_approval_requires_fresh_evidence_and_queues_one_child(
     assert child.dataset_sha256 == fresh.sha256
 
 
+def test_followup_approval_recovers_queue_failure_without_false_dispatch(
+    web_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    store, parent = operator_store_with_contract()
+    cycle_id = "nightwatch-live-parent-recovery"
+    journal = StubJournal(refused_operator_entries(parent.contract_id, cycle_id))
+    queue = StubMissionQueue(error=ServiceUnavailable("queue unavailable"))
+    monkeypatch.delenv("NIGHTWATCH_PUBLIC_MODE", raising=False)
+    monkeypatch.setenv("NIGHTWATCH_OPERATOR_MODE", "1")
+    client = create_app(
+        static_root=web_root,
+        reader=journal,
+        mission_queue=queue,
+        operator_store=store,
+    ).test_client()
+    created = client.post(f"/api/missions/{cycle_id}/follow-up")
+    draft_id = created.json["followup"]["draft_id"]
+    original = store.read_dataset(parent.dataset_id)
+    assert original is not None
+    fresh_rows = [dict(row, message=f"{row['message']} recovery") for row in original.rows]
+    fresh = store.create_dataset(
+        parse_uploaded_dataset(
+            ("\n".join(json.dumps(row) for row in fresh_rows) + "\n").encode(),
+            "jsonl",
+        )
+    )
+
+    failed = client.post(
+        f"/api/operator/follow-ups/{draft_id}/approve",
+        json={
+            "authorize_new_budget": True,
+            "dataset_id": fresh.dataset_id,
+            "maximum_gpu_minutes": 10,
+        },
+        headers={"Idempotency-Key": "followup-parent-queue-recovery"},
+    )
+    state = client.get(f"/api/missions/{cycle_id}/follow-up")
+
+    assert failed.status_code == 503
+    assert state.json["approval"] is not None
+    assert state.json["dispatch"] is None
+    assert store.read_followup_dispatch(draft_id) is None
+
+    queue.error = None
+    recovered = client.post(f"/api/operator/follow-ups/{draft_id}/dispatch")
+    repeated = client.post(f"/api/operator/follow-ups/{draft_id}/dispatch")
+
+    assert recovered.status_code == 202
+    assert recovered.json["status"] == "queued"
+    assert recovered.json["dispatch"]["status"] == "queued"
+    assert repeated.status_code == 202
+    assert repeated.json["status"] == "already_accepted"
+    assert len(queue.calls) == 2
+
+
 def test_public_followup_is_static_redacted_and_read_only(
     web_root: Path,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    store, parent = operator_store_with_contract()
     cycle_id = "nightwatch-live-ac7c9d317783b6af4e543b1d"
-    draft = build_followup_draft(
-        cycle_id,
-        refused_operator_entries(parent.contract_id, cycle_id),
-        parent,
-    )
     followups = tmp_path / "followups"
     followups.mkdir()
-    (followups / f"{cycle_id}.json").write_text(
-        json.dumps({"cycle_id": cycle_id, "followup": draft.public_summary()}),
-        encoding="utf-8",
-    )
+    source = Path(__file__).resolve().parents[1] / "artifacts" / "public-followups" / f"{cycle_id}.json"
+    (followups / f"{cycle_id}.json").write_bytes(source.read_bytes())
     monkeypatch.setenv("NIGHTWATCH_PUBLIC_MODE", "1")
     monkeypatch.setenv("NIGHTWATCH_OPERATOR_MODE", "1")
     monkeypatch.setenv("NIGHTWATCH_PUBLIC_FOLLOWUPS_DIR", str(followups))
-    client = create_app(static_root=web_root, operator_store=store).test_client()
+    client = create_app(
+        static_root=web_root,
+        public_snapshot=adaptive_fleet_public_snapshot(),
+    ).test_client()
 
     loaded = client.get(f"/api/missions/{cycle_id}/follow-up")
     mutation = client.post(f"/api/missions/{cycle_id}/follow-up")
@@ -389,6 +444,12 @@ def test_public_followup_is_static_redacted_and_read_only(
     assert "parent_dataset_sha256" not in loaded.json["followup"]
     assert loaded.json["followup"]["execution_authorized"] is False
     assert mutation.status_code == 404
+
+    tampered = json.loads((followups / f"{cycle_id}.json").read_text(encoding="utf-8"))
+    tampered["followup"]["parent_head_sha256"] = "f" * 64
+    (followups / f"{cycle_id}.json").write_text(json.dumps(tampered), encoding="utf-8")
+    rejected = client.get(f"/api/missions/{cycle_id}/follow-up")
+    assert rejected.status_code == 404
 
 
 @pytest.mark.parametrize(
@@ -840,6 +901,15 @@ def self_service_public_snapshot() -> dict[str, object]:
         Path(__file__).resolve().parents[1]
         / "artifacts"
         / "public-mission-live-fe8a4e9d756508004f9214de.json"
+    )
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def adaptive_fleet_public_snapshot() -> dict[str, object]:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "artifacts"
+        / "public-mission-live-ac7c9d317783b6af4e543b1d.json"
     )
     return json.loads(path.read_text(encoding="utf-8"))
 

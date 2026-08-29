@@ -1,0 +1,40 @@
+{
+  "displayName": "Nightwatch public Cloud Run 5xx errors",
+  "documentation": {
+    "content": "The public judge experience is returning sustained server errors. Follow the checked-in runbook: https://github.com/gowtham0992/Nightwatch/blob/main/cloud/monitoring/runbook.md",
+    "mimeType": "text/markdown"
+  },
+  "conditions": [
+    {
+      "displayName": "Public service 5xx rate exceeds 0.01 requests per second for two minutes",
+      "conditionThreshold": {
+        "filter": "resource.type = \"cloud_run_revision\" AND metric.type = \"run.googleapis.com/request_count\" AND metric.label.response_code_class = \"5xx\" AND resource.label.service_name = \"nightwatch-public\"",
+        "aggregations": [
+          {
+            "alignmentPeriod": "60s",
+            "perSeriesAligner": "ALIGN_RATE",
+            "crossSeriesReducer": "REDUCE_SUM",
+            "groupByFields": [
+              "resource.label.service_name"
+            ]
+          }
+        ],
+        "comparison": "COMPARISON_GT",
+        "thresholdValue": 0.01,
+        "duration": "120s",
+        "trigger": {
+          "count": 1
+        }
+      }
+    }
+  ],
+  "alertStrategy": {
+    "autoClose": "1800s"
+  },
+  "combiner": "OR",
+  "enabled": true,
+  "userLabels": {
+    "service": "nightwatch-public",
+    "severity": "page"
+  }
+}

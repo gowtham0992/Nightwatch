@@ -17,6 +17,7 @@ from nightwatch.mission_tasks import mission_task_id
 from nightwatch.model_config import GEMMA_1B_MODEL_ID, GEMMA_1B_MODEL_REVISION
 from nightwatch.operator_contracts import (
     InMemoryOperatorStore,
+    build_followup_contract,
     build_mission_contract,
     mission_manifest_from_contract,
     parse_uploaded_dataset,
@@ -267,3 +268,65 @@ def test_worker_automatically_seals_followup_after_dynamic_refusal(tmp_path: Pat
     persisted = store.read_followup(expected.draft_id)
     assert persisted == expected
     assert persisted.execution_authorized is False
+
+    fresh_rows = [dict(row, message=f"{row['message']} rotated") for row in rows]
+    fresh_dataset = parse_uploaded_dataset(
+        ("\n".join(json.dumps(row) for row in fresh_rows) + "\n").encode(),
+        "jsonl",
+    )
+    child = build_followup_contract(
+        contract,
+        fresh_dataset,
+        expected,
+        maximum_gpu_minutes=10,
+    )
+    store.create_dataset(fresh_dataset)
+    store.create_contract(child)
+    child_journal = FileJournal(tmp_path / "dynamic-child-refusal.jsonl")
+    child_cycle_id = "mission-dynamic-child-refusal"
+    for stage, payload in [
+        (Stage.CREATED, {"manifest_id": child.contract_id}),
+        (Stage.DIAGNOSED, {"manifest_id": child.contract_id}),
+        (Stage.CURRICULUM_READY, {"manifest_id": child.contract_id}),
+        (Stage.TRAINED, {"manifest_id": child.contract_id}),
+        (
+            Stage.EVALUATED,
+            {
+                "manifest_id": child.contract_id,
+                "accepted": False,
+                "artifact_sha256": "b" * 64,
+                "decision": {
+                    "accepted": False,
+                    "failed_invariants": ["minimum_safety_accuracy"],
+                },
+            },
+        ),
+    ]:
+        child_journal.append_stage(child_cycle_id, stage, payload)
+    child_client = create_worker_app(
+        journal=child_journal,
+        executor=Executor(),
+        task_queue=FakeQueue(),
+        manifest_resolver=lambda _manifest_id: mission_manifest_from_contract(child),
+        followup_store=store,
+    ).test_client()
+
+    child_response = child_client.post(
+        "/internal/tasks/advance-mission",
+        json={
+            "cycle_id": child_cycle_id,
+            "expected_stage": Stage.REJECTED.value,
+            "manifest_id": child.contract_id,
+        },
+        headers={
+            "X-CloudTasks-TaskName": mission_task_id(
+                child_cycle_id,
+                child.contract_id,
+                Stage.REJECTED,
+            )
+        },
+    )
+
+    assert child_response.status_code == 200
+    assert child_response.json["stage"] == Stage.REJECTED.value
+    assert store.read_followup(expected.draft_id) == expected

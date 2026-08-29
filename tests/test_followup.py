@@ -9,8 +9,10 @@ from nightwatch.contracts import Stage
 from nightwatch.followup import (
     FollowupError,
     build_followup_approval,
+    build_followup_dispatch,
     build_followup_draft,
     followup_approval_from_dict,
+    followup_dispatch_from_dict,
     followup_draft_from_dict,
     validate_public_followup_summary,
 )
@@ -144,6 +146,10 @@ def test_one_create_only_approval_binds_child_budget_and_evidence() -> None:
     assert store.read_followup(draft.draft_id) == draft
     assert store.read_followup_approval(draft.draft_id) == approval
     assert followup_approval_from_dict(approval.to_dict()) == approval
+    dispatch = build_followup_dispatch(approval, task_id="mission-" + "a" * 40)
+    store.create_followup_dispatch(dispatch)
+    assert store.read_followup_dispatch(draft.draft_id) == dispatch
+    assert followup_dispatch_from_dict(dispatch.to_dict()) == dispatch
 
     conflict = build_followup_approval(
         draft,
@@ -167,3 +173,41 @@ def test_public_projection_fails_closed_if_authority_is_added() -> None:
     projection["followup"]["execution_authorized"] = True
     with pytest.raises(JournalError, match="unauthorized authority"):
         validate_public_followup_summary(projection, expected_cycle_id=draft.parent_cycle_id)
+
+
+def test_followup_lineage_stops_after_one_governed_child() -> None:
+    parent_dataset = dataset("parent")
+    parent = build_mission_contract(request(parent_dataset.dataset_id), parent_dataset)
+    draft = build_followup_draft("nightwatch-live-parent", refused_entries(parent.contract_id), parent)
+    fresh_dataset = dataset("fresh")
+    child = build_followup_contract(parent, fresh_dataset, draft, maximum_gpu_minutes=10)
+
+    with pytest.raises(FollowupError, match="lineage limit"):
+        build_followup_draft("nightwatch-live-child", refused_entries(child.contract_id), child)
+    with pytest.raises(OperatorContractError, match="lineage limit"):
+        build_followup_contract(child, dataset("grandchild"), draft, maximum_gpu_minutes=5)
+
+
+@pytest.mark.parametrize(
+    ("field", "keyword"),
+    [
+        ("parent_manifest_id", "expected_manifest_id"),
+        ("parent_head_sha256", "expected_head_sha256"),
+        ("parent_evaluation_sha256", "expected_evaluation_sha256"),
+    ],
+)
+def test_public_projection_must_match_published_mission_evidence(field: str, keyword: str) -> None:
+    parent_dataset = dataset("parent")
+    parent = build_mission_contract(request(parent_dataset.dataset_id), parent_dataset)
+    draft = build_followup_draft("nightwatch-live-parent", refused_entries(parent.contract_id), parent)
+    projection = {"cycle_id": draft.parent_cycle_id, "followup": draft.public_summary()}
+    kwargs = {
+        "expected_cycle_id": draft.parent_cycle_id,
+        "expected_manifest_id": draft.parent_manifest_id,
+        "expected_head_sha256": draft.parent_head_sha256,
+        "expected_evaluation_sha256": draft.parent_evaluation_sha256,
+    }
+    kwargs[keyword] = "f" * 64 if field != "parent_manifest_id" else "contract-" + "f" * 24
+
+    with pytest.raises(JournalError, match="published mission evidence"):
+        validate_public_followup_summary(projection, **kwargs)

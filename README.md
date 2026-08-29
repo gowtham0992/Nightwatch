@@ -53,7 +53,7 @@ Nightwatch owns that workflow from trigger to decision:
 
 Cloud Tasks advances exactly one durable stage per request. A retry resumes from immutable evidence instead of repeating completed Gemini or training work. No human selects the favorable candidate, edits a threshold, or presses “approve” midway through the run.
 
-When a candidate is refused, Nightwatch can now do one more useful thing without weakening that boundary: it deterministically converts the failed invariants into a **sealed follow-up proposal**. That proposal cannot execute. A separately authenticated operator must upload a different evaluation digest and explicitly authorize a new capped budget before Nightwatch creates one hash-linked child mission. The child inherits the model pin, release policy, and approved Registry roster; it still ends only `qualified_not_deployed` or `refused_not_deployed`.
+When a candidate is refused, Nightwatch can do one more useful thing without weakening that boundary: it deterministically converts the failed invariants into a **sealed follow-up proposal**. That proposal cannot execute. A separately authenticated operator must upload a different evaluation digest and explicitly authorize a new capped budget before Nightwatch creates one hash-linked child mission. Authorization and Cloud Tasks dispatch are recorded separately, so a queue outage can never be presented as a queued mission; the exact approved child can be safely dispatched later. The child inherits the model pin, release policy, and approved Registry roster; it still ends only `qualified_not_deployed` or `refused_not_deployed`, and it cannot create a grandchild.
 
 ## Real outcomes, one fixed release boundary
 
@@ -165,7 +165,7 @@ The public and private services do not share authority simply because they share
 |---|---|
 | Public judge surface | Separate identity; redacted bundled evidence; no Firestore, Vertex AI, Modal, or mission-start access |
 | Private operator | Google Cloud IAM authentication; content-addressed contract; server-derived cycle ID; allowlisted queue only |
-| Governed follow-up | Terminal refusal required; proposal is create-only and non-executable; parent head and draft hash pinned; evaluation SHA must rotate; new budget requires explicit operator consent; maximum lineage depth one |
+| Governed follow-up | Terminal refusal required; proposal, approval, and dispatch are separate create-only records; parent head and draft hash pinned; evaluation SHA must rotate; new budget requires explicit operator consent; maximum lineage depth one |
 | Workers | OIDC-only Cloud Run invocation; one-purpose service accounts; least-privilege IAM; each specialist has Vertex-only project access |
 | Agent discovery | Registry search is untrusted input; frozen URN, Agent Card hash, HTTPS origin, service account, capability taxonomy, and fleet-size checks fail closed before delegation |
 | Evidence | SHA-256 hash chain in Firestore; create-only Cloud Storage artifacts and receipts |
@@ -233,7 +233,7 @@ npm test
 npm run build
 ```
 
-Expected output ends with **284 Python tests passed**, **28 frontend tests passed**, and a successful Vite production build. Exact counts can grow as security and recovery cases are added.
+Expected output ends with **290 Python tests passed**, **29 frontend tests passed**, and a successful Vite production build. Exact counts can grow as security and recovery cases are added.
 
 The Python suite covers gates, journal integrity, task idempotency, storage preconditions, service boundaries, Registry roster pinning, private A2A receipts, public redaction, verification, mission orchestration, and the real scam-safety evidence contract. The frontend suite verifies the mission adapter and fails closed when evidence is incomplete or inconsistent. This sequence was last run successfully after the adaptive-fleet release on August 28, 2026 UTC.
 

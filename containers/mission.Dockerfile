@@ -5,9 +5,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PORT=8080
 
 WORKDIR /app
-COPY pyproject.toml README.md ./
+COPY pyproject.toml uv.lock README.md ./
 COPY src ./src
-RUN pip install --no-cache-dir ".[service,agent,experiment]" \
+RUN pip install --no-cache-dir uv==0.11.8 \
+    && uv export --frozen --no-dev --extra service --extra agent --extra experiment --no-emit-project --no-hashes --output-file /tmp/requirements.txt \
+    && uv pip install --system --no-cache -r /tmp/requirements.txt \
+    && uv pip install --system --no-cache --no-deps . \
     && useradd --create-home --uid 10001 nightwatch
 
 COPY artifacts/v0-curriculum.jsonl ./artifacts/v0-curriculum.jsonl

@@ -9,6 +9,7 @@ import {
   missionMetrics,
   retainedMission,
   SELF_SERVICE_MISSION_ID,
+  shouldPollMissingMission,
   storySelectionChanges,
 } from './data/missionControl.js';
 import { shortHash } from './data/scamMission.js';
@@ -388,6 +389,7 @@ export default function App() {
     return () => globalThis.removeEventListener?.('popstate', onPopState);
   }, [health?.operator_enabled]);
   useEffect(() => {
+    if (health == null) return undefined;
     if (story === 'qualified') {
       setMission(retainedMission()); setLaunchState('complete'); setLoadFailed(false); setNotice('');
       return undefined;
@@ -396,10 +398,10 @@ export default function App() {
     const poll = async () => {
       controller = new AbortController();
       try { const result = await fetchMission(story, { signal: controller.signal }); if (ignore) return; setMission(result); setLoadFailed(false); setLaunchState(result.terminal ? 'complete' : 'running'); setNotice(''); if (!result.terminal) timer = globalThis.setTimeout(poll, 2000); }
-      catch (error) { if (ignore) return; if (error.status === 404) { setNotice('Cloud Task accepted. Waiting for the first immutable journal entry…'); timer = globalThis.setTimeout(poll, 1500); } else { setLoadFailed(true); setNotice(error.message || 'Mission evidence is temporarily unavailable.'); } }
+      catch (error) { if (ignore) return; if (shouldPollMissingMission(error.status, health.operator_enabled)) { setNotice('Cloud Task accepted. Waiting for the first immutable journal entry…'); timer = globalThis.setTimeout(poll, 1500); } else { setLoadFailed(true); setNotice(error.message || 'Mission evidence is temporarily unavailable.'); } }
     };
     poll(); return () => { ignore = true; controller?.abort(); globalThis.clearTimeout(timer); };
-  }, [story, retryNonce]);
+  }, [story, retryNonce, health]);
   useEffect(() => {
     if (!mission?.terminal || mission.outcome !== 'refused') { setFollowupRecord(null); return undefined; }
     let ignore = false;

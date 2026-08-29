@@ -6,12 +6,14 @@ import {
   buildAgentGraph,
   approveFollowup,
   createFollowup,
+  dispatchFollowup,
   fetchFollowup,
   launchMission,
   missionAtEntry,
   missionMetrics,
   missionFromJournal,
   SELF_SERVICE_MISSION_ID,
+  shouldPollMissingMission,
   storySelectionChanges,
 } from './missionControl.js';
 
@@ -20,6 +22,12 @@ const hash = (character) => character.repeat(64);
 test('selecting the active case is a no-op instead of clearing its loaded mission', () => {
   assert.equal(storySelectionChanges(SELF_SERVICE_MISSION_ID, SELF_SERVICE_MISSION_ID), false);
   assert.equal(storySelectionChanges(SELF_SERVICE_MISSION_ID, 'qualified'), true);
+});
+
+test('only the private operator surface polls a missing mission that was just queued', () => {
+  assert.equal(shouldPollMissingMission(404, true), true);
+  assert.equal(shouldPollMissingMission(404, false), false);
+  assert.equal(shouldPollMissingMission(503, true), false);
 });
 
 const journal = {
@@ -114,6 +122,7 @@ test('follow-up API keeps drafting public and approval operator-only', async () 
     dataset_id: 'dataset-1234567890abcdef12345678',
     maximum_gpu_minutes: 10,
   }, 'followup-demo-20260828', { fetchImpl });
+  await dispatchFollowup('followup-1234567890abcdef12345678', { fetchImpl });
 
   assert.equal(calls[0][0], '/api/missions/nightwatch-live-parent/follow-up');
   assert.equal(calls[0][1].method, undefined);
@@ -125,6 +134,9 @@ test('follow-up API keeps drafting public and approval operator-only', async () 
     dataset_id: 'dataset-1234567890abcdef12345678',
     maximum_gpu_minutes: 10,
   });
+  assert.equal(calls[3][0], '/api/operator/follow-ups/followup-1234567890abcdef12345678/dispatch');
+  assert.equal(calls[3][1].method, 'POST');
+  assert.equal(calls[3][1].body, undefined);
 });
 
 test('live refusal metrics explain why a perfect target and safety result stayed locked', () => {

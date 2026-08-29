@@ -1,0 +1,72 @@
+name: Nightwatch verification
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.11.8"
+          enable-cache: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: uv sync --locked --extra agent --extra experiment --extra service --extra dev
+
+      - name: Run Python verification
+        run: uv run pytest
+
+      - name: Audit locked production dependencies
+        run: |
+          uv export --frozen --no-dev --extra service --no-emit-project --no-hashes --output-file /tmp/nightwatch-service.txt
+          uv export --frozen --no-dev --extra agent --no-emit-project --no-hashes --output-file /tmp/nightwatch-agent.txt
+          uv export --frozen --no-dev --extra service --extra agent --extra experiment --no-emit-project --no-hashes --output-file /tmp/nightwatch-mission.txt
+          uv export --frozen --no-dev --extra train --extra cloud --no-emit-project --no-hashes --output-file /tmp/nightwatch-trainer.txt
+          uvx pip-audit -r /tmp/nightwatch-service.txt --no-deps --disable-pip --progress-spinner off
+          uvx pip-audit -r /tmp/nightwatch-agent.txt --no-deps --disable-pip --progress-spinner off
+          uvx pip-audit -r /tmp/nightwatch-mission.txt --no-deps --disable-pip --progress-spinner off
+          uvx pip-audit -r /tmp/nightwatch-trainer.txt --no-deps --disable-pip --progress-spinner off
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Run frontend verification
+        working-directory: web
+        run: npm test
+
+      - name: Audit frontend production dependencies
+        working-directory: web
+        run: npm audit --omit=dev
+
+      - name: Build production frontend
+        working-directory: web
+        run: npm run build
+
+      - name: Build public service image
+        run: docker build --file containers/service.Dockerfile --tag nightwatch-ci:${{ github.sha }} .
+
+      - name: Build mission service image
+        run: docker build --file containers/mission.Dockerfile --tag nightwatch-mission-ci:${{ github.sha }} .
+
+      - name: Build specialist service image
+        run: docker build --file containers/specialist.Dockerfile --tag nightwatch-specialist-ci:${{ github.sha }} .

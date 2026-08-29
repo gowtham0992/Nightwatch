@@ -270,8 +270,9 @@ def create_worker_app(
                 and body["manifest_id"].startswith("contract-")
             ):
                 parent_contract = require_contract(active_followup_store, body["manifest_id"])
-                proposal = build_followup_draft(body["cycle_id"], entries, parent_contract)
-                active_followup_store.create_followup(proposal)
+                if parent_contract.lineage is None:
+                    proposal = build_followup_draft(body["cycle_id"], entries, parent_contract)
+                    active_followup_store.create_followup(proposal)
         except (FollowupError, OperatorContractError, JournalError):
             app.logger.exception(
                 "mission stage refused",

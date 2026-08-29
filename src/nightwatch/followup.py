@@ -20,6 +20,8 @@ _CYCLE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
 _CONTRACT_ID = re.compile(r"^contract-[a-f0-9]{24}$")
 _DRAFT_ID = re.compile(r"^followup-[a-f0-9]{24}$")
 _APPROVAL_ID = re.compile(r"^approval-[a-f0-9]{24}$")
+_DISPATCH_ID = re.compile(r"^dispatch-[a-f0-9]{24}$")
+_TASK_ID = re.compile(r"^mission-[a-f0-9]{40}$")
 
 _INVARIANT_CAPABILITIES: dict[str, str] = {
     "minimum_target_gain": "target_repair",
@@ -169,6 +171,39 @@ class FollowupApproval:
         }
 
 
+@dataclass(frozen=True)
+class FollowupDispatch:
+    dispatch_id: str
+    dispatch_sha256: str
+    draft_id: str
+    approval_id: str
+    child_contract_id: str
+    child_cycle_id: str
+    task_id: str
+    status: str
+
+    def _material(self) -> dict[str, Any]:
+        value = asdict(self)
+        value.pop("dispatch_id")
+        value.pop("dispatch_sha256")
+        return value
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    def public_summary(self) -> dict[str, Any]:
+        return {
+            "dispatch_id": self.dispatch_id,
+            "dispatch_sha256": self.dispatch_sha256,
+            "draft_id": self.draft_id,
+            "approval_id": self.approval_id,
+            "child_contract_id": self.child_contract_id,
+            "child_cycle_id": self.child_cycle_id,
+            "task_id": self.task_id,
+            "status": self.status,
+        }
+
+
 def _terminal_refusal(entries: Iterable[JournalEntry]) -> tuple[list[JournalEntry], JournalEntry, JournalEntry]:
     ordered = list(entries)
     if not ordered or ordered[-1].stage is not Stage.REJECTED:
@@ -195,6 +230,8 @@ def build_followup_draft(
 ) -> FollowupDraft:
     if not isinstance(cycle_id, str) or _CYCLE_ID.fullmatch(cycle_id) is None:
         raise FollowupError("parent cycle ID is malformed")
+    if getattr(parent_contract, "lineage", None) is not None:
+        raise FollowupError("the governed follow-up lineage limit has been reached")
     ordered, evaluated, terminal = _terminal_refusal(entries)
     manifest_id = ordered[0].payload.get("manifest_id")
     if manifest_id != getattr(parent_contract, "contract_id", None):
@@ -358,6 +395,20 @@ def followup_approval_from_dict(value: object) -> FollowupApproval:
         raise FollowupError("stored follow-up approval ID is malformed")
     if approval.authority != FOLLOWUP_AUTHORITY or approval.deployment_authorized:
         raise FollowupError("stored follow-up approval contains unauthorized state")
+    if (
+        _DRAFT_ID.fullmatch(approval.draft_id or "") is None
+        or _CONTRACT_ID.fullmatch(approval.child_contract_id or "") is None
+        or _CYCLE_ID.fullmatch(approval.parent_cycle_id or "") is None
+        or _CYCLE_ID.fullmatch(approval.child_cycle_id or "") is None
+        or isinstance(approval.maximum_gpu_minutes, bool)
+        or not isinstance(approval.maximum_gpu_minutes, int)
+        or approval.maximum_gpu_minutes < 1
+        or approval.maximum_training_attempts != 1
+    ):
+        raise FollowupError("stored follow-up approval fields are invalid")
+    _require_sha256(approval.parent_head_sha256, "parent head")
+    _require_sha256(approval.fresh_dataset_sha256, "fresh dataset")
+    _require_sha256(approval.idempotency_sha256, "idempotency hash")
     if _digest(approval._material()) != approval.approval_sha256:
         raise FollowupError("stored follow-up approval digest does not match")
     if approval.approval_id != f"approval-{approval.approval_sha256[:24]}":
@@ -365,7 +416,62 @@ def followup_approval_from_dict(value: object) -> FollowupApproval:
     return approval
 
 
-def validate_public_followup_summary(value: object, *, expected_cycle_id: str) -> dict[str, Any]:
+def build_followup_dispatch(
+    approval: FollowupApproval,
+    *,
+    task_id: str,
+) -> FollowupDispatch:
+    if _TASK_ID.fullmatch(task_id or "") is None:
+        raise FollowupError("follow-up task identity is malformed")
+    material = {
+        "draft_id": approval.draft_id,
+        "approval_id": approval.approval_id,
+        "child_contract_id": approval.child_contract_id,
+        "child_cycle_id": approval.child_cycle_id,
+        "task_id": task_id,
+        "status": "queued",
+    }
+    digest = _digest(material)
+    return FollowupDispatch(
+        dispatch_id=f"dispatch-{digest[:24]}",
+        dispatch_sha256=digest,
+        **material,
+    )
+
+
+def followup_dispatch_from_dict(value: object) -> FollowupDispatch:
+    try:
+        if not isinstance(value, dict):
+            raise FollowupError("stored follow-up dispatch is malformed")
+        dispatch = FollowupDispatch(**value)
+    except (KeyError, TypeError) as exc:
+        raise FollowupError("stored follow-up dispatch is malformed") from exc
+    if _DISPATCH_ID.fullmatch(dispatch.dispatch_id or "") is None:
+        raise FollowupError("stored follow-up dispatch ID is malformed")
+    if dispatch.status != "queued" or _TASK_ID.fullmatch(dispatch.task_id or "") is None:
+        raise FollowupError("stored follow-up dispatch contains invalid state")
+    if (
+        _DRAFT_ID.fullmatch(dispatch.draft_id or "") is None
+        or _APPROVAL_ID.fullmatch(dispatch.approval_id or "") is None
+        or _CONTRACT_ID.fullmatch(dispatch.child_contract_id or "") is None
+        or _CYCLE_ID.fullmatch(dispatch.child_cycle_id or "") is None
+    ):
+        raise FollowupError("stored follow-up dispatch fields are invalid")
+    if _digest(dispatch._material()) != dispatch.dispatch_sha256:
+        raise FollowupError("stored follow-up dispatch digest does not match")
+    if dispatch.dispatch_id != f"dispatch-{dispatch.dispatch_sha256[:24]}":
+        raise FollowupError("stored follow-up dispatch identity does not match its digest")
+    return dispatch
+
+
+def validate_public_followup_summary(
+    value: object,
+    *,
+    expected_cycle_id: str,
+    expected_manifest_id: str | None = None,
+    expected_head_sha256: str | None = None,
+    expected_evaluation_sha256: str | None = None,
+) -> dict[str, Any]:
     if not isinstance(value, dict) or set(value) != {"cycle_id", "followup"}:
         raise JournalError("public follow-up projection is malformed")
     if value.get("cycle_id") != expected_cycle_id or not isinstance(value.get("followup"), dict):
@@ -388,10 +494,24 @@ def validate_public_followup_summary(value: object, *, expected_cycle_id: str) -
             raise JournalError("public follow-up projection has invalid evidence identity") from exc
     if _DRAFT_ID.fullmatch(str(summary.get("draft_id"))) is None:
         raise JournalError("public follow-up projection has invalid draft identity")
+    expected = {
+        "parent_manifest_id": expected_manifest_id,
+        "parent_head_sha256": expected_head_sha256,
+        "parent_evaluation_sha256": expected_evaluation_sha256,
+    }
+    if any(wanted is not None and summary.get(field) != wanted for field, wanted in expected.items()):
+        raise JournalError("public follow-up projection does not match the published mission evidence")
     return value
 
 
-def load_public_followup_summary(path: Path, *, expected_cycle_id: str) -> dict[str, Any]:
+def load_public_followup_summary(
+    path: Path,
+    *,
+    expected_cycle_id: str,
+    expected_manifest_id: str | None = None,
+    expected_head_sha256: str | None = None,
+    expected_evaluation_sha256: str | None = None,
+) -> dict[str, Any]:
     try:
         raw = path.read_bytes()
     except OSError as exc:
@@ -402,4 +522,10 @@ def load_public_followup_summary(path: Path, *, expected_cycle_id: str) -> dict[
         value = json.loads(raw)
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise JournalError("public follow-up projection is malformed") from exc
-    return validate_public_followup_summary(value, expected_cycle_id=expected_cycle_id)
+    return validate_public_followup_summary(
+        value,
+        expected_cycle_id=expected_cycle_id,
+        expected_manifest_id=expected_manifest_id,
+        expected_head_sha256=expected_head_sha256,
+        expected_evaluation_sha256=expected_evaluation_sha256,
+    )

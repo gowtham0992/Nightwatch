@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fetchVerificationReceipt, requestVerification } from './data/missionAdapter.js';
 import { discoveryEvidence, dossierFacts, evaluationEvidence, missionRecord, publishedCaseEvidence, releaseChecks } from './data/judgeDossier.js';
-import { SELF_SERVICE_MISSION_ID } from './data/missionControl.js';
+import { JUDGE_LIVE_MISSION_ID, SELF_SERVICE_MISSION_ID } from './data/missionControl.js';
 import { shortHash } from './data/scamMission.js';
 import { scrollToElementThen } from './utils/scrollGate.js';
 import GovernedFollowup from './GovernedFollowup.jsx';
@@ -32,11 +32,14 @@ function Chapter({ number, kicker, title, copy, children, id }) {
 }
 
 function CaseSwitch({ story, onSelectStory }) {
-  const refusal = story !== 'qualified';
+  const refusal = story === SELF_SERVICE_MISSION_ID;
+  const regression = story === JUDGE_LIVE_MISSION_ID;
+  const qualified = story === 'qualified';
   return <div className="nw-case-switch" aria-label="Choose a verified Nightwatch outcome">
     <span>Verified cases</span>
     <button type="button" className={refusal ? 'active' : ''} aria-pressed={refusal} onClick={() => onSelectStory(SELF_SERVICE_MISSION_ID)}>Refused repair</button>
-    <button type="button" className={!refusal ? 'active' : ''} aria-pressed={!refusal} onClick={() => onSelectStory('qualified')}>Qualified repair</button>
+    <button type="button" className={regression ? 'active' : ''} aria-pressed={regression} onClick={() => onSelectStory(JUDGE_LIVE_MISSION_ID)}>Hidden regression</button>
+    <button type="button" className={qualified ? 'active' : ''} aria-pressed={qualified} onClick={() => onSelectStory('qualified')}>Qualified repair</button>
   </div>;
 }
 

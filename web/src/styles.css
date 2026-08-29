@@ -102,3 +102,8 @@ body:before{content:'';position:fixed;inset:0;pointer-events:none;opacity:.34;ba
   .judge-workspace .agent-card.compact{min-height:88px}
   .judge-workspace .inspector{border-left:0;border-top:1px solid var(--line)}
 }
+
+.followup-approved.recovery{border-top-color:var(--fu-alert)}
+.followup-approved.recovery>span{color:var(--fu-alert)}
+.followup-approved.recovery button:disabled{opacity:.55;cursor:not-allowed}
+.followup-approved.recovery small{grid-column:1/-1;color:var(--fu-alert)}

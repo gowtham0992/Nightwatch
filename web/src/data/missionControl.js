@@ -5,6 +5,10 @@ const HASH = /^[a-f0-9]{64}$/;
 export const JUDGE_LIVE_MISSION_ID = 'nightwatch-live-89e73407c43d525c4bc19272';
 export const SELF_SERVICE_MISSION_ID = 'nightwatch-live-ac7c9d317783b6af4e543b1d';
 
+export function shouldPollMissingMission(status, operatorEnabled) {
+  return status === 404 && operatorEnabled === true;
+}
+
 export function storySelectionChanges(currentStory, nextStory) {
   return currentStory !== nextStory;
 }
@@ -306,5 +310,11 @@ export async function approveFollowup(draftId, request, idempotencyKey, { fetchI
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify(request),
+  }));
+}
+
+export async function dispatchFollowup(draftId, { fetchImpl = globalThis.fetch } = {}) {
+  return responseJson(await fetchImpl(`/api/operator/follow-ups/${encodeURIComponent(draftId)}/dispatch`, {
+    method: 'POST', headers: { Accept: 'application/json' },
   }));
 }

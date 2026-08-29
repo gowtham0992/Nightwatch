@@ -21,7 +21,7 @@ The private operator must supply two genuinely new inputs before another mission
 1. a different canonical evaluation SHA-256, because the parent evidence is treated as spent;
 2. a separately approved GPU-minute ceiling, never higher than the proposal and always limited to one attempt.
 
-Approval creates a new schema-v3 child contract that commits to the parent cycle, parent contract, terminal head, follow-up draft, rotated evidence digest, and new budget. The child inherits the pinned model, release policy, baseline adapter, field mapping, and approved Registry roster. Maximum lineage depth is one, so a child cannot recursively manufacture another retry. The same deterministic release gate evaluates the child, and both branches remain non-deploying.
+Approval creates a new schema-v3 child contract that commits to the parent cycle, parent contract, terminal head, follow-up draft, rotated evidence digest, and new budget. A separate create-only dispatch receipt is written only after Cloud Tasks accepts the exact child identity. If that external call fails, authorization remains auditable without being mislabeled as queued, and an operator can safely retry the deterministic task. The child inherits the pinned model, release policy, baseline adapter, field mapping, and approved Registry roster. Maximum lineage depth is one, so a child cannot recursively manufacture another retry. The same deterministic release gate evaluates the child, and both branches remain non-deploying.
 
 ## Google Cloud enforces the boundary
 
@@ -56,6 +56,7 @@ Cloud Storage holds create-only stage artifacts and external-call claims. Each e
 
 - `operator/followups/{draft_id}.json` stores a create-only non-executable proposal;
 - `operator/followup-approvals/{draft_id}.json` stores at most one operator approval bound to a child contract, evidence digest, budget, and idempotency hash;
+- `operator/followup-dispatches/{draft_id}.json` records Cloud Tasks acceptance separately from authorization and binds the exact deterministic child task;
 
 - a duplicate Cloud Task returns an identical completed journal entry;
 - a crash before artifact creation leaves nothing durable and can retry safely;

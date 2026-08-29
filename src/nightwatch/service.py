@@ -17,6 +17,7 @@ from nightwatch.firestore_journal import FirestoreJournal, validate_cycle_id
 from nightwatch.followup import (
     FollowupError,
     build_followup_approval,
+    build_followup_dispatch,
     build_followup_draft,
     load_public_followup_summary,
 )
@@ -92,6 +93,7 @@ class MissionQueue(Protocol):
 
 
 _OPERATOR_KEY = re.compile(r"^[A-Za-z0-9_-]{16,128}$")
+_FOLLOWUP_DRAFT_ID = re.compile(r"^followup-[a-f0-9]{24}$")
 
 
 def _operator_cycle_id(contract_id: str, idempotency_key: str) -> str:
@@ -291,10 +293,61 @@ def create_app(
         directory = Path(
             os.environ.get("NIGHTWATCH_PUBLIC_FOLLOWUPS_DIR", "/app/public-followups")
         )
+        snapshot = get_public_snapshot(cycle_id)
+        created = snapshot["entries"][0]
+        evaluated = next(
+            (entry for entry in snapshot["entries"] if entry["stage"] == Stage.EVALUATED.value),
+            None,
+        )
+        if evaluated is None:
+            raise JournalError("published mission is missing evaluation evidence")
         return load_public_followup_summary(
             directory / f"{cycle_id}.json",
             expected_cycle_id=cycle_id,
+            expected_manifest_id=created["payload"].get("manifest_id"),
+            expected_head_sha256=snapshot["head_hash"],
+            expected_evaluation_sha256=evaluated["payload"].get("artifact_sha256"),
         )
+
+    def dispatch_approved_followup(store: OperatorStore, approval: Any) -> tuple[Any, Any, Any]:
+        contract = require_contract(store, approval.child_contract_id)
+        if (
+            contract.dataset_sha256 != approval.fresh_dataset_sha256
+            or contract.compute.maximum_gpu_minutes != approval.maximum_gpu_minutes
+            or contract.compute.maximum_training_attempts != approval.maximum_training_attempts
+            or contract.lineage is None
+            or contract.lineage.followup_draft_id != approval.draft_id
+        ):
+            raise OperatorContractError("approved follow-up contract failed integrity validation")
+        existing = store.read_followup_dispatch(approval.draft_id)
+        if existing is not None:
+            return contract, existing, None
+        scheduled = get_operator_queue().enqueue_stage(
+            approval.child_cycle_id,
+            approval.child_contract_id,
+            Stage.CREATED,
+        )
+        dispatch = store.create_followup_dispatch(
+            build_followup_dispatch(approval, task_id=scheduled.task_id)
+        )
+        return contract, dispatch, scheduled
+
+    def followup_launch_response(draft: Any, approval: Any, dispatch: Any, scheduled: Any) -> Response:
+        response = jsonify(
+            {
+                "cycle_id": approval.child_cycle_id,
+                "manifest_id": approval.child_contract_id,
+                "parent_cycle_id": draft.parent_cycle_id,
+                "followup_draft_id": draft.draft_id,
+                "approval": approval.public_summary(),
+                "dispatch": dispatch.public_summary(),
+                "stage": Stage.CREATED.value,
+                "status": "already_accepted" if scheduled is None or scheduled.duplicate else "queued",
+                "task_id": dispatch.task_id,
+            }
+        )
+        response.status_code = 202
+        return response
 
     @app.after_request
     def secure_response(response: Response) -> Response:
@@ -529,6 +582,7 @@ def create_app(
             else:
                 proposal = existing
             approval = store.read_followup_approval(proposal.draft_id)
+            dispatch = store.read_followup_dispatch(proposal.draft_id)
         except (FollowupError, OperatorContractError, JournalError) as exc:
             return _error("followup_unavailable", str(exc), 409)
         except (GoogleAPICallError, GoogleAuthError, RetryError, RuntimeError):
@@ -543,6 +597,7 @@ def create_app(
                 "cycle_id": cycle_id,
                 "followup": proposal.public_summary(),
                 "approval": approval.public_summary() if approval else None,
+                "dispatch": dispatch.public_summary() if dispatch else None,
             }
         )
         response.status_code = 201 if request.method == "POST" and existing is None else 200
@@ -573,6 +628,10 @@ def create_app(
             draft = store.read_followup(draft_id)
             if draft is None:
                 return _error("followup_not_found", "No valid follow-up draft exists with that ID.", 404)
+            approval = store.read_followup_approval(draft_id)
+            if approval is not None:
+                contract, dispatch, scheduled = dispatch_approved_followup(store, approval)
+                return followup_launch_response(draft, approval, dispatch, scheduled)
             parent = require_contract(store, draft.parent_manifest_id)
             dataset = store.read_dataset(body["dataset_id"])
             if dataset is None:
@@ -594,34 +653,43 @@ def create_app(
                 idempotency_key=idempotency_key,
             )
             approval = store.create_followup_approval(approval)
-            scheduled = get_operator_queue().enqueue_stage(
-                child_cycle_id,
-                contract.contract_id,
-                Stage.CREATED,
-            )
+            contract, dispatch, scheduled = dispatch_approved_followup(store, approval)
         except (FollowupError, OperatorContractError, JournalError) as exc:
             return _error("followup_refused", str(exc), 409)
         except (GoogleAPICallError, GoogleAuthError, RetryError, RuntimeError):
             app.logger.exception("follow-up approval unavailable", extra={"draft_id": draft_id})
             return _error(
                 "dependency_unavailable",
-                "The follow-up could not be authorized right now.",
+                "Authorization may be sealed, but child scheduling was not confirmed. Refresh and retry scheduling.",
                 503,
             )
-        response = jsonify(
-            {
-                "cycle_id": child_cycle_id,
-                "manifest_id": contract.contract_id,
-                "parent_cycle_id": draft.parent_cycle_id,
-                "followup_draft_id": draft.draft_id,
-                "approval": approval.public_summary(),
-                "stage": Stage.CREATED.value,
-                "status": "already_accepted" if scheduled.duplicate else "queued",
-                "task_id": scheduled.task_id,
-            }
-        )
-        response.status_code = 202
-        return response
+        return followup_launch_response(draft, approval, dispatch, scheduled)
+
+    @app.post("/api/operator/follow-ups/<draft_id>/dispatch")
+    def retry_followup_dispatch(draft_id: str) -> tuple[Response, int] | Response:
+        if not operator_enabled():
+            return _error("not_found", "The API route does not exist.", 404)
+        if _FOLLOWUP_DRAFT_ID.fullmatch(draft_id) is None or request.content_length not in (None, 0):
+            return _error("invalid_request", "Provide a valid follow-up draft ID and no request body.", 400)
+        try:
+            store = get_operator_store()
+            draft = store.read_followup(draft_id)
+            if draft is None:
+                return _error("followup_not_found", "No valid follow-up draft exists with that ID.", 404)
+            approval = store.read_followup_approval(draft_id)
+            if approval is None:
+                return _error("followup_not_authorized", "This follow-up has not been authorized.", 409)
+            contract, dispatch, scheduled = dispatch_approved_followup(store, approval)
+        except (FollowupError, OperatorContractError, JournalError) as exc:
+            return _error("followup_refused", str(exc), 409)
+        except (GoogleAPICallError, GoogleAuthError, RetryError, RuntimeError):
+            app.logger.exception("follow-up dispatch unavailable", extra={"draft_id": draft_id})
+            return _error(
+                "dependency_unavailable",
+                "The authorized child mission could not be queued right now.",
+                503,
+            )
+        return followup_launch_response(draft, approval, dispatch, scheduled)
 
     @app.get("/api/missions/<path:cycle_id>")
     def mission(cycle_id: str) -> tuple[Response, int] | Response:

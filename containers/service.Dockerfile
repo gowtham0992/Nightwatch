@@ -20,9 +20,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PORT=8080
 
 WORKDIR /app
-COPY pyproject.toml README.md ./
+COPY pyproject.toml uv.lock README.md ./
 COPY src ./src
-RUN pip install --no-cache-dir ".[service]" \
+RUN pip install --no-cache-dir uv==0.11.8 \
+    && uv export --frozen --no-dev --extra service --no-emit-project --no-hashes --output-file /tmp/requirements.txt \
+    && uv pip install --system --no-cache -r /tmp/requirements.txt \
+    && uv pip install --system --no-cache --no-deps . \
     && useradd --create-home --uid 10001 nightwatch
 COPY --from=web-builder /workspace/web/dist ./web-dist
 COPY artifacts/public-mission-v2.json ./public-missions/nightwatch-v2-qualification.json
